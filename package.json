@@ -1,5 +1,5 @@
 {
-  "name": "astroplate-starter",
+  "name": "visual-prompt-studio",
   "version": "1.0.0",
   "description": "Content-first Astro starter with React, Tailwind CSS, and daisyUI",
   "author": "Your Name",
@@ -33,6 +33,17 @@
     "@astrojs/react": "7.1.1",
     "@astrojs/sitemap": "3.7.4",
     "@digi4care/astro-google-tagmanager": "^2.1.0",
+    "@fontsource-variable/bricolage-grotesque": "5.3.0",
+    "@fontsource/archivo-black": "5.3.0",
+    "@fontsource/bebas-neue": "5.3.0",
+    "@fontsource/cormorant-garamond": "5.3.0",
+    "@fontsource/fraunces": "5.3.0",
+    "@fontsource/ibm-plex-mono": "5.3.0",
+    "@fontsource/inter": "5.3.0",
+    "@fontsource/josefin-sans": "5.3.0",
+    "@fontsource/limelight": "5.3.0",
+    "@fontsource/oswald": "5.3.0",
+    "@fontsource/shippori-mincho": "5.3.0",
     "@justinribeiro/lite-youtube": "^1.9.0",
     "astro": "7.4.2",
     "astro-auto-import": "^0.5.2",
@@ -49,7 +60,8 @@
     "remark-collapse": "^0.1.2",
     "remark-toc": "^9.0.0",
     "sharp": "^0.35.5",
-    "vite": "^8.3.5"
+    "vite": "^8.3.5",
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

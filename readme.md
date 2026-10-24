@@ -1,6 +1,29 @@
-# Content-first Astro starter
+# Visual Prompt Studio
 
-A content-driven Astro starter, derived from Astroplate (MIT, see `LICENSE`). Astro owns pages, layouts, and Markdown collections; React stays available for the existing interactive search and MDX components. Most content renders as static HTML.
+Visual Prompt Studio is a local-first, copy-first composer for art-directed image prompts. The homepage combines layout, imagery, print finish, palette, typography, exact poster text, and exclusions into prompts tuned for the selected image model. It does not generate images or send recipe data to a server.
+
+The app is built on the Astro template in this repository. Astro owns routing, layouts, metadata, and the content pages; the interactive composer is a typed browser-side module. The original v2 source and guides are kept in `visual-prompt-studio 2/` as references.
+
+## Run
+
+Requirements: Node.js `22.23.4` or newer and pnpm `11.17.0`.
+
+```sh
+pnpm install --frozen-lockfile
+pnpm run dev
+```
+
+The composer saves its recipe in the browser, supports validated JSON import/export, and copies model-specific prompts. Inspiration links open external sites; the app itself makes no API calls.
+
+## Prompt composer
+
+- Select from nine aspect ratios, eight formats, five model targets, and target-appropriate prompt structures.
+- Combine independent layout, imagery, and finish styles with palettes, type specimens, and optional authorial intent.
+- Preserve exact poster copy or reserve a clean area for later typesetting.
+- Select exclusions; style-dependent exclusions are called out and skipped automatically.
+- Import and export typed recipes. The recipe schema also validates browser storage.
+
+Run the repository checks and production build with the commands below. See [technology decisions](docs/technology-decisions.md), [content authoring](docs/content-authoring.md), and [deployment](docs/deployment.md) for the Astro template details.
 
 ## Included
 

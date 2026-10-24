@@ -1,6 +1,6 @@
 {
   "site": {
-    "title": "Your Site",
+    "title": "Visual Prompt Studio",
     "base_url": "https://example.com",
     "base_path": "/",
     "trailing_slash": false,
@@ -9,7 +9,7 @@
     "logo_darkmode": "",
     "logo_width": "150",
     "logo_height": "30",
-    "logo_text": "Your Brand"
+    "logo_text": "Visual Prompt Studio"
   },
 
   "settings": {
@@ -51,9 +51,9 @@
   },
 
   "metadata": {
-    "meta_author": "Your Name",
+    "meta_author": "Visual Prompt Studio",
     "meta_image": "/social-card.svg",
-    "meta_description": "A content-first website. Replace this description with an accurate summary."
+    "meta_description": "Compose clear, art-directed image prompts with layered visual language, exact text, and model-aware controls."
   },
 
   "llms": {

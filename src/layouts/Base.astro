@@ -29,11 +29,21 @@ export interface Props {
   image?: string;
   noindex?: boolean;
   canonical?: string;
+  hideChrome?: boolean;
+  pageTheme?: "light" | "dark";
 }
 
 // destructure frontmatter
-const { title, meta_title, description, image, noindex, canonical } =
-  Astro.props;
+const {
+  title,
+  meta_title,
+  description,
+  image,
+  noindex,
+  canonical,
+  hideChrome = false,
+  pageTheme,
+} = Astro.props;
 const siteMode = getSiteMode();
 const canonicalUrl = getCanonicalUrl(
   canonical || Astro.url.pathname,
@@ -45,7 +55,7 @@ const shouldNoindex = siteMode === "preview" || noindex;
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme={pageTheme}>
   <head>
     <!-- google tag manager -->
     {
@@ -73,10 +83,11 @@ const shouldNoindex = siteMode === "preview" || noindex;
 
     <!-- google font css - Astro 6 built-in Font API -->
     {
-      fontEntries.map(([key]) => {
-        const cssVar = `--font-${key}` as any;
-        return <Font cssVariable={cssVar} preload />;
-      })
+      !hideChrome &&
+        fontEntries.map(([key]) => {
+          const cssVar = `--font-${key}` as any;
+          return <Font cssVariable={cssVar} preload />;
+        })
     }
 
     <!-- responsive meta -->
@@ -167,13 +178,17 @@ const shouldNoindex = siteMode === "preview" || noindex;
         <GoogleTagmanagerNoscript id={config.google_tag_manager.gtm_id} />
       )
     }
-    {config.announcement.enable && <Announcement client:only="react" />}
-    <Header />
-    <SearchModal client:only="react" />
+    {
+      !hideChrome && config.announcement.enable && (
+        <Announcement client:only="react" />
+      )
+    }
+    {!hideChrome && <Header />}
+    {!hideChrome && <SearchModal client:only="react" />}
     <main class="grow" id="main-content">
       <slot />
     </main>
-    <Footer />
-    <TwSizeIndicator />
+    {!hideChrome && <Footer />}
+    {!hideChrome && <TwSizeIndicator />}
   </body>
 </html>

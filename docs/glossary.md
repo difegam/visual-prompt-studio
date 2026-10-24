@@ -12,3 +12,10 @@
 | `SITE_MODE`        | Build setting that selects `preview` or `production` SEO and robots behavior.                                                                       |
 | Canonical URL      | The configured public URL a page declares as its preferred address. It is assembled using `site.base_url`, `site.base_path`, and the current route. |
 | Vite+ (`vp`)       | A separate tool for running project scripts. This starter leaves it out because Astro commands already run through pnpm scripts.                    |
+| Aspect ratio       | The proportional relationship between the width and height of the requested image, such as `4:5` or `16:9`.                                         |
+| Prompt recipe      | A set of a brief, format, visual choices, text, exclusions, and target settings used to compile an image prompt.                                    |
+| Prompt target      | The image model or tool whose syntax and constraints shape the compiled prompt.                                                                     |
+| Prompt pattern     | The structure used to express a recipe, such as a concise art-direction paragraph or a seven-line brief.                                            |
+| Visual layer       | One independent part of the art direction: layout, imagery, or print finish.                                                                        |
+| Exclusion          | A named element the prompt should avoid, unless the selected visual style relies on that element.                                                   |
+| Compiled prompt    | The target-aware text produced from a prompt recipe, including a separate negative prompt when the target supports it.                              |
