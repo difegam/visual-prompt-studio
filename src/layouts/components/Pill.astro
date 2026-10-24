@@ -1,0 +1,31 @@
+---
+type Variant = "overlay" | "soft" | "filter" | "filter-active" | "tag";
+
+interface Props {
+  href: string;
+  variant?: Variant;
+  class?: string;
+}
+
+const { href, variant = "tag", class: className = "" } = Astro.props;
+
+const base = "inline-block rounded-full transition-colors duration-200";
+const variants: Record<Variant, string> = {
+  overlay:
+    "bg-primary/90 dark:bg-darkmode-primary/90 hover:bg-primary dark:hover:bg-darkmode-primary dark:text-text-dark px-3 py-1 text-xs font-bold tracking-wide text-white uppercase",
+  soft: "bg-primary/10 dark:bg-darkmode-primary/10 text-primary dark:text-darkmode-primary hover:bg-primary/20 dark:hover:bg-darkmode-primary/20 px-3 py-1 text-xs font-bold tracking-wide uppercase",
+  filter:
+    "border-border dark:border-darkmode-border bg-body dark:bg-darkmode-body text-text-dark dark:text-darkmode-text-dark hover:bg-light dark:hover:bg-darkmode-light hover:border-primary/40 dark:hover:border-darkmode-primary/40 border px-4 py-1.5 text-sm font-medium",
+  "filter-active":
+    "bg-primary dark:bg-darkmode-primary dark:text-text-dark px-4 py-1.5 text-sm font-medium text-white",
+  tag: "bg-light dark:bg-darkmode-light text-text-dark dark:text-darkmode-text-dark hover:bg-primary dark:hover:bg-darkmode-primary hover:text-white dark:hover:text-text-dark px-3 py-1 text-sm",
+};
+---
+
+<a
+  href={href}
+  aria-current={variant === "filter-active" ? "page" : undefined}
+  class:list={[base, variants[variant], className]}
+>
+  <slot />
+</a>

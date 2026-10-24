@@ -1,0 +1,127 @@
+---
+import config from "@/config/config.json";
+import dateFormat from "@/lib/utils/dateFormat";
+import { humanize, plainify, slugify } from "@/lib/utils/textConverter";
+import { FaRegUserCircle } from "react-icons/fa";
+import ImageMod from "./ImageMod.astro";
+import Pill from "./Pill.astro";
+
+const {
+  summary_length,
+  blog_folder,
+}: { summary_length: number; blog_folder: string } = config.settings;
+const { data } = Astro.props;
+const { title, image, date, author, categories } = data.data;
+const category: string | undefined = categories?.[0];
+const postUrl = `/${blog_folder}/${data.id}`;
+---
+
+<article
+  class="group bg-body dark:bg-darkmode-body border-border dark:border-darkmode-border flex h-full flex-col overflow-hidden rounded-2xl border transition-shadow duration-300 hover:shadow-xl"
+>
+  {
+    image && (
+      <div class="relative overflow-hidden">
+        <ImageMod
+          class="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+          src={image}
+          alt={title}
+          width={445}
+          height={334}
+          format="webp"
+          fit="cover"
+        />
+        {category && (
+          <Pill
+            href={`/categories/${slugify(category)}`}
+            variant="overlay"
+            class="absolute top-4 right-4"
+          >
+            {humanize(category)}
+          </Pill>
+        )}
+      </div>
+    )
+  }
+  <div class="flex flex-1 flex-col p-6">
+    {
+      !image && category && (
+        <Pill
+          href={`/categories/${slugify(category)}`}
+          variant="soft"
+          class="mb-3"
+        >
+          {humanize(category)}
+        </Pill>
+      )
+    }
+    <h4 class="mb-2">
+      <a
+        href={postUrl}
+        class="hover:text-primary dark:hover:text-darkmode-primary transition-colors duration-200"
+      >
+        {title}
+      </a>
+    </h4>
+    <ul
+      class="text-text-light dark:text-darkmode-text-light mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm"
+    >
+      <li>
+        <a href={`/authors/${slugify(author)}`} class="flex items-center">
+          <FaRegUserCircle className="mr-1.5" />
+          {humanize(author)}
+        </a>
+      </li>
+      {
+        categories && categories.length > 0 && (
+          <>
+            <li aria-hidden="true">·</li>
+            <li class="flex flex-wrap gap-1">
+              {categories.map((category: string, index: number) => (
+                <>
+                  <a
+                    href={`/categories/${slugify(category)}`}
+                    class="hover:text-primary dark:hover:text-darkmode-primary"
+                  >
+                    {humanize(category)}
+                  </a>
+                  {index < categories.length - 1 && <span>, </span>}
+                </>
+              ))}
+            </li>
+          </>
+        )
+      }
+      {
+        date && (
+          <>
+            <li aria-hidden="true">·</li>
+            <li>{dateFormat(date)}</li>
+          </>
+        )
+      }
+    </ul>
+    <p class="mb-6 line-clamp-3">
+      {plainify(data.body?.slice(0, Number(summary_length)))}
+    </p>
+    <a
+      class="btn btn-primary btn-sm mt-auto inline-flex items-center self-start"
+      href={postUrl}
+    >
+      Read more
+      <svg
+        class="ml-2 h-4 w-4 transition-transform group-hover:translate-x-0.5"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        aria-hidden="true"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M9 5l7 7-7 7"></path>
+      </svg>
+    </a>
+  </div>
+</article>

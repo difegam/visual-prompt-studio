@@ -1,0 +1,20 @@
+{
+  // Cloudflare Workers — Static Assets deployment
+  // Deploy only through an explicit environment: development or production.
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "astroplate-starter-development",
+  "compatibility_date": "2026-10-24",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page",
+  },
+  "observability": {
+    "enabled": true,
+    "logs": { "enabled": true, "invocation_logs": true },
+    "traces": { "enabled": true },
+  },
+  "env": {
+    "development": { "name": "astroplate-starter-development" },
+    "production": { "name": "astroplate-starter-production" },
+  },
+}

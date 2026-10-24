@@ -1,0 +1,43 @@
+---
+import { Image } from "astro:assets";
+import type { PortfolioProject } from "@/examples/portfolio/projects";
+
+interface Props {
+  project: PortfolioProject;
+}
+
+const { project }: Props = Astro.props;
+---
+
+<article
+  class="border-border bg-body dark:border-darkmode-border dark:bg-darkmode-body overflow-hidden rounded-lg border"
+>
+  {
+    project.image && (
+      <Image
+        src={project.image.src}
+        alt={project.image.alt}
+        class="aspect-[16/9] w-full object-cover"
+        loading="lazy"
+        decoding="async"
+      />
+    )
+  }
+  <div class="p-6">
+    <h2 class="mb-3 text-xl font-semibold">
+      <a class="link link-hover" href={project.href}>{project.title}</a>
+    </h2>
+    <p class="text-text dark:text-darkmode-text mb-5">{project.summary}</p>
+    {
+      project.tags && project.tags.length > 0 && (
+        <ul class="flex flex-wrap gap-2" aria-label={`${project.title} topics`}>
+          {project.tags.map((tag) => (
+            <li>
+              <span class="badge badge-outline">{tag}</span>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </div>
+</article>

@@ -1,0 +1,22 @@
+pre-commit:
+  parallel: false
+  commands:
+    eslint:
+      glob:
+        - "*.{js,mjs,cjs,jsx,ts,tsx,astro}"
+        - "**/*.{js,mjs,cjs,jsx,ts,tsx,astro}"
+      run: ./scripts/with-node.sh pnpm exec eslint --fix {staged_files}
+      stage_fixed: true
+    prettier:
+      glob:
+        - "*.{js,mjs,cjs,jsx,ts,tsx,astro,md,mdx,json,css,yml,yaml}"
+        - "**/*.{js,mjs,cjs,jsx,ts,tsx,astro,md,mdx,json,css,yml,yaml}"
+      exclude:
+        - pnpm-lock.yaml
+      run: ./scripts/with-node.sh pnpm exec prettier --write {staged_files}
+      stage_fixed: true
+
+pre-push:
+  commands:
+    project-check:
+      run: ./scripts/with-node.sh pnpm run check

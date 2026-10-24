@@ -1,0 +1,132 @@
+---
+import BlogCard from "@/components/BlogCard.astro";
+import Pill from "@/components/Pill.astro";
+import Share from "@/components/Share.astro";
+import config from "@/config/config.json";
+import Disqus from "@/helpers/Disqus";
+import { getSinglePage } from "@/lib/contentParser.astro";
+import dateFormat from "@/lib/utils/dateFormat";
+import similarItems from "@/lib/utils/similarItems";
+import { humanize, markdownify, slugify } from "@/lib/utils/textConverter";
+import { render } from "astro:content";
+import {
+  FaRegCalendarAlt,
+  FaRegClock,
+  FaRegFolder,
+  FaRegUserCircle,
+} from "react-icons/fa";
+import ImageMod from "./components/ImageMod.astro";
+
+const COLLECTION_FOLDER = "blog";
+const { post } = Astro.props;
+
+const posts = await getSinglePage(COLLECTION_FOLDER);
+const similarPosts = similarItems(post, posts);
+const { Content, remarkPluginFrontmatter } = await render(post);
+const { wordCount, readingTimeMinutes } = remarkPluginFrontmatter as {
+  wordCount?: number;
+  readingTimeMinutes?: number;
+};
+const { title, description, author, categories, image, date, tags } = post.data;
+---
+
+<section class="section pt-7">
+  <div class="container">
+    <div class="row justify-center">
+      <article class="lg:col-10">
+        {
+          image && (
+            <div class="mb-10">
+              <ImageMod
+                src={image}
+                height={500}
+                width={1200}
+                alt={title}
+                class="w-full rounded"
+                format="webp"
+              />
+            </div>
+          )
+        }
+        <h1 set:html={markdownify(title)} class="h2 mb-4" />
+        <ul class="mb-4">
+          <li class="mr-4 inline-block">
+            <a href={`/authors/${slugify(author)}`}>
+              <FaRegUserCircle className={"-mt-1 mr-2 inline-block"} />
+              {humanize(author)}
+            </a>
+          </li>
+          <li class="mr-4 inline-block">
+            <FaRegFolder className={"-mt-1 mr-2 inline-block"} />
+            {
+              categories.map((category: string, index: number) => (
+                <a href={`/categories/${slugify(category)}`}>
+                  {humanize(category)}
+                  {index !== categories.length - 1 && ","}
+                </a>
+              ))
+            }
+          </li>
+          <li class="mr-4 inline-block">
+            <FaRegCalendarAlt className={"-mt-1 mr-2 inline-block"} />
+            {dateFormat(date)}
+          </li>
+          {
+            typeof wordCount === "number" &&
+              wordCount > 0 &&
+              typeof readingTimeMinutes === "number" &&
+              readingTimeMinutes > 0 && (
+                <li class="mr-4 inline-block">
+                  <FaRegClock className={"-mt-1 mr-2 inline-block"} />
+                  {readingTimeMinutes} min read · {wordCount} words
+                </li>
+              )
+          }
+        </ul>
+        <div class="content mb-10">
+          <Content />
+        </div>
+        <Share title={title} description={description} slug={post.id} />
+        <div class="row items-start justify-between">
+          <div class="mb-10 flex items-center lg:col-5 lg:mb-0">
+            <h5 class="mr-3">Tags :</h5>
+            <ul>
+              {
+                tags.map((tag: string) => (
+                  <li class="inline-block">
+                    <Pill
+                      href={`/tags/${slugify(tag)}`}
+                      variant="tag"
+                      class="m-1"
+                    >
+                      {humanize(tag)}
+                    </Pill>
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+        </div>
+        {
+          config.disqus.enable && (
+            <Disqus className="mt-20" client:only="react" />
+          )
+        }
+      </article>
+    </div>
+
+    <!-- Related posts -->
+    <div class="section pb-0">
+      <h2 class="h3 mb-12 text-center">Related Posts</h2>
+      <div class="row justify-center">
+        {
+          similarPosts.slice(0, 3).map((post) => (
+            <div class="mb-14 md:col-6 lg:col-4">
+              <BlogCard data={post} />
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</section>

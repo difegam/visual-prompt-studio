@@ -1,0 +1,142 @@
+---
+title: "Elements"
+meta_title: "Component examples"
+description: "Examples of Markdown, MDX shortcodes, and accessible content patterns."
+draft: false
+---
+
+# Heading 1
+
+## Heading 2
+
+### Heading 3
+
+#### Heading 4
+
+##### Heading 5
+
+###### Heading 6
+
+---
+
+### Paragraph and emphasis
+
+Markdown keeps editorial text close to its structure. Use headings in order and write link text that explains its destination.
+
+This paragraph includes **strong text**, _emphasis_, and an [example link](https://example.com).
+
+---
+
+### Lists
+
+1. Use ordered lists when sequence matters.
+2. Keep each item focused on one action.
+3. Use unordered lists for groups without an order.
+
+- Content collections validate editorial fields.
+- The build turns entries into static routes.
+- Components render the shared content patterns.
+
+---
+
+### Code and syntax highlighting
+
+```astro
+---
+const title = "A page heading";
+---
+
+<h1>{title}</h1>
+```
+
+---
+
+### Buttons
+
+<Button label="Read the about page" link="/about" style="solid" />
+<Button label="Contact" link="/contact" style="outline" />
+
+---
+
+### Notice
+
+<Notice type="note">
+  Use a note for context that supports the surrounding content.
+</Notice>
+
+<Notice type="tip">Keep tips short and actionable.</Notice>
+
+<Notice type="info">Use this style for supplementary information.</Notice>
+
+<Notice type="warning">
+  Reserve warnings for a meaningful risk or required action.
+</Notice>
+
+---
+
+### Tabs
+
+<Tabs client:load>
+
+<Tab name="Content">
+
+Keep authoring data in Markdown when it belongs to the content model. Use MDX only when an article needs an imported component.
+
+</Tab>
+
+<Tab name="Components">
+
+Astro components are a good fit for static patterns. React shortcodes are available for interactive examples.
+
+</Tab>
+
+<Tab name="Accessibility">
+
+Check keyboard operation, focus visibility, labels, and reading order when a component introduces interaction.
+
+</Tab>
+
+</Tabs>
+
+---
+
+### Accordion
+
+<Accordion client:load title="When should I use MDX?">
+
+Use MDX when prose needs an embedded component. Prefer ordinary Markdown for content that does not need interactive UI.
+
+</Accordion>
+
+<Accordion client:load title="How do I add an image?">
+
+Use media you have permission to publish. Add useful alt text when an image conveys information; use empty alt text for decorative images.
+
+</Accordion>
+
+---
+
+### Table
+
+| Pattern         | Best fit                         | Example in this starter |
+| :-------------- | :------------------------------- | :---------------------- |
+| Astro component | Static markup and content        | `ProjectCard.astro`     |
+| React island    | Browser interaction              | Search modal            |
+| MDX shortcode   | Embedded component in an article | `Notice`                |
+
+---
+
+### Image
+
+![Abstract illustration placeholder. Replace it with an image you have permission to publish.](/sample-illustration.svg)
+
+---
+
+### Video shortcodes
+
+Remote video embeds can contact third-party services and may need consent or a privacy review. Add a real video only after checking its source, privacy behavior, and accessibility.
+
+```mdx
+<Youtube client:load id="VIDEO_ID" title="Descriptive video title" />
+<Video width="100%" src="/videos/example.mp4" />
+```

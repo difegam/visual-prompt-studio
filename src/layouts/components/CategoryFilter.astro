@@ -1,0 +1,31 @@
+---
+import { getTaxonomy } from "@/lib/taxonomyParser.astro";
+import { humanize } from "@/lib/utils/textConverter";
+import Pill from "./Pill.astro";
+
+interface Props {
+  activeSlug?: string;
+}
+
+const { activeSlug } = Astro.props;
+const categories = await getTaxonomy("blog", "categories");
+---
+
+<nav
+  aria-label="Filter posts by category"
+  class="mb-10 flex flex-wrap justify-center gap-2"
+>
+  <Pill href="/blog" variant={activeSlug ? "filter" : "filter-active"}>
+    All posts
+  </Pill>
+  {
+    categories.map((category: string) => (
+      <Pill
+        href={`/categories/${category}`}
+        variant={category === activeSlug ? "filter-active" : "filter"}
+      >
+        {humanize(category)}
+      </Pill>
+    ))
+  }
+</nav>

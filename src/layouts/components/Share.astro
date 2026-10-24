@@ -1,0 +1,141 @@
+---
+import config from "@/config/config.json";
+import {
+  IoCopyOutline,
+  IoLogoFacebook,
+  IoLogoLinkedin,
+  IoLogoTwitter,
+  IoShareSocialOutline,
+} from "react-icons/io5";
+
+const { base_url: baseUrl, base_path: basePath } = config.site;
+const { blog_folder } = config.settings;
+const {
+  title,
+  description,
+  slug,
+  className,
+}: { title?: string; description?: string; slug?: string; className?: string } =
+  Astro.props;
+
+const normalizedBasePath = (basePath || "/").replace(/\/*$/, "");
+const normalizedSlug = (slug || "").replace(/^\/*/, "");
+const routePath = `${normalizedBasePath}/${blog_folder}/${normalizedSlug}`;
+const shareUrl = new URL(
+  routePath,
+  `${baseUrl.replace(/\/*$/, "")}/`,
+).toString();
+
+const facebookUrl = new URL("https://www.facebook.com/sharer/sharer.php");
+facebookUrl.searchParams.set("u", shareUrl);
+
+const twitterUrl = new URL("https://twitter.com/intent/tweet");
+twitterUrl.searchParams.set("text", title || "");
+twitterUrl.searchParams.set("url", shareUrl);
+
+const linkedInUrl = new URL("https://www.linkedin.com/sharing/share-offsite/");
+linkedInUrl.searchParams.set("url", shareUrl);
+---
+
+<div
+  data-share
+  data-title={title}
+  data-description={description}
+  data-url={shareUrl}
+  class:list={[
+    "fab fab-flower fixed right-[max(1.25rem,env(safe-area-inset-right))] bottom-[max(1.25rem,env(safe-area-inset-bottom))] z-30",
+    className,
+  ]}
+>
+  <div
+    tabindex="0"
+    role="button"
+    aria-label="Share this post"
+    class="btn btn-circle bg-primary dark:bg-darkmode-primary border-primary dark:border-darkmode-primary dark:text-text-dark size-14 !rounded-full p-0 text-white shadow-lg"
+  >
+    <IoShareSocialOutline className="size-6" />
+  </div>
+
+  <div class="tooltip tooltip-left" data-tip="Share on X">
+    <a
+      aria-label="Share on X"
+      class="btn btn-circle border-border dark:border-darkmode-border bg-body dark:bg-darkmode-light text-text-dark dark:text-darkmode-text-dark hover:bg-light dark:hover:bg-darkmode-body size-12 !rounded-full p-0 shadow-lg"
+      href={twitterUrl.toString()}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <IoLogoTwitter className="size-6" />
+    </a>
+  </div>
+  <div class="tooltip tooltip-left" data-tip="Share on LinkedIn">
+    <a
+      aria-label="Share on LinkedIn"
+      class="btn btn-circle border-border dark:border-darkmode-border bg-body dark:bg-darkmode-light text-text-dark dark:text-darkmode-text-dark hover:bg-light dark:hover:bg-darkmode-body size-12 !rounded-full p-0 shadow-lg"
+      href={linkedInUrl.toString()}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <IoLogoLinkedin className="size-6" />
+    </a>
+  </div>
+  <div class="tooltip" data-tip="Share on Facebook">
+    <a
+      aria-label="Share on Facebook"
+      class="btn btn-circle border-border dark:border-darkmode-border bg-body dark:bg-darkmode-light text-text-dark dark:text-darkmode-text-dark hover:bg-light dark:hover:bg-darkmode-body size-12 !rounded-full p-0 shadow-lg"
+      href={facebookUrl.toString()}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <IoLogoFacebook className="size-6" />
+    </a>
+  </div>
+  <div class="tooltip" data-tip="Share or copy link">
+    <button
+      type="button"
+      data-share-action="auto"
+      aria-label="Share or copy link"
+      class="btn btn-circle border-border dark:border-darkmode-border bg-body dark:bg-darkmode-light text-text-dark dark:text-darkmode-text-dark hover:bg-light dark:hover:bg-darkmode-body size-12 !rounded-full p-0 shadow-lg"
+    >
+      <IoCopyOutline className="size-6" />
+    </button>
+  </div>
+  <p data-share-status role="status" aria-live="polite" class="sr-only"></p>
+</div>
+
+<script>
+  document.addEventListener("click", async (event) => {
+    if (!(event.target instanceof Element)) return;
+
+    const button = event.target.closest<HTMLButtonElement>(
+      "[data-share-action]",
+    );
+    const root = button?.closest<HTMLElement>("[data-share]");
+    const status = root?.querySelector<HTMLElement>("[data-share-status]");
+    if (!button || !root || !status) return;
+
+    const shareData = {
+      title: root.dataset.title || document.title,
+      text: root.dataset.description || "",
+      url: root.dataset.url || window.location.href,
+    };
+
+    if (typeof navigator.share === "function") {
+      try {
+        await navigator.share(shareData);
+        status.textContent = "Shared.";
+        return;
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError")
+          return;
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(shareData.url);
+      status.textContent = "Link copied.";
+    } catch {
+      status.textContent =
+        "Could not copy the link. Use one of the social links instead.";
+    }
+  });
+</script>

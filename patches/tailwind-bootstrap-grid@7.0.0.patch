@@ -1,0 +1,20 @@
+diff --git a/lib/index.js b/lib/index.js
+index 884e0d9e4416709b39830ab133e734b45ae7dcbc..6bb33820563951af5beccfe4e7d1219eb1ac4648 100644
+--- a/lib/index.js
++++ b/lib/index.js
+@@ -46,7 +46,14 @@ module.exports = plugin_1.default.withOptions((pluginOptions) => (options) => {
+             return result;
+         }),
+     })
+-        .default({});
++        .default({
++        debug: false,
++        grid_columns: 12,
++        grid_gutter_width: '1.5rem',
++        grid_gutters: ['0', '0'],
++        generate_container: true,
++        container_max_widths: [],
++    });
+     const parsedPluginOptions = pluginOptionsSchema.safeParse(pluginOptions);
+     if (!parsedPluginOptions.success) {
+         throw new Error(`tailwind-bootstrap-grid options are invalid: ${parsedPluginOptions.error.message}`);

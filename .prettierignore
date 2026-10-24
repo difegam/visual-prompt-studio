@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.astro/
+.agents/
+.superpowers/
+.json/search.json
+src/styles/generated-theme.css
+pnpm-lock.yaml
