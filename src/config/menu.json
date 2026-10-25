@@ -5,6 +5,14 @@
       "url": "/"
     },
     {
+      "name": "Compare",
+      "url": "/compare"
+    },
+    {
+      "name": "Guide",
+      "url": "/guide"
+    },
+    {
       "name": "Blog",
       "url": "/blog"
     },

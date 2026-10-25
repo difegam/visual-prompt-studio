@@ -285,7 +285,7 @@ Softly squared, with radius growing with the size of the container. Controls use
 
 ### Navigation
 
-- A sticky 56px bar on Paper with a bottom hairline. Brand is the registration-mark glyph plus "Visual Prompt Studio" (17px, 700, width 85%). Links are muted weight 500 and turn Ink on hover. Below 1024px the links and recipe tools collapse into a Menu disclosure that closes on selection or Escape.
+- A sticky 64px bar on Paper with a bottom hairline. Brand is the registration-mark glyph plus "Visual Prompt Studio" (17px, 700, width 85%). Links are grouped: a main set (Studio, Compare, Guide) in weight 500 with an Accent underline on the current page, then a quieter secondary set (Blog, About) after a hairline divider. Links are muted and turn Ink on hover. Below 1024px the links and recipe tools collapse into a Menu disclosure that closes on selection or Escape.
 
 ## Do's and Don'ts
 

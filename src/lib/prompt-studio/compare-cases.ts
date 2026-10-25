@@ -37,9 +37,7 @@ export interface CompareCase {
 export const GENERIC_CASE = {
   image: generic,
   alt: "Halloween poster with a glowing orange title, carved pumpkins, a full moon and children trick-or-treating on a lamplit street.",
-  prompt: `Make a poster: A Halloween event in our neighborhood. The title is "Halloween in Amby"
-Include the date and time: "October 31 @ 18:00"
-Include the location: "Amby"`,
+  prompt: `Make a poster: A Halloween event in our neighborhood. The title is "Halloween in Amby". Include the date and time: "October 31 @ 18:00". Include the location: "Amby"`,
   guesses: [
     "Style: the model fell back on the most common Halloween look.",
     "Palette: orange, purple and black, with glow and gradients.",

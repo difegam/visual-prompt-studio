@@ -4339,10 +4339,22 @@ dialog::backdrop {
   gap: 4px;
   margin-left: auto;
 }
+.bar-nav-more {
+  gap: 0;
+  padding-left: 10px;
+  border-left: 1px solid var(--line);
+}
+.bar-nav-more a {
+  font-size: 12.5px;
+  font-weight: 400;
+}
 .bar-actions {
-  margin-left: 0;
+  margin-left: auto;
   flex-wrap: nowrap;
   align-items: center;
+}
+.bar:has(.bar-tools) .bar-actions {
+  margin-left: 0;
 }
 .bar-icon {
   display: grid;
@@ -4371,6 +4383,10 @@ dialog::backdrop {
   .bar-menu {
     display: block;
     margin-left: auto;
+  }
+  .bar-actions,
+  .bar:has(.bar-tools) .bar-actions {
+    margin-left: 0;
   }
   .bar-menu::details-content {
     display: block;
@@ -4433,6 +4449,15 @@ dialog::backdrop {
     min-height: 44px;
     padding: 0 10px;
     font-size: 15px;
+  }
+  .bar-nav-more {
+    margin-top: 4px;
+    padding: 4px 0 0;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+  .bar-nav-more a {
+    font-size: 14px;
   }
   .bar-tools {
     margin: 4px 0 0;
