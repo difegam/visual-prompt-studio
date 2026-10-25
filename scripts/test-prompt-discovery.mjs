@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
 import { createServer } from "vite";
+import { parse } from "node-html-parser";
 
 let server;
 let api;
@@ -8,6 +9,7 @@ let data;
 let styles;
 let references;
 let recipe;
+let cards;
 
 before(async () => {
   server = await createServer({
@@ -29,10 +31,116 @@ before(async () => {
   recipe = await server.ssrLoadModule(
     "/src/lib/prompt-studio/domain/recipe.ts",
   );
+  cards = await server.ssrLoadModule("/src/lib/prompt-studio/ui/directions.ts");
 });
 
 after(async () => {
   await server?.close();
+});
+
+test("suggested starters explain their layers and link to their first resolved source", () => {
+  const starter = data.DIRECTIONS.find(({ trendYear }) => trendYear === 2026);
+  const source = references.getReference(starter.sourceIds[0]);
+  const html = cards.renderDirectionCard(
+    { ...starter, sourceIds: ["missing", ...starter.sourceIds] },
+    { variant: "suggested", goal: "attention", selected: true },
+  );
+  const card = parse(html);
+  assert.ok(card.textContent.includes("2026 starter"));
+  assert.ok(card.textContent.includes(starter.principle));
+  assert.ok(card.textContent.includes(starter.tradeoff));
+  assert.equal(card.querySelector("article").getAttribute("role"), "listitem");
+  const layers = card.querySelector('ul[aria-label="Visual layers"]');
+  assert.equal(layers.querySelectorAll("li").length, 3);
+  for (const styleId of Object.values(starter.patch.styles)) {
+    assert.ok(layers.textContent.includes(styles.getStyle(styleId).name));
+  }
+  const link = card.querySelector("a");
+  assert.equal(link.textContent, `Learn with ${source.name}`);
+  assert.equal(link.getAttribute("href"), source.url);
+  assert.equal(link.getAttribute("target"), "_blank");
+  assert.equal(link.getAttribute("rel"), "noopener noreferrer");
+  const button = card.querySelector("button");
+  assert.equal(button.textContent, "Use this starter");
+  assert.equal(button.getAttribute("data-preset"), starter.id);
+  assert.equal(button.getAttribute("aria-pressed"), "true");
+  assert.ok(card.querySelector("svg"));
+  for (const color of starter.patch.palette)
+    assert.ok(html.includes(color.hex));
+});
+
+test("explorer starters use native learning disclosure and retain delegation", () => {
+  const starter = data.DIRECTIONS.find(({ trendYear }) => trendYear === 2026);
+  const card = parse(
+    cards.renderDirectionCard(starter, {
+      variant: "explorer",
+      goal: "attention",
+      selected: false,
+    }),
+  );
+  const details = card.querySelector("details.direction-learning");
+  assert.ok(details.querySelector("summary"));
+  assert.ok(details.textContent.includes(starter.principle));
+  assert.ok(details.textContent.includes(starter.tradeoff));
+  assert.ok(details.querySelector("a"));
+  assert.equal(
+    card.querySelector("button").getAttribute("data-preset"),
+    starter.id,
+  );
+  assert.equal(
+    card.querySelector("button").getAttribute("aria-pressed"),
+    "false",
+  );
+  assert.equal(card.querySelector("article").getAttribute("role"), "listitem");
+});
+
+test("legacy directions omit educational markup in both variants", () => {
+  const legacy = data.DIRECTIONS.find(({ trendYear }) => !trendYear);
+  for (const variant of ["suggested", "explorer"]) {
+    const card = parse(
+      cards.renderDirectionCard(legacy, {
+        variant,
+        goal: "attention",
+        selected: false,
+      }),
+    );
+    assert.equal(
+      card.querySelector("button").textContent,
+      "Use this direction",
+    );
+    assert.equal(card.querySelector(".direction-learning"), null);
+    assert.equal(card.querySelector(".direction-principle"), null);
+    assert.equal(card.querySelector(".direction-tradeoff"), null);
+    assert.equal(card.querySelector("a"), null);
+    assert.ok(!card.textContent.includes("2026 starter"));
+  }
+});
+
+test("direction cards escape text and attributes and skip unresolved learning links", () => {
+  const starter = data.DIRECTIONS.find(({ trendYear }) => trendYear === 2026);
+  for (const variant of ["suggested", "explorer"]) {
+    const card = parse(
+      cards.renderDirectionCard(
+        {
+          ...starter,
+          id: 'test" data-injected="yes',
+          name: '<img src=x onerror="bad">',
+          principle: "<script>bad</script>",
+          tradeoff: "A & B",
+          sourceIds: ["missing"],
+        },
+        { variant, goal: "attention", selected: false },
+      ),
+    );
+    assert.equal(card.querySelector("script, img, [data-injected]"), null);
+    assert.ok(card.textContent.includes("<script>bad</script>"));
+    assert.ok(card.textContent.includes("A & B"));
+    assert.equal(card.querySelector("a"), null);
+    assert.equal(
+      card.querySelector("button").getAttribute("data-preset"),
+      'test" data-injected="yes',
+    );
+  }
 });
 
 function validateStarter(direction) {
