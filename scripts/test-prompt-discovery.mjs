@@ -60,7 +60,7 @@ test("suggested starters explain their layers and link to their first resolved s
   assert.equal(link.getAttribute("href"), source.url);
   assert.equal(link.getAttribute("target"), "_blank");
   assert.equal(link.getAttribute("rel"), "noopener noreferrer");
-  const button = card.querySelector("button");
+  const button = card.querySelector("button[data-preset]");
   assert.equal(button.textContent, "Use this starter");
   assert.equal(button.getAttribute("data-preset"), starter.id);
   assert.equal(button.getAttribute("aria-pressed"), "true");
@@ -69,7 +69,7 @@ test("suggested starters explain their layers and link to their first resolved s
     assert.ok(html.includes(color.hex));
 });
 
-test("explorer starters use native learning disclosure and retain delegation", () => {
+test("explorer starters use an info popover for learning and retain delegation", () => {
   const starter = data.DIRECTIONS.find(({ trendYear }) => trendYear === 2026);
   const card = parse(
     cards.renderDirectionCard(starter, {
@@ -78,17 +78,22 @@ test("explorer starters use native learning disclosure and retain delegation", (
       selected: false,
     }),
   );
-  const details = card.querySelector("details.direction-learning");
-  assert.ok(details.querySelector("summary"));
-  assert.ok(details.textContent.includes(starter.principle));
-  assert.ok(details.textContent.includes(starter.tradeoff));
-  assert.ok(details.querySelector("a"));
+  const trigger = card.querySelector("button.info-trigger");
+  const popover = card.querySelector(".info-popover .direction-learning");
+  assert.ok(trigger);
   assert.equal(
-    card.querySelector("button").getAttribute("data-preset"),
+    card.querySelector(".info-popover").getAttribute("id"),
+    trigger.getAttribute("popovertarget"),
+  );
+  assert.ok(popover.textContent.includes(starter.principle));
+  assert.ok(popover.textContent.includes(starter.tradeoff));
+  assert.ok(popover.querySelector("a"));
+  assert.equal(
+    card.querySelector("button[data-preset]").getAttribute("data-preset"),
     starter.id,
   );
   assert.equal(
-    card.querySelector("button").getAttribute("aria-pressed"),
+    card.querySelector("button[data-preset]").getAttribute("aria-pressed"),
     "false",
   );
   assert.equal(card.querySelector("article").getAttribute("role"), "listitem");
@@ -105,7 +110,7 @@ test("legacy directions omit educational markup in both variants", () => {
       }),
     );
     assert.equal(
-      card.querySelector("button").textContent,
+      card.querySelector("button[data-preset]").textContent,
       "Use this direction",
     );
     assert.equal(card.querySelector(".direction-learning"), null);
@@ -137,7 +142,7 @@ test("direction cards escape text and attributes and skip unresolved learning li
     assert.ok(card.textContent.includes("A & B"));
     assert.equal(card.querySelector("a"), null);
     assert.equal(
-      card.querySelector("button").getAttribute("data-preset"),
+      card.querySelector("button[data-preset]").getAttribute("data-preset"),
       'test" data-injected="yes',
     );
   }

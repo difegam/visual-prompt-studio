@@ -46,6 +46,9 @@ jobs:
       - name: Check Astro and TypeScript
         run: pnpm run check
 
+      - name: Run prompt discovery tests
+        run: pnpm run test:discovery
+
       - name: Build and validate pull request preview
         if: github.event_name == 'pull_request'
         run: pnpm run build:preview

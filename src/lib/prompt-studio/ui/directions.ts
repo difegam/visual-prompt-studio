@@ -96,7 +96,7 @@ export function renderDirectionCard(
         <li><b>Imagery</b><span>${esc(art.name)}</span></li>
         <li><b>Finish</b><span>${esc(technique.name)}</span></li>
       </ul>
-      ${renderInfoPopover({ id: `info-${esc(direction.id)}`, label: "Why this works", content: `<p class="direction-rationale">${esc(rationale)}</p><div class="direction-learning">${learning}</div>` })}
+      ${renderInfoPopover({ id: `info-${esc(direction.id)}`, label: "Why this works", content: `<p class="direction-rationale">${esc(rationale)}</p>${learning ? `<div class="direction-learning">${learning}</div>` : ""}` })}
       <div class="card-actions">${button("btn btn-primary direction-apply")}</div>
     </div>
   </article>`;
