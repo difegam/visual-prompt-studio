@@ -1,0 +1,437 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-25T16:27:17.821Z",
+  "title": "Design System: Visual Prompt Studio",
+  "extensions": {
+    "colorMeta": {
+      "accent": {
+        "role": "primary",
+        "displayName": "Proofing Cobalt",
+        "canonical": "oklch(43.1% 0.213 268)",
+        "tonalRamp": [
+          "#0e0057",
+          "#0d007c",
+          "#151ca2",
+          "#263fc8",
+          "#4e74f3",
+          "#7da6ff",
+          "#a2cbff",
+          "#c1eaff"
+        ]
+      },
+      "cyan-layout": {
+        "role": "secondary",
+        "displayName": "Layout Cyan",
+        "canonical": "oklch(59.5% 0.127 235)",
+        "tonalRamp": [
+          "#000b2e",
+          "#00254c",
+          "#00406b",
+          "#005d8c",
+          "#078bc0",
+          "#5ab9ed",
+          "#85ddff",
+          "#a8faff"
+        ]
+      },
+      "magenta-imagery": {
+        "role": "secondary",
+        "displayName": "Imagery Magenta",
+        "canonical": "oklch(56.9% 0.211 358)",
+        "tonalRamp": [
+          "#33000b",
+          "#570021",
+          "#7b003a",
+          "#a10055",
+          "#d93480",
+          "#ff71ae",
+          "#ff9ad1",
+          "#ffbbee"
+        ]
+      },
+      "yellow-finish": {
+        "role": "secondary",
+        "displayName": "Finish Yellow",
+        "canonical": "oklch(66.0% 0.135 85)",
+        "tonalRamp": [
+          "#1d0200",
+          "#381900",
+          "#553200",
+          "#744d00",
+          "#a47800",
+          "#d3a73f",
+          "#f6cb6e",
+          "#ffe991"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Press Paper",
+        "canonical": "oklch(94.6% 0.008 122)",
+        "tonalRamp": [
+          "#0b0b09",
+          "#21221f",
+          "#3a3b38",
+          "#555652",
+          "#7f817c",
+          "#adafaa",
+          "#d0d2cc",
+          "#edefe9"
+        ]
+      },
+      "sheet": {
+        "role": "neutral",
+        "displayName": "Proof Sheet",
+        "canonical": "oklch(98.0% 0.005 118)",
+        "tonalRamp": [
+          "#0b0b0a",
+          "#212220",
+          "#3a3b39",
+          "#555653",
+          "#80807e",
+          "#adaeab",
+          "#d0d1ce",
+          "#eeefeb"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "oklch(22.6% 0.007 258)",
+        "tonalRamp": [
+          "#0a0b0e",
+          "#202225",
+          "#393b3e",
+          "#535559",
+          "#7e8083",
+          "#acaeb1",
+          "#cfd1d4",
+          "#edeef1"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Graphite Muted",
+        "canonical": "oklch(48.0% 0.015 149)",
+        "tonalRamp": [
+          "#080d08",
+          "#1d231e",
+          "#363d37",
+          "#505851",
+          "#7b837c",
+          "#a9b0aa",
+          "#ccd3cd",
+          "#e9f1ea"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Trim Line",
+        "canonical": "oklch(83.8% 0.014 135)",
+        "tonalRamp": [
+          "#090c08",
+          "#20231e",
+          "#383c36",
+          "#535751",
+          "#7d827b",
+          "#aab0a8",
+          "#cdd3ca",
+          "#ebf1e8"
+        ]
+      },
+      "ok": {
+        "role": "status",
+        "displayName": "Proof Green",
+        "canonical": "oklch(47.6% 0.094 150)",
+        "tonalRamp": [
+          "#001300",
+          "#002c08",
+          "#0b4720",
+          "#286339",
+          "#588f64",
+          "#89bd93",
+          "#aee0b7",
+          "#cdfdd6"
+        ]
+      },
+      "warn": {
+        "role": "status",
+        "displayName": "Caution Amber",
+        "canonical": "oklch(50.7% 0.112 67)",
+        "tonalRamp": [
+          "#220000",
+          "#3e1200",
+          "#5d2c00",
+          "#7c4600",
+          "#ab7232",
+          "#d8a268",
+          "#fbc68f",
+          "#ffe4b0"
+        ]
+      },
+      "bad": {
+        "role": "status",
+        "displayName": "Error Red",
+        "canonical": "oklch(48.5% 0.150 28)",
+        "tonalRamp": [
+          "#2e0000",
+          "#500000",
+          "#720406",
+          "#962821",
+          "#c75a4e",
+          "#f58c7f",
+          "#ffb2a4",
+          "#ffd1c3"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Single page headline above the brief."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section titles."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Tab labels and card titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Descriptions and guidance."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Field labels, chips and buttons."
+      },
+      "kicker": {
+        "displayName": "Kicker",
+        "purpose": "Rare uppercase eyebrow."
+      }
+    },
+    "shadows": [
+      {
+        "name": "popover",
+        "value": "0 14px 36px color-mix(in srgb, #000 28%, transparent)",
+        "purpose": "Field-info popovers."
+      },
+      {
+        "name": "mobile-sheet",
+        "value": "0 -12px 32px -12px color-mix(in srgb, var(--ink) 30%, transparent)",
+        "purpose": "Bottom proof sheet on narrow screens."
+      },
+      {
+        "name": "copy-dock",
+        "value": "0 -10px 12px -8px color-mix(in srgb, var(--ink) 14%, transparent)",
+        "purpose": "Sticky Copy row over scrolling proof."
+      },
+      {
+        "name": "target-selected",
+        "value": "0 4px 12px -4px color-mix(in srgb, var(--accent) 60%, transparent)",
+        "purpose": "Selected model target only."
+      },
+      {
+        "name": "selection-ring",
+        "value": "inset 0 0 0 2px var(--layer)",
+        "purpose": "Selected style tile."
+      }
+    ],
+    "motion": [
+      {
+        "name": "control",
+        "value": "140ms ease",
+        "purpose": "Border and shadow changes on fields."
+      },
+      {
+        "name": "state",
+        "value": "150ms ease-out",
+        "purpose": "Target picker and tooltip transitions."
+      },
+      {
+        "name": "sheet",
+        "value": "0.18s ease",
+        "purpose": "Mobile proof sheet open/close. All motion is disabled under prefers-reduced-motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "nav-inline",
+        "value": "1024px"
+      },
+      {
+        "name": "desk",
+        "value": "1041px"
+      },
+      {
+        "name": "single-column",
+        "value": "1040px"
+      },
+      {
+        "name": "phone",
+        "value": "640px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one action per region, e.g. Copy prompt.",
+      "html": "<button class=\"ds-btn ds-btn-primary\">Copy prompt</button>",
+      "css": ".ds-btn{font:600 14px/1.5 'Bricolage Grotesque Variable',system-ui,sans-serif;border-radius:6px;padding:8px 14px;min-height:44px;border:1px solid #c6ccc3;background:#f8f9f5;color:#1a1c1f;cursor:pointer;transition:border-color 140ms}.ds-btn:hover{border-color:#1a1c1f}.ds-btn:focus-visible{outline:2px solid #2238c2;outline-offset:2px}.ds-btn-primary{background:#2238c2;border-color:#2238c2;color:#fff;min-height:48px}.ds-btn-primary:hover{filter:brightness(1.08);border-color:#2238c2}.ds-btn-ghost{background:transparent;border-color:transparent}.ds-btn-ghost:hover{background:#f8f9f5;border-color:#c6ccc3}"
+    },
+    {
+      "name": "Default Button",
+      "kind": "button",
+      "refersTo": "button-default",
+      "description": "Secondary actions on a Sheet.",
+      "html": "<button class=\"ds-btn\">Apply direction</button>",
+      "css": ".ds-btn{font:600 14px/1.5 'Bricolage Grotesque Variable',system-ui,sans-serif;border-radius:6px;padding:8px 14px;min-height:44px;border:1px solid #c6ccc3;background:#f8f9f5;color:#1a1c1f;cursor:pointer;transition:border-color 140ms}.ds-btn:hover{border-color:#1a1c1f}.ds-btn:focus-visible{outline:2px solid #2238c2;outline-offset:2px}.ds-btn-primary{background:#2238c2;border-color:#2238c2;color:#fff;min-height:48px}.ds-btn-primary:hover{filter:brightness(1.08);border-color:#2238c2}.ds-btn-ghost{background:transparent;border-color:transparent}.ds-btn-ghost:hover{background:#f8f9f5;border-color:#c6ccc3}"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Low-priority tools such as Import, Export, Reset.",
+      "html": "<button class=\"ds-btn ds-btn-ghost\">Reset</button>",
+      "css": ".ds-btn{font:600 14px/1.5 'Bricolage Grotesque Variable',system-ui,sans-serif;border-radius:6px;padding:8px 14px;min-height:44px;border:1px solid #c6ccc3;background:#f8f9f5;color:#1a1c1f;cursor:pointer;transition:border-color 140ms}.ds-btn:hover{border-color:#1a1c1f}.ds-btn:focus-visible{outline:2px solid #2238c2;outline-offset:2px}.ds-btn-primary{background:#2238c2;border-color:#2238c2;color:#fff;min-height:48px}.ds-btn-primary:hover{filter:brightness(1.08);border-color:#2238c2}.ds-btn-ghost{background:transparent;border-color:transparent}.ds-btn-ghost:hover{background:#f8f9f5;border-color:#c6ccc3}"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Sheet input with hairline border and cobalt focus ring.",
+      "html": "<div class=\"ds-field\"><label for=\"ds-i\">Headline</label><input id=\"ds-i\" class=\"ds-input\" type=\"text\" value=\"Night Market\"></div>",
+      "css": ".ds-field{display:flex;flex-direction:column;gap:6px;font-family:'Bricolage Grotesque Variable',system-ui,sans-serif}.ds-field label{font-size:13px;font-weight:600;color:#1a1c1f}.ds-input{font:inherit;color:#1a1c1f;background:#f8f9f5;border:1px solid #c6ccc3;border-radius:10px;padding:10px 12px;min-height:46px;width:100%;box-sizing:border-box;transition:border-color 140ms}.ds-input:hover{border-color:#586059}.ds-input:focus-visible{outline:2px solid #2238c2;outline-offset:2px}"
+    },
+    {
+      "name": "Layer Tabs",
+      "kind": "nav",
+      "refersTo": "tabs",
+      "description": "Layer switcher; the selected tab underlines in its own process ink.",
+      "html": "<div class=\"ds-tabs\" role=\"tablist\"><button role=\"tab\" aria-selected=\"true\" class=\"ds-tab c\"><i></i>Layout<small>Swiss grid</small></button><button role=\"tab\" aria-selected=\"false\" class=\"ds-tab m\"><i></i>Imagery</button><button role=\"tab\" aria-selected=\"false\" class=\"ds-tab y\"><i></i>Finish</button></div>",
+      "css": ".ds-tabs{display:flex;gap:8px;border-bottom:1px solid #c6ccc3;font-family:'Bricolage Grotesque Variable',system-ui,sans-serif}.ds-tab{font:700 15px/1.5 inherit;font-family:inherit;color:#586059;background:none;border:0;border-bottom:3px solid transparent;padding:9px 12px;min-height:46px;display:flex;align-items:baseline;gap:8px;cursor:pointer}.ds-tab i{width:10px;height:10px;border-radius:50%;align-self:center;background:#0089bf}.ds-tab.m i{background:#cf2477}.ds-tab.y i{background:#b88a00}.ds-tab small{font-size:12px;font-weight:400}.ds-tab[aria-selected=true]{color:#1a1c1f;border-color:#0089bf}.ds-tab:hover{color:#1a1c1f}.ds-tab:focus-visible{outline:2px solid #2238c2;outline-offset:2px}"
+    },
+    {
+      "name": "Style Tile",
+      "kind": "card",
+      "refersTo": "tile",
+      "description": "Selectable style card; selection is an inset ring in the layer ink plus a dot.",
+      "html": "<button class=\"ds-tile\" aria-pressed=\"true\"><span class=\"ds-art\"></span><span class=\"ds-meta\"><b>Swiss grid</b><small>Ordered, modular layout</small></span></button>",
+      "css": ".ds-tile{position:relative;width:176px;display:flex;flex-direction:column;text-align:left;font-family:'Bricolage Grotesque Variable',system-ui,sans-serif;color:#1a1c1f;background:#f8f9f5;border:1px solid #c6ccc3;border-radius:12px;padding:0;overflow:hidden;cursor:pointer}.ds-tile:hover{border-color:#586059}.ds-tile[aria-pressed=true]{border-color:#0089bf;box-shadow:inset 0 0 0 2px #0089bf}.ds-tile[aria-pressed=true]::after{content:\"\";position:absolute;top:8px;right:8px;width:12px;height:12px;border-radius:50%;background:#0089bf;box-shadow:0 0 0 3px #f8f9f5}.ds-art{aspect-ratio:16/11;background:repeating-linear-gradient(90deg,#d9ddd5 0 1px,transparent 1px 22px),#eceee8}.ds-meta{display:flex;flex-direction:column;gap:2px;padding:12px 13px 14px;font-size:13px}.ds-meta small{font-size:12px;color:#586059}.ds-tile:focus-visible{outline:2px solid #2238c2;outline-offset:2px}"
+    },
+    {
+      "name": "Filter Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Pill toggle for filters and exclusions.",
+      "html": "<div class=\"ds-chips\"><button class=\"ds-chip\">Posters</button><button class=\"ds-chip\" aria-pressed=\"true\">Album covers</button></div>",
+      "css": ".ds-chips{display:flex;gap:6px}.ds-chip{font:600 13px/1.5 'Bricolage Grotesque Variable',system-ui,sans-serif;color:#586059;background:transparent;border:1px solid #c6ccc3;border-radius:999px;padding:5px 12px;cursor:pointer}.ds-chip:hover{color:#1a1c1f;border-color:#586059}.ds-chip[aria-pressed=true]{color:#1a1c1f;background:#f8f9f5;border-color:#1a1c1f}.ds-chip:focus-visible{outline:2px solid #2238c2;outline-offset:2px}"
+    },
+    {
+      "name": "Target Picker",
+      "kind": "custom",
+      "refersTo": "button-primary",
+      "description": "Five-up model selector in a tinted tray; selected target fills cobalt.",
+      "html": "<div class=\"ds-tray\"><span class=\"ds-opt\">A</span><span class=\"ds-opt on\">B</span><span class=\"ds-opt\">C</span></div>",
+      "css": ".ds-tray{display:grid;grid-template-columns:repeat(3,56px);gap:6px;padding:6px;border-radius:16px;background:color-mix(in srgb,#1a1c1f 5%,#f8f9f5)}.ds-opt{height:52px;display:grid;place-items:center;border-radius:12px;border:1px solid #c6ccc3;background:#f8f9f5;color:#1a1c1f;font:700 14px 'Bricolage Grotesque Variable',system-ui,sans-serif;transition:background 150ms,border-color 150ms,color 150ms}.ds-opt:hover:not(.on){background:color-mix(in srgb,#2238c2 10%,#f8f9f5);border-color:color-mix(in srgb,#2238c2 45%,#c6ccc3);color:#2238c2}.ds-opt.on{background:#2238c2;border-color:#2238c2;color:#fff;box-shadow:0 4px 12px -4px color-mix(in srgb,#2238c2 60%,transparent)}"
+    },
+    {
+      "name": "Prompt Proof",
+      "kind": "custom",
+      "refersTo": "panel",
+      "description": "Prompt text with each phrase underlined in the ink of the layer that wrote it.",
+      "html": "<div class=\"ds-proof\"><p class=\"ds-prompt\">A poster in a <span class=\"c\">Swiss grid</span> layout, <span class=\"m\">risograph-style collage</span> imagery, <span class=\"y\">two-color overprint</span> finish.</p></div>",
+      "css": ".ds-proof{background:#f8f9f5;border:1px solid #c6ccc3;border-radius:16px;padding:18px;max-width:380px}.ds-prompt{margin:0;font:400 13px/1.65 'Bricolage Grotesque Variable',system-ui,sans-serif;color:#1a1c1f;background:#f8f9f5;border:1px solid #c6ccc3;border-radius:10px;padding:14px 16px}.ds-prompt span{border-radius:2px}.ds-prompt .c{box-shadow:inset 0 -2px 0 #0089bf}.ds-prompt .m{box-shadow:inset 0 -2px 0 #cf2477}.ds-prompt .y{box-shadow:inset 0 -2px 0 #b88a00}"
+    },
+    {
+      "name": "Palette Swatches",
+      "kind": "custom",
+      "refersTo": "chip",
+      "description": "Color chips with name and hex, plus palette variation strips.",
+      "html": "<div class=\"ds-sw\"><div class=\"ds-s\"><span class=\"ds-c\" style=\"background:#2238c2\"></span><b>Cobalt</b><i>#2238C2</i></div><div class=\"ds-s\"><span class=\"ds-c\" style=\"background:#cf2477\"></span><b>Magenta</b><i>#CF2477</i></div><button class=\"ds-var\"><span class=\"ds-strip\"><u style=\"background:#2238c2\"></u><u style=\"background:#cf2477\"></u><u style=\"background:#b88a00\"></u></span>Triad</button></div>",
+      "css": ".ds-sw{display:flex;gap:8px;align-items:flex-start;font-family:'Bricolage Grotesque Variable',system-ui,sans-serif}.ds-s{width:92px;display:flex;flex-direction:column;gap:4px;font-size:12px}.ds-c{height:54px;border-radius:6px;border:1px solid #c6ccc3;display:block}.ds-s b{font-weight:600;line-height:1.2}.ds-s i{font-style:normal;color:#586059;font-variant-numeric:tabular-nums}.ds-var{font:inherit;font-size:12px;color:#586059;background:#f8f9f5;border:1px solid #c6ccc3;border-radius:6px;padding:5px;display:flex;flex-direction:column;gap:4px;cursor:pointer}.ds-var:hover{border-color:#1a1c1f;color:#1a1c1f}.ds-strip{display:flex;height:20px;width:84px;border-radius:3px;overflow:hidden}.ds-strip u{flex:1}.ds-var:focus-visible{outline:2px solid #2238c2;outline-offset:2px}"
+    },
+    {
+      "name": "Signature Option",
+      "kind": "card",
+      "refersTo": "tile",
+      "description": "Two-up choice card; selected state uses an Ink ring because it is a type (K) choice.",
+      "html": "<div class=\"ds-sigs\"><button class=\"ds-sig\" aria-pressed=\"true\"><b>Grotesque</b><span>Neutral, modern</span></button><button class=\"ds-sig\" aria-pressed=\"false\"><b>Serif</b><span>Editorial, warm</span></button></div>",
+      "css": ".ds-sigs{display:grid;grid-template-columns:repeat(2,160px);gap:10px;font-family:'Bricolage Grotesque Variable',system-ui,sans-serif}.ds-sig{font:inherit;color:#1a1c1f;text-align:left;background:#f8f9f5;border:1px solid #c6ccc3;border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:2px;cursor:pointer}.ds-sig b{font-size:14px}.ds-sig span{font-size:13px;color:#586059}.ds-sig[aria-pressed=true]{border-color:#1a1c1f;box-shadow:inset 0 0 0 1.5px #1a1c1f}.ds-sig:focus-visible{outline:2px solid #2238c2;outline-offset:2px}"
+    },
+    {
+      "name": "Mobile Bar",
+      "kind": "nav",
+      "refersTo": "button-default",
+      "description": "Fixed bottom bar on narrow screens; See prompt opens the proof sheet.",
+      "html": "<div class=\"ds-mb\"><button class=\"ds-b\">See prompt</button><button class=\"ds-b p\">Copy prompt</button></div>",
+      "css": ".ds-mb{display:flex;gap:8px;padding:10px 16px;background:#eceee8;border-top:1px solid #c6ccc3;font-family:'Bricolage Grotesque Variable',system-ui,sans-serif}.ds-b{flex:1;font:600 14px/1.5 inherit;font-family:inherit;min-height:44px;border-radius:6px;border:1px solid #c6ccc3;background:#f8f9f5;color:#1a1c1f;cursor:pointer}.ds-b.p{background:#2238c2;border-color:#2238c2;color:#fff}.ds-b:focus-visible{outline:2px solid #2238c2;outline-offset:2px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Press Proof",
+    "overview": "The studio is a composing desk beside a proof. On the left the user sets three independent separations (Layout, Imagery, Finish). On the right a sticky proof column shows the result under crop marks: a sketch of the composition and the compiled prompt, each layer underlined in its own ink. The metaphor is practical, not decorative. It explains why layers are color-coded, why the logo is a registration mark, and why the prompt is treated as a proof to check before copying.\n\nThe voice is calm, precise and tool-first. Surfaces are pale paper and sheet greys with a faint green cast, text is near-black ink, and a single cobalt carries every action. Color outside the cobalt is information: cyan, magenta and yellow mean Layout, Imagery and Finish, and black ink means type. Expression is concentrated in one place, the condensed, heavy display headline set in a variable-width face. Everything else stays quiet so the compiled prompt, the product, is the loudest object on the screen.\n\nIt rejects the generic AI-tool look: gradient hero, glow, purple, floating glass cards. It also rejects the opposite, a flat form-builder with no sense of craft.",
+    "keyCharacteristics": [
+      "CMYK coding is structural. C = Layout, M = Imagery, Y = Finish, K = type, wherever a layer appears.",
+      "One action color (cobalt). Never used for layer coding.",
+      "Hairline borders and tonal layering instead of shadows.",
+      "One variable typeface; hierarchy comes from weight and width, not from font pairing.",
+      "Two-column desk on desktop (composer + sticky proof); on narrow screens the proof becomes a bottom sheet over a fixed mobile bar.",
+      "Light and dark are both first-class and follow the OS unless the user picks one."
+    ],
+    "rules": [
+      {
+        "name": "The Separation Rule",
+        "body": "Cyan, magenta and yellow only ever mean Layout, Imagery and Finish. Never use them as decoration, status or brand accent. Black ink means type.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Action Rule",
+        "body": "Cobalt marks what the user can do next. If two things on screen are cobalt-filled and both are not obvious primary actions, one is wrong.",
+        "section": "colors"
+      },
+      {
+        "name": "The Paper Rule",
+        "body": "Backgrounds are tinted, never pure white or pure black. Raise a surface by switching from Paper to Sheet, not by adding a shadow.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Voice Rule",
+        "body": "No second UI typeface. Create hierarchy with weight, width and size.",
+        "section": "typography"
+      },
+      {
+        "name": "The Quiet Eyebrow Rule",
+        "body": "Uppercase tracked text appears once per region at most, and never as a decorative label on every card.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat-By-Default Rule",
+        "body": "Surfaces are flat at rest. A shadow means overlap (popover, sheet, dock) or an explicit selected state, never decoration.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** code layers with the process inks every time they appear (tab, tile, step marker, prompt underline, legend), and keep the mapping C = Layout, M = Imagery, Y = Finish, K = type.",
+      "**Do** use Proofing Cobalt for actions, selection of a target model, and focus; keep it off decoration.",
+      "**Do** build raised surfaces with Paper to Sheet plus a 1px Trim Line border.",
+      "**Do** keep the display headline condensed and heavy (width 75%, weight 800) and every other text role at normal width.",
+      "**Do** keep every interactive target at 44px or taller and every control reachable with a visible 2px cobalt focus ring.",
+      "**Do** give a dark-mode counterpart for every new color token, and test both themes.",
+      "**Do** keep user-entered text (the brief, exact poster text, the compiled prompt) in the most legible type; the interface should recede around it."
+    ],
+    "donts": [
+      "**Don't** use cyan, magenta or yellow as status, accent or ornament; they are reserved for layer coding.",
+      "**Don't** add gradients, glows, glass blur, side-stripe card accents or hero-metric tiles.",
+      "**Don't** add a second UI typeface, or use specimen faces (Fraunces, Oswald, etc.) for interface text.",
+      "**Don't** place shadows on resting cards or panels; use a border and tonal change.",
+      "**Don't** use pure white or pure black backgrounds.",
+      "**Don't** invent testimonials, usage counts or popularity claims in copy; curated picks are described as studio recommendations.",
+      "**Don't** pull Heebo, Signika, daisyUI component skins or the template's near-black primary into studio surfaces."
+    ]
+  }
+}
