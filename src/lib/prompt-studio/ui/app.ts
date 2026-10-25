@@ -165,7 +165,7 @@ async function copyText(
     sel?.removeAllRanges();
     sel?.addRange(range);
     try {
-      return document.execCommand("copy");
+      return (document as any).execCommand("copy");
     } catch {
       return false;
     }
