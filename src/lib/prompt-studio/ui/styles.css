@@ -892,11 +892,10 @@ textarea:hover {
 .direction-explorer {
   border-top: 1px solid var(--line);
   padding-top: 8px;
-  display: flex;
-  justify-content: center;
 }
 .direction-explorer > summary {
   width: fit-content;
+  margin-inline: auto;
   min-height: 40px;
   padding-inline: 14px;
   background: var(--accent);
@@ -904,10 +903,26 @@ textarea:hover {
   border-radius: 6px;
   font-family: inherit;
   font-weight: 600;
-  list-style-position: inside;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+.direction-explorer > summary::-webkit-details-marker {
+  display: none;
+}
+.direction-explorer > summary::before {
+  content: "▸";
+}
+.direction-explorer[open] > summary::before {
+  content: "▾";
 }
 .direction-explorer > summary:hover {
   filter: brightness(1.08);
+}
+.direction-explorer > summary:focus:not(:focus-visible) {
+  outline: none;
+  box-shadow: none;
 }
 .explorer-body {
   display: grid;
@@ -2451,6 +2466,29 @@ textarea:hover {
 }
 .insp-toolbar .filters .chip {
   flex: 0 0 auto;
+}
+.learning-tools {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.learning-paths {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.learning-paths h3 {
+  font-size: 13px;
+  color: var(--muted);
+}
+.learning-paths [role="group"] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.learning-tools .filters {
+  margin: 0;
 }
 .insp-nav {
   grid-area: nav;

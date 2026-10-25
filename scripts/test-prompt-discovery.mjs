@@ -642,6 +642,69 @@ test("reference lookup resolves catalog entries and leaves unknown IDs unresolve
   assert.equal(references.getReference("missing"), undefined);
 });
 
+test("every learning topic has at least one tagged reference", () => {
+  assert.deepEqual(
+    references.LEARNING_TOPICS.map(({ id }) => id),
+    ["hierarchy", "typography", "color-rhythm", "material", "story-place"],
+  );
+  for (const { id } of references.LEARNING_TOPICS) {
+    assert.ok(
+      references.REFERENCES.some((ref) => ref.topics?.includes(id)),
+      `${id} needs a tagged reference`,
+    );
+  }
+  for (const ref of references.REFERENCES) {
+    if (ref.topics) assert.equal(ref.kind, "learning", ref.id);
+  }
+});
+
+test("topic tags point at the expected learning sources", () => {
+  const ids = (topic) =>
+    references
+      .filterReferences(references.REFERENCES, "learning", topic)
+      .map(({ id }) => id);
+  assert.ok(ids("story-place").includes("adobe-design-trends-2026"));
+  assert.ok(ids("story-place").includes("adobe-creative-trends-2026"));
+  assert.ok(ids("typography").includes("figma-typography"));
+  assert.ok(ids("hierarchy").includes("cooper-how-posters-work"));
+});
+
+test("reference kind and learning topic filters share an intersection", () => {
+  const learning = references.filterReferences(
+    references.REFERENCES,
+    "learning",
+    "all",
+  );
+  const typography = references.filterReferences(
+    references.REFERENCES,
+    "learning",
+    "typography",
+  );
+  assert.ok(typography.length > 0 && typography.length < learning.length);
+  assert.ok(typography.every((ref) => ref.kind === "learning"));
+});
+
+test("all topic clears only the topic restriction", () => {
+  const all = references.filterReferences(references.REFERENCES, "all", "all");
+  assert.equal(all.length, references.REFERENCES.length);
+  const learning = references.filterReferences(
+    references.REFERENCES,
+    "learning",
+    "all",
+  );
+  assert.ok(learning.every((ref) => ref.kind === "learning"));
+});
+
+test("non-learning kinds cannot be constrained by a hidden learning topic", () => {
+  const styles = references.REFERENCES.filter((ref) => ref.kind === "styles");
+  assert.ok(styles.length > 0);
+  assert.equal(
+    references.filterReferences(references.REFERENCES, "styles", "typography")
+      .length,
+    styles.length,
+  );
+});
+
 test("recommendations prefer exact format and goal matches", () => {
   const directions = api.getRecommendations("poster", "attention");
   assert.ok(directions.length >= 2);

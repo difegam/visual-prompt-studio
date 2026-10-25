@@ -20,6 +20,20 @@ export type ReferenceKind =
 export type Cost = "free" | "freemium" | "paid";
 export type RefStatus = "active" | "dormant" | "pivoted";
 
+export type LearningTopicId =
+  "hierarchy" | "typography" | "color-rhythm" | "material" | "story-place";
+
+export const LEARNING_TOPICS: readonly {
+  readonly id: LearningTopicId;
+  readonly label: string;
+}[] = [
+  { id: "hierarchy", label: "Hierarchy" },
+  { id: "typography", label: "Typography" },
+  { id: "color-rhythm", label: "Color and rhythm" },
+  { id: "material", label: "Material" },
+  { id: "story-place", label: "Story and place" },
+];
+
 export interface LinkContext {
   readonly styleNames: readonly string[];
   readonly target: TargetId;
@@ -35,6 +49,8 @@ export interface ReferenceDef {
   readonly cost: Cost;
   readonly status: RefStatus;
   readonly note?: string;
+  /** Concept topics for design-learning sources. Absent on other kinds. */
+  readonly topics?: readonly LearningTopicId[];
   readonly checked: string;
   /** Optional context-aware link, built only from URL patterns observed on the site. */
   readonly deepLink?: (
@@ -69,6 +85,7 @@ export const REFERENCES: readonly ReferenceDef[] = [
     status: "active",
     note: "An editorial overview. Web interaction trends do not translate directly into image prompts.",
     checked: RESEARCH_CHECKED,
+    topics: ["typography", "color-rhythm"],
   },
   {
     id: "adobe-design-trends-2026",
@@ -82,6 +99,7 @@ export const REFERENCES: readonly ReferenceDef[] = [
     status: "active",
     note: "A design forecast that offers directions to explore, not a universal recipe for a brief.",
     checked: RESEARCH_CHECKED,
+    topics: ["material", "story-place"],
   },
   {
     id: "adobe-creative-trends-2026",
@@ -95,6 +113,7 @@ export const REFERENCES: readonly ReferenceDef[] = [
     status: "active",
     note: "A creative forecast. Local cues still need to come from the subject and the user's brief.",
     checked: RESEARCH_CHECKED,
+    topics: ["material", "story-place"],
   },
   {
     id: "behance-design-trends-2026",
@@ -133,6 +152,7 @@ export const REFERENCES: readonly ReferenceDef[] = [
     cost: "free",
     status: "active",
     checked: RESEARCH_CHECKED,
+    topics: ["typography", "hierarchy"],
   },
   {
     id: "cooper-how-posters-work",
@@ -146,6 +166,7 @@ export const REFERENCES: readonly ReferenceDef[] = [
     status: "active",
     note: "An archived exhibition overview with enduring poster-design strategies.",
     checked: RESEARCH_CHECKED,
+    topics: ["hierarchy", "story-place"],
   },
   {
     id: "midlibrary",
@@ -339,4 +360,22 @@ const REFERENCES_BY_ID = new Map(
 
 export function getReference(id: string): ReferenceDef | undefined {
   return REFERENCES_BY_ID.get(id);
+}
+
+/**
+ * Kind and topic filters combine. A topic only applies to design-learning
+ * sources, so a stale topic cannot hide results of any other kind.
+ */
+export function filterReferences(
+  references: readonly ReferenceDef[],
+  kind: ReferenceKind | "all",
+  topic: LearningTopicId | "all",
+): readonly ReferenceDef[] {
+  return references.filter(
+    (ref) =>
+      (kind === "all" || ref.kind === kind) &&
+      (topic === "all" ||
+        kind !== "learning" ||
+        ref.topics?.includes(topic) === true),
+  );
 }

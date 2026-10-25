@@ -16,9 +16,10 @@ import {
 } from "../domain/avoids";
 import { FONTS, getFont, type FontId } from "../domain/fonts";
 import { PALETTE_VARIATIONS, nameForHex } from "../domain/palettes";
-import { MIXES, PRESETS, clonePalette } from "../domain/presets";
+import { MIXES, PRESETS, clonePalette, getDirection } from "../domain/presets";
 import { getReadabilityHints } from "../domain/readability";
 import { openInFor } from "../domain/open-in";
+import { CURRENT_TREND_EDITION } from "../domain/trends";
 import {
   GOALS,
   applyDirection,
@@ -53,7 +54,10 @@ import {
 } from "../domain/recipe";
 import {
   KIND_LABELS,
+  LEARNING_TOPICS,
   REFERENCES,
+  filterReferences,
+  type LearningTopicId,
   type ReferenceKind,
 } from "../domain/references";
 import {
@@ -74,6 +78,7 @@ import {
   toggleComparisonSelection,
 } from "./direction-comparison";
 import { bindInfoPopovers } from "./info-popover";
+import { esc } from "./escape";
 
 /* ── tiny utilities ──────────────────────────────────────────────────── */
 
@@ -82,15 +87,6 @@ function $<T extends HTMLElement = HTMLElement>(id: string): T {
   if (!el) throw new Error(`Missing #${id}`);
   return el as T;
 }
-
-const esc = (s: string): string =>
-  s.replace(
-    /[&<>"']/g,
-    (c) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
-        c
-      ]!,
-  );
 
 type ActiveFilter = { key: string; label: string; value: string };
 
@@ -210,6 +206,7 @@ interface View {
   layer: StyleLayer;
   baseline: boolean;
   refKind: ReferenceKind | "all";
+  refTopic: LearningTopicId | "all";
   presetId: string | null;
   goal: GoalId;
   highlight: string | null;
@@ -227,6 +224,7 @@ export function startApp(): void {
     layer: "design",
     baseline: false,
     refKind: "all",
+    refTopic: "all",
     presetId: null,
     goal: "attention",
     highlight: null,
@@ -506,7 +504,7 @@ export function startApp(): void {
   const directionStyle = $<HTMLSelectElement>("direction-style");
   const directionGroup = $<HTMLSelectElement>("direction-group");
   const curatedOnly = $<HTMLInputElement>("direction-curated");
-  const trendOnly = $<HTMLInputElement>("direction-2026");
+  const trendOnly = $<HTMLInputElement>("direction-current-edition");
   const directionActiveFilters = $("direction-active-filters");
   const directionPagination = $("direction-pagination");
   const comparisonBars = [
@@ -520,18 +518,9 @@ export function startApp(): void {
   let applyingFromComparison = false;
   let directionPage = 1;
 
-  /* Blur the summary when the explorer opens so the :focus-visible ring
-     does not persist on the "Explore all directions" button. */
-  const explorer = document.querySelector(
-    ".direction-explorer",
-  ) as HTMLDetailsElement | null;
-  explorer?.addEventListener("toggle", () => {
-    if (explorer.open) explorer.querySelector("summary")?.blur();
-  });
-
   function selectedComparisonDirections() {
     return view.comparisonIds.flatMap((id) => {
-      const direction = PRESETS.find((item) => item.id === id);
+      const direction = getDirection(id);
       return direction ? [direction] : [];
     });
   }
@@ -565,7 +554,7 @@ export function startApp(): void {
   }
   function renderDirectionSummary(recipe: Recipe): void {
     const el = $("direction-summary");
-    const direction = PRESETS.find((item) => item.id === view.presetId);
+    const direction = getDirection(view.presetId);
     el.hidden = !direction;
     if (!direction) return;
     const layers = [
@@ -615,15 +604,13 @@ export function startApp(): void {
     id: string | undefined,
     origin: HTMLElement,
   ): void {
-    if (!id || !PRESETS.some((direction) => direction.id === id)) return;
+    if (!id || !getDirection(id)) return;
     const result = toggleComparisonSelection(view.comparisonIds, id);
     view.comparisonIds = [...result.ids];
     refreshComparisonUi();
 
-    const direction = PRESETS.find((item) => item.id === id)!;
-    const replaced = result.replacedId
-      ? PRESETS.find((item) => item.id === result.replacedId)
-      : undefined;
+    const direction = getDirection(id)!;
+    const replaced = getDirection(result.replacedId);
     say(
       replaced
         ? `Replaced “${replaced.name}” with “${direction.name}” in the comparison.`
@@ -645,7 +632,7 @@ export function startApp(): void {
     id: string | undefined,
     origin?: HTMLElement,
   ): void {
-    const direction = PRESETS.find((item) => item.id === id);
+    const direction = getDirection(id);
     if (!direction) return;
     const before = store.get();
     view.presetId = direction.id;
@@ -659,12 +646,12 @@ export function startApp(): void {
       replacement?.focus();
     });
     say(
-      direction.trendYear === 2026
+      direction.trendYear !== undefined
         ? `Applied “${direction.name}” visual starter. Your content and output settings are unchanged.`
         : `Applied “${direction.name}”. Your brief and output settings are unchanged.`,
       () => store.set(before),
     );
-    if (view.comparisonIds.includes(direction.id)) view.comparisonIds = [];
+    view.comparisonIds = [];
   }
   presetsEl.addEventListener("click", (event) => {
     const target = event.target as HTMLElement;
@@ -686,7 +673,7 @@ export function startApp(): void {
       goal: directionGoal.value as DirectionFilters["goal"],
       styleId: directionStyle.value,
       curatedOnly: curatedOnly.checked,
-      trendYear: trendOnly.checked ? 2026 : "all",
+      trendYear: trendOnly.checked ? CURRENT_TREND_EDITION.year : "all",
     };
     directionActiveFilters.innerHTML = renderFilterSummary("directions", [
       ...(directionSearch.value.trim()
@@ -731,7 +718,13 @@ export function startApp(): void {
         ? [{ key: "curatedOnly", label: "Curated picks", value: "Only" }]
         : []),
       ...(trendOnly.checked
-        ? [{ key: "trendYear", label: "Edition", value: "2026 starters" }]
+        ? [
+            {
+              key: "trendYear",
+              label: "Edition",
+              value: CURRENT_TREND_EDITION.label,
+            },
+          ]
         : []),
     ]);
     const filtered = filterDirections(PRESETS, filters).toSorted(
@@ -789,7 +782,7 @@ export function startApp(): void {
       ? groupsMarkup
       : `<div class="empty-directions"><p>No directions match these filters.</p><button type="button" class="btn btn-ghost btn-sm" data-clear-direction-search>Clear search and filters</button></div>`;
     $("explorer-status").textContent =
-      `${page.total} ${page.total === 1 ? "direction" : "directions"}${curatedOnly.checked ? " · studio-curated picks" : ""}${trendOnly.checked ? " · 2026 starters" : ""}`;
+      `${page.total} ${page.total === 1 ? "direction" : "directions"}${curatedOnly.checked ? " · studio-curated picks" : ""}${trendOnly.checked ? ` · ${CURRENT_TREND_EDITION.label}` : ""}`;
     directionPagination.innerHTML =
       page.pageCount > 1
         ? `<div class="join"><button class="btn btn-sm join-item" type="button" data-page="${page.page - 1}" ${page.page === 1 ? "disabled" : ""} aria-label="Previous page">Previous</button><span class="btn btn-sm join-item pagination-current" aria-current="page">Page ${page.page} of ${page.pageCount}</span><button class="btn btn-sm join-item" type="button" data-page="${page.page + 1}" ${page.page === page.pageCount ? "disabled" : ""} aria-label="Next page">Next</button></div>`
@@ -910,7 +903,7 @@ export function startApp(): void {
       goal: "direction-goal",
       styleId: "direction-style",
       curatedOnly: "direction-curated",
-      trendYear: "direction-2026",
+      trendYear: "direction-current-edition",
     };
     if (remove) {
       const focusId = focusIds[remove.dataset.removeFilter ?? ""];
@@ -920,7 +913,7 @@ export function startApp(): void {
       if (focusId === "direction-goal") directionGoal.value = "all";
       if (focusId === "direction-style") directionStyle.value = "all";
       if (focusId === "direction-curated") curatedOnly.checked = false;
-      if (focusId === "direction-2026") trendOnly.checked = false;
+      if (focusId === "direction-current-edition") trendOnly.checked = false;
       directionPage = 1;
       renderDirectionExplorer();
       requestAnimationFrame(() => $(focusId).focus());
@@ -1629,19 +1622,23 @@ export function startApp(): void {
       (b.querySelector(".btn-label") ?? b).textContent = text;
     }
   };
+  /** Reveal the selected prompt so the user can copy it by hand. */
+  const copyBlocked = (): void => {
+    promptEl.closest("details")?.setAttribute("open", "");
+    say("Copy was blocked. The prompt is selected: press Ctrl+C or ⌘C.");
+  };
   async function copyPrompt(): Promise<void> {
     for (const b of copyButtons) {
       b.classList.remove("btn-copy-press");
-      void b.offsetWidth;
+      void b.offsetWidth; // force a reflow so the CSS animation restarts
       b.classList.add("btn-copy-press");
     }
     setCopyLabel("Pressing...");
     const ok = await copyText(compiled.text, promptEl);
-    if (!ok) promptEl.closest("details")?.setAttribute("open", "");
     if (ok) {
       if (promptBox) {
         promptBox.classList.remove("is-pressing");
-        void promptBox.offsetWidth;
+        void promptBox.offsetWidth; // force a reflow so the animation restarts
         promptBox.classList.add("is-pressing");
       }
       copyIcon.innerHTML =
@@ -1655,10 +1652,12 @@ export function startApp(): void {
         if (promptBox) promptBox.classList.remove("is-pressing");
       }, 1800);
     }
+    if (!ok) {
+      copyBlocked();
+      return;
+    }
     say(
-      ok
-        ? `Proof approved: ${compiled.text.length.toLocaleString()} characters.`
-        : "Copy was blocked. The prompt is selected: press Ctrl+C or ⌘C.",
+      `Copied ${compiled.text.length.toLocaleString()} characters. Proof approved.`,
     );
   }
   const openInBtn = $("btn-open-in") as HTMLAnchorElement;
@@ -1672,12 +1671,8 @@ export function startApp(): void {
       return;
     }
     void copyText(compiled.text, promptEl).then((ok) => {
-      if (ok) {
-        say(`Prompt copied. Paste it into ${name} (⌘V / Ctrl+V).`);
-      } else {
-        promptEl.closest("details")?.setAttribute("open", "");
-        say("Copy was blocked. The prompt is selected: press Ctrl+C or ⌘C.");
-      }
+      if (ok) say(`Prompt copied. Paste it into ${name} (⌘V / Ctrl+V).`);
+      else copyBlocked();
     });
   });
   $("btn-copy").addEventListener("click", () => void copyPrompt());
@@ -1846,7 +1841,61 @@ export function startApp(): void {
     );
     if (!b) return;
     view.refKind = b.dataset.kind as View["refKind"];
+    // A topic only means something under Design learning; never keep it hidden.
+    view.refTopic = "all";
     renderRefs(store.get());
+  });
+  const learningToolsEl = $("ref-learning-tools");
+  const topicFiltersEl = $("ref-topic-filters");
+  const learningPathsEl = $("ref-learning-paths");
+  const refActiveFilters = $("ref-active-filters");
+  // Each path selects an existing topic; the articles stay in the source cards.
+  const LEARNING_PATHS: readonly {
+    label: string;
+    topic: LearningTopicId;
+  }[] = [
+    { label: "Focus and hierarchy", topic: "hierarchy" },
+    { label: "Type and legibility", topic: "typography" },
+    { label: "Material and place", topic: "story-place" },
+  ];
+  topicFiltersEl.innerHTML = [
+    `<button type="button" class="chip" data-topic="all">All topics</button>`,
+  ]
+    .concat(
+      LEARNING_TOPICS.map(
+        (t) =>
+          `<button type="button" class="chip" data-topic="${t.id}">${esc(t.label)}</button>`,
+      ),
+    )
+    .join("");
+  learningPathsEl.innerHTML = LEARNING_PATHS.map(
+    (p) =>
+      `<button type="button" class="btn btn-sm" data-topic="${p.topic}">${esc(p.label)}</button>`,
+  ).join("");
+  const setRefTopic = (e: Event) => {
+    const b = (e.target as HTMLElement).closest<HTMLButtonElement>(
+      "[data-topic]",
+    );
+    if (!b) return;
+    view.refTopic = b.dataset.topic as View["refTopic"];
+    renderRefs(store.get());
+  };
+  topicFiltersEl.addEventListener("click", setRefTopic);
+  learningPathsEl.addEventListener("click", setRefTopic);
+  refActiveFilters.addEventListener("click", (event) => {
+    const target = event.target as HTMLElement;
+    const remove = target.closest<HTMLButtonElement>("[data-remove-filter]");
+    const clear = target.closest<HTMLButtonElement>("[data-clear-filter-area]");
+    if (!remove && !clear) return;
+    // Removing the topic keeps the kind; removing the kind drops both.
+    const topicOnly = remove?.dataset.removeFilter === "topic";
+    if (!topicOnly) view.refKind = "all";
+    view.refTopic = "all";
+    renderRefs(store.get());
+    const next = topicOnly
+      ? topicFiltersEl.querySelector<HTMLElement>('[data-topic="all"]')
+      : filtersEl.querySelector<HTMLElement>('[data-kind="all"]');
+    next?.focus();
   });
   const refsEl = $("refs");
   const refsPrev = $<HTMLButtonElement>("refs-prev");
@@ -1896,11 +1945,31 @@ export function startApp(): void {
       getStyle(r.styles.design).name,
       getStyle(r.styles.technique).name,
     ].filter((x): x is string => x !== null);
-    const references = REFERENCES.filter(
-      (x) => view.refKind === "all" || x.kind === view.refKind,
+    const learning = view.refKind === "learning";
+    learningToolsEl.hidden = !learning;
+    press(
+      learningToolsEl,
+      "[data-topic]",
+      "aria-pressed",
+      (el) => el.dataset.topic === view.refTopic,
+    );
+    const topicLabel =
+      LEARNING_TOPICS.find((t) => t.id === view.refTopic)?.label ?? "";
+    refActiveFilters.innerHTML = renderFilterSummary("sources", [
+      ...(view.refKind === "all"
+        ? []
+        : [{ key: "kind", label: "Source", value: KIND_LABELS[view.refKind] }]),
+      ...(learning && view.refTopic !== "all"
+        ? [{ key: "topic", label: "Topic", value: topicLabel }]
+        : []),
+    ]);
+    const references = filterReferences(
+      REFERENCES,
+      view.refKind,
+      view.refTopic,
     );
     $("ref-filter-status").textContent =
-      `${references.length} ${references.length === 1 ? "source" : "sources"}${view.refKind === "all" ? "" : ` · ${KIND_LABELS[view.refKind]}`}`;
+      `${references.length} ${references.length === 1 ? "source" : "sources"}${view.refKind === "all" ? "" : ` · ${KIND_LABELS[view.refKind]}`}${learning && view.refTopic !== "all" ? ` · ${topicLabel}` : ""}`;
     const infoIcon = `<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4M12 8h.01"></path></svg>`;
     refsEl.innerHTML = references
       .map((x) => {
@@ -2197,7 +2266,7 @@ export function startApp(): void {
       targetNote.textContent = noteText;
       if ($("f-target").dataset.motion) {
         targetNote.classList.remove("is-in");
-        void targetNote.offsetWidth;
+        void targetNote.offsetWidth; // force a reflow so the animation restarts
         targetNote.classList.add("is-in");
       }
     }
