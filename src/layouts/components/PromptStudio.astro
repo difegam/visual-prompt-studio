@@ -231,6 +231,7 @@ import FieldInfo from "@/layouts/components/FieldInfo.astro";
                   <span>Curated picks only</span>
                 </label>
               </div>
+              <div id="direction-active-filters"></div>
               <p
                 id="explorer-status"
                 class="explorer-status"
@@ -328,6 +329,7 @@ import FieldInfo from "@/layouts/components/FieldInfo.astro";
               /><span>Curated picks only</span></label
             >
           </div>
+          <div id="style-active-filters-design"></div>
           <p
             class="style-result-status"
             id="style-status-design"
@@ -377,6 +379,7 @@ import FieldInfo from "@/layouts/components/FieldInfo.astro";
               /><span>Curated picks only</span></label
             >
           </div>
+          <div id="style-active-filters-art"></div>
           <p
             class="style-result-status"
             id="style-status-art"
@@ -427,6 +430,7 @@ import FieldInfo from "@/layouts/components/FieldInfo.astro";
               /><span>Curated picks only</span></label
             >
           </div>
+          <div id="style-active-filters-technique"></div>
           <p
             class="style-result-status"
             id="style-status-technique"
@@ -600,6 +604,7 @@ import FieldInfo from "@/layouts/components/FieldInfo.astro";
                         aria-pressed="false">Mono</button
                       >
                     </div>
+                    <div id="font-active-filters"></div>
                     <p class="font-popularity-note">
                       Popular marks families with high general web usage; it is
                       not an image-model ranking.
@@ -1019,6 +1024,14 @@ import FieldInfo from "@/layouts/components/FieldInfo.astro";
         aria-label="Filter sources"
       >
       </div>
+      <div id="ref-active-filters"></div>
+      <p
+        id="ref-filter-status"
+        class="sr-only"
+        role="status"
+        aria-live="polite"
+      >
+      </p>
       <div class="refs" id="refs"></div>
     </div>
   </section>

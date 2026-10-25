@@ -60,6 +60,7 @@ import {
   type DesignId,
   type BrowsableStyle,
   type StyleLayer,
+  type StyleId,
   type TechniqueId,
 } from "../domain/styles";
 import { finishSvg, inksFrom, motifSvg, proofSvg } from "./sketch";
@@ -80,6 +81,24 @@ const esc = (s: string): string =>
         c
       ]!,
   );
+
+type ActiveFilter = { key: string; label: string; value: string };
+
+function renderFilterSummary(
+  area: string,
+  filters: readonly ActiveFilter[],
+): string {
+  if (filters.length === 0) return "";
+  return `<div class="active-filter-summary" role="group" aria-label="Active filters">
+    ${filters
+      .map(
+        (filter) =>
+          `<button type="button" class="active-filter-pill" data-remove-filter="${esc(filter.key)}" aria-label="Remove ${esc(filter.label)} filter: ${esc(filter.value)}"><span>${esc(filter.label)}: ${esc(filter.value)}</span><span class="active-filter-remove" aria-hidden="true">×</span></button>`,
+      )
+      .join("")}
+    <button type="button" class="btn btn-ghost btn-sm active-filter-clear" data-clear-filter-area="${esc(area)}">Clear all</button>
+  </div>`;
+}
 
 function aspectShapeSvg(aspect: Aspect, boxWidth = 28, boxHeight = 28): string {
   const { w, h } = aspectRatio(aspect);
@@ -436,6 +455,7 @@ export function startApp(): void {
   const directionStyle = $<HTMLSelectElement>("direction-style");
   const directionGroup = $<HTMLSelectElement>("direction-group");
   const curatedOnly = $<HTMLInputElement>("direction-curated");
+  const directionActiveFilters = $("direction-active-filters");
   const directionPagination = $("direction-pagination");
   let directionPage = 1;
   function renderDirections(recipe: Recipe): void {
@@ -551,6 +571,49 @@ export function startApp(): void {
       styleId: directionStyle.value,
       curatedOnly: curatedOnly.checked,
     };
+    directionActiveFilters.innerHTML = renderFilterSummary("directions", [
+      ...(directionSearch.value.trim()
+        ? [
+            {
+              key: "query",
+              label: "Search",
+              value: directionSearch.value.trim(),
+            },
+          ]
+        : []),
+      ...(directionFormat.value !== "all"
+        ? [
+            {
+              key: "format",
+              label: "Project type",
+              value:
+                directionFormat.selectedOptions[0]?.textContent?.trim() ?? "",
+            },
+          ]
+        : []),
+      ...(directionGoal.value !== "all"
+        ? [
+            {
+              key: "goal",
+              label: "Communication goal",
+              value:
+                directionGoal.selectedOptions[0]?.textContent?.trim() ?? "",
+            },
+          ]
+        : []),
+      ...(directionStyle.value !== "all"
+        ? [
+            {
+              key: "styleId",
+              label: "Style layer",
+              value: getStyle(directionStyle.value as StyleId).name,
+            },
+          ]
+        : []),
+      ...(curatedOnly.checked
+        ? [{ key: "curatedOnly", label: "Curated picks", value: "Only" }]
+        : []),
+    ]);
     const filtered = filterDirections(PRESETS, filters).toSorted(
       (a, b) =>
         (a.curatedRank ?? Number.MAX_SAFE_INTEGER) -
@@ -653,6 +716,40 @@ export function startApp(): void {
     const button = target.closest<HTMLButtonElement>("[data-preset]");
     if (button) applyChosenDirection(button.dataset.preset, directionResults);
   });
+  directionActiveFilters.addEventListener("click", (event) => {
+    const target = event.target as HTMLElement;
+    const remove = target.closest<HTMLButtonElement>("[data-remove-filter]");
+    const area = target.closest<HTMLButtonElement>("[data-clear-filter-area]");
+    if (!remove && area?.dataset.clearFilterArea !== "directions") return;
+    const focusIds: Record<string, string> = {
+      query: "direction-search",
+      format: "direction-format",
+      goal: "direction-goal",
+      styleId: "direction-style",
+      curatedOnly: "direction-curated",
+    };
+    if (remove) {
+      const focusId = focusIds[remove.dataset.removeFilter ?? ""];
+      if (!focusId) return;
+      if (focusId === "direction-search") directionSearch.value = "";
+      if (focusId === "direction-format") directionFormat.value = "all";
+      if (focusId === "direction-goal") directionGoal.value = "all";
+      if (focusId === "direction-style") directionStyle.value = "all";
+      if (focusId === "direction-curated") curatedOnly.checked = false;
+      directionPage = 1;
+      renderDirectionExplorer();
+      requestAnimationFrame(() => $(focusId).focus());
+      return;
+    }
+    directionSearch.value = "";
+    directionFormat.value = "all";
+    directionGoal.value = "all";
+    directionStyle.value = "all";
+    curatedOnly.checked = false;
+    directionPage = 1;
+    renderDirectionExplorer();
+    requestAnimationFrame(() => directionSearch.focus());
+  });
   directionPagination.addEventListener("click", (event) => {
     const button = (event.target as HTMLElement).closest<HTMLButtonElement>(
       "[data-page]",
@@ -707,6 +804,7 @@ export function startApp(): void {
     const search = $<HTMLInputElement>(`style-search-${layer}`);
     const group = $<HTMLSelectElement>(`style-group-${layer}`);
     const curated = $<HTMLInputElement>(`style-curated-${layer}`);
+    const activeFiltersEl = $(`style-active-filters-${layer}`);
     group.innerHTML = `<option value="all">All groups</option>${[...new Set(styles.map((style) => style.group))].map((name) => `<option value="${esc(name)}">${esc(name)}</option>`).join("")}`;
 
     function renderStyleLayer(): void {
@@ -715,6 +813,23 @@ export function startApp(): void {
         group: group.value,
         curatedOnly: curated.checked,
       };
+      activeFiltersEl.innerHTML = renderFilterSummary(`style-${layer}`, [
+        ...(search.value.trim()
+          ? [{ key: "query", label: "Search", value: search.value.trim() }]
+          : []),
+        ...(group.value !== "all"
+          ? [
+              {
+                key: "group",
+                label: "Group",
+                value: group.selectedOptions[0]?.textContent?.trim() ?? "",
+              },
+            ]
+          : []),
+        ...(curated.checked
+          ? [{ key: "curatedOnly", label: "Curated picks", value: "Only" }]
+          : []),
+      ]);
       const filtered = filterStyles(styles, filters).toSorted(
         (a, b) => Number(b.curated) - Number(a.curated),
       );
@@ -830,6 +945,49 @@ export function startApp(): void {
         renderStyleLayer();
       }),
     );
+    activeFiltersEl.addEventListener("click", (event) => {
+      const target = event.target as HTMLElement;
+      const remove = target.closest<HTMLButtonElement>("[data-remove-filter]");
+      const area = target.closest<HTMLButtonElement>(
+        "[data-clear-filter-area]",
+      );
+      if (!remove && area?.dataset.clearFilterArea !== `style-${layer}`) return;
+      if (remove) {
+        switch (remove.dataset.removeFilter) {
+          case "query":
+            search.value = "";
+            break;
+          case "group":
+            group.value = "all";
+            break;
+          case "curatedOnly":
+            curated.checked = false;
+            break;
+          default:
+            return;
+        }
+        styleBrowsePage[layer] = 1;
+        styleRenderKey[layer] = "";
+        renderStyleLayer();
+        requestAnimationFrame(() => {
+          const focusTarget =
+            remove.dataset.removeFilter === "query"
+              ? search
+              : remove.dataset.removeFilter === "curatedOnly"
+                ? curated
+                : group;
+          focusTarget.focus();
+        });
+        return;
+      }
+      search.value = "";
+      group.value = "all";
+      curated.checked = false;
+      styleBrowsePage[layer] = 1;
+      styleRenderKey[layer] = "";
+      renderStyleLayer();
+      requestAnimationFrame(() => search.focus());
+    });
     panels[layer].addEventListener("click", (event) => {
       const target = event.target as HTMLElement;
       if (target.closest("[data-clear-style-filters]")) {
@@ -980,6 +1138,7 @@ export function startApp(): void {
   const fontSearchEl = $<HTMLInputElement>("font-search");
   const fontDialog = $<HTMLDialogElement>("font-picker-dialog");
   const fontTrigger = $<HTMLButtonElement>("font-picker-trigger");
+  const fontActiveFilters = $("font-active-filters");
   let fontCategoryFilter = "all";
 
   const categoryName: Record<(typeof FONTS)[number]["category"], string> = {
@@ -988,9 +1147,30 @@ export function startApp(): void {
     display: "Display",
     mono: "Monospaced",
   };
+  const fontFilterLabels: Record<string, string> = {
+    popular: "Popular",
+    sans: categoryName.sans,
+    serif: categoryName.serif,
+    display: categoryName.display,
+    mono: categoryName.mono,
+  };
 
   function renderFontOptions(): void {
     const query = fontSearchEl.value.trim().toLocaleLowerCase();
+    fontActiveFilters.innerHTML = renderFilterSummary("fonts", [
+      ...(fontSearchEl.value.trim()
+        ? [{ key: "query", label: "Search", value: fontSearchEl.value.trim() }]
+        : []),
+      ...(fontCategoryFilter !== "all"
+        ? [
+            {
+              key: "category",
+              label: "Category",
+              value: fontFilterLabels[fontCategoryFilter] ?? fontCategoryFilter,
+            },
+          ]
+        : []),
+    ]);
     const fonts = FONTS.filter((font) => {
       const matchesCategory =
         fontCategoryFilter === "all" ||
@@ -1023,6 +1203,18 @@ export function startApp(): void {
       );
   }
 
+  function setFontCategoryFilter(category: string): void {
+    fontCategoryFilter = category;
+    specimensEl
+      .querySelectorAll<HTMLButtonElement>("[data-font-category]")
+      .forEach((button) => {
+        const selected = button.dataset.fontCategory === fontCategoryFilter;
+        button.setAttribute("aria-pressed", String(selected));
+        button.classList.toggle("btn-ghost", !selected);
+      });
+    renderFontOptions();
+  }
+
   renderFontOptions();
   fontTrigger.addEventListener("click", () => {
     if (!fontDialog.open) fontDialog.showModal();
@@ -1030,19 +1222,36 @@ export function startApp(): void {
   });
   fontDialog.addEventListener("close", () => fontTrigger.focus());
   fontSearchEl.addEventListener("input", renderFontOptions);
+  fontActiveFilters.addEventListener("click", (event) => {
+    const target = event.target as HTMLElement;
+    const remove = target.closest<HTMLButtonElement>("[data-remove-filter]");
+    const area = target.closest<HTMLButtonElement>("[data-clear-filter-area]");
+    if (!remove && area?.dataset.clearFilterArea !== "fonts") return;
+    if (remove?.dataset.removeFilter === "query") {
+      fontSearchEl.value = "";
+      renderFontOptions();
+      requestAnimationFrame(() => fontSearchEl.focus());
+      return;
+    }
+    if (remove?.dataset.removeFilter === "category") {
+      setFontCategoryFilter("all");
+      requestAnimationFrame(() => {
+        specimensEl
+          .querySelector<HTMLButtonElement>('[data-font-category="all"]')
+          ?.focus();
+      });
+      return;
+    }
+    if (remove) return;
+    fontSearchEl.value = "";
+    setFontCategoryFilter("all");
+    requestAnimationFrame(() => fontSearchEl.focus());
+  });
   specimensEl.addEventListener("click", (e) => {
     const target = e.target as HTMLElement;
     const category = target.closest<HTMLButtonElement>("[data-font-category]");
     if (category) {
-      fontCategoryFilter = category.dataset.fontCategory ?? "all";
-      specimensEl
-        .querySelectorAll<HTMLButtonElement>("[data-font-category]")
-        .forEach((button) => {
-          const selected = button === category;
-          button.setAttribute("aria-pressed", String(selected));
-          button.classList.toggle("btn-ghost", !selected);
-        });
-      renderFontOptions();
+      setFontCategoryFilter(category.dataset.fontCategory ?? "all");
       return;
     }
 
@@ -1340,6 +1549,7 @@ export function startApp(): void {
   /* ── inspiration ── */
   const kinds = [...new Set(REFERENCES.map((r) => r.kind))];
   const filtersEl = $("ref-filters");
+  const refActiveFilters = $("ref-active-filters");
   filtersEl.innerHTML = [
     `<button type="button" class="chip" data-kind="all">All</button>`,
   ]
@@ -1357,6 +1567,18 @@ export function startApp(): void {
     if (!b) return;
     view.refKind = b.dataset.kind as View["refKind"];
     renderRefs(store.get());
+  });
+  refActiveFilters.addEventListener("click", (event) => {
+    const target = event.target as HTMLElement;
+    const remove = target.closest<HTMLButtonElement>("[data-remove-filter]");
+    const area = target.closest<HTMLButtonElement>("[data-clear-filter-area]");
+    if (!remove && area?.dataset.clearFilterArea !== "inspiration") return;
+    if (remove && remove.dataset.removeFilter !== "kind") return;
+    view.refKind = "all";
+    renderRefs(store.get());
+    requestAnimationFrame(() => {
+      filtersEl.querySelector<HTMLButtonElement>('[data-kind="all"]')?.focus();
+    });
   });
   const fmtDate = (iso: string) =>
     new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-GB", {
@@ -1380,14 +1602,29 @@ export function startApp(): void {
       .forEach((b) =>
         b.setAttribute("aria-pressed", String(b.dataset.kind === view.refKind)),
       );
+    refActiveFilters.innerHTML = renderFilterSummary(
+      "inspiration",
+      view.refKind === "all"
+        ? []
+        : [
+            {
+              key: "kind",
+              label: "Source type",
+              value: KIND_LABELS[view.refKind],
+            },
+          ],
+    );
     const names = [
       r.styles.art !== "none" ? getStyle(r.styles.art).name : null,
       getStyle(r.styles.design).name,
       getStyle(r.styles.technique).name,
     ].filter((x): x is string => x !== null);
-    $("refs").innerHTML = REFERENCES.filter(
+    const references = REFERENCES.filter(
       (x) => view.refKind === "all" || x.kind === view.refKind,
-    )
+    );
+    $("ref-filter-status").textContent =
+      `${references.length} ${references.length === 1 ? "source" : "sources"}${view.refKind === "all" ? "" : ` · ${KIND_LABELS[view.refKind]}`}`;
+    $("refs").innerHTML = references
       .map((x) => {
         const deep = x.deepLink?.({ styleNames: names, target: r.target });
         return `<article class="ref">
