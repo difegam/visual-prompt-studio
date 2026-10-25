@@ -1,4 +1,4 @@
-/** "Open in" links for model targets that have a chat app we can send people to. */
+/** "Open in" links for model targets that have a hosted app we can send people to. */
 
 export interface OpenIn {
   label: string;
@@ -11,8 +11,13 @@ export interface OpenIn {
 export const MAX_PROMPT_URL_LENGTH = 2000;
 
 const CHATGPT = "https://chatgpt.com/";
-// Gemini's web app has no supported prefill parameter.
-const GEMINI = "https://gemini.google.com/app";
+
+/** Apps with no supported prompt URL: we copy the prompt, then open the app to paste it. */
+const COPY_THEN_OPEN: Record<string, { name: string; url: string }> = {
+  gemini: { name: "Gemini", url: "https://gemini.google.com/app" },
+  midjourney: { name: "Midjourney", url: "https://www.midjourney.com/imagine" },
+  flux: { name: "FLUX", url: "https://playground.bfl.ai" },
+};
 
 export function openInFor(target: string, prompt: string): OpenIn | null {
   if (target === "gpt-image") {
@@ -21,8 +26,8 @@ export function openInFor(target: string, prompt: string): OpenIn | null {
       ? { label: "Open in ChatGPT", url, needsCopy: false }
       : { label: "Open in ChatGPT", url: CHATGPT, needsCopy: true };
   }
-  if (target === "gemini") {
-    return { label: "Copy & open Gemini", url: GEMINI, needsCopy: true };
-  }
-  return null;
+  const app = COPY_THEN_OPEN[target];
+  return app
+    ? { label: `Copy & open ${app.name}`, url: app.url, needsCopy: true }
+    : null;
 }

@@ -1009,6 +1009,16 @@ test("open-in links carry the prompt for ChatGPT and fall back to copying", () =
   assert.equal(gemini.label, "Copy & open Gemini");
   assert.equal(gemini.url, "https://gemini.google.com/app");
   assert.equal(gemini.needsCopy, true);
-  for (const id of ["midjourney", "flux", "sdxl", "generic"])
+  assert.deepEqual(openIn.openInFor("midjourney", prompt), {
+    label: "Copy & open Midjourney",
+    url: "https://www.midjourney.com/imagine",
+    needsCopy: true,
+  });
+  assert.deepEqual(openIn.openInFor("flux", prompt), {
+    label: "Copy & open FLUX",
+    url: "https://playground.bfl.ai",
+    needsCopy: true,
+  });
+  for (const id of ["sdxl", "generic"])
     assert.equal(openIn.openInFor(id, prompt), null);
 });
