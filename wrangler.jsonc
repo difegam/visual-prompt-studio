@@ -14,7 +14,13 @@
     "traces": { "enabled": true },
   },
   "env": {
-    "development": { "name": "astroplate-starter-development" },
-    "production": { "name": "astroplate-starter-production" },
+    "development": {
+      "name": "astroplate-starter-development",
+      "routes": [{ "pattern": "vps.dev.dgamboa.com", "custom_domain": true }],
+    },
+    "production": {
+      "name": "astroplate-starter-production",
+      "routes": [{ "pattern": "vps.dgamboa.com", "custom_domain": true }],
+    },
   },
 }

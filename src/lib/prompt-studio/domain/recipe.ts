@@ -149,6 +149,12 @@ export const TARGETS = [
     note: "Natural language. Strong text rendering; quote every word that must appear.",
   },
   {
+    id: "gemini",
+    label: "Gemini",
+    model: "Nano Banana 2.1",
+    note: "Natural language, like briefing a designer. Quote every word that must appear; refine in the same chat.",
+  },
+  {
     id: "midjourney",
     label: "Midjourney",
     model: "V8.x",
@@ -221,6 +227,7 @@ export const PATTERNS_BY_TARGET: Record<TargetId, readonly PatternId[]> = {
     "restyle",
     "edit",
   ],
+  gemini: ["concise", "seven-line", "spec", "point-of-view", "restyle", "edit"],
   flux: ["concise", "seven-line", "spec", "point-of-view", "edit"],
   generic: [
     "concise",

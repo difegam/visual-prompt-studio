@@ -296,6 +296,18 @@ export const REFERENCES: readonly ReferenceDef[] = [
     checked: CHECKED,
   },
   {
+    id: "gemini-image-guide",
+    name: "Gemini image generation",
+    url: "https://ai.google.dev/gemini-api/docs/image-generation",
+    kind: "docs",
+    bestFor:
+      "Nano Banana models: aspect ratios, reference images, text rendering, and conversational edits.",
+    models: "Nano Banana (Gemini image models)",
+    cost: "free",
+    status: "active",
+    checked: RESEARCH_CHECKED,
+  },
+  {
     id: "mj-no",
     name: "Midjourney --no",
     url: "https://docs.midjourney.com/docs/no",

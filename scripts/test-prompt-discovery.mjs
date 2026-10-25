@@ -540,3 +540,31 @@ test("applying a starter changes only the safe bundle and clones mutable values"
   assert.equal(JSON.stringify(current), currentBefore);
   assert.equal(JSON.stringify(starter), catalogBefore);
 });
+
+test("Gemini is a target that accepts every pattern and compiles in plain language", async () => {
+  const compiler = await server.ssrLoadModule(
+    "/src/lib/prompt-studio/domain/compiler.ts",
+  );
+  const gemini = recipe.TARGETS.find(({ id }) => id === "gemini");
+  assert.ok(gemini, "gemini target exists");
+  assert.deepEqual(
+    [...recipe.PATTERNS_BY_TARGET.gemini].sort(),
+    recipe.PATTERNS.map(({ id }) => id).sort(),
+  );
+  const base = {
+    ...recipe.DEFAULT_RECIPE,
+    idea: "An exhibition about tidal wetlands",
+    target: "gemini",
+  };
+  assert.ok(recipe.RecipeSchema.safeParse(base).success, "schema accepts it");
+  for (const pattern of recipe.PATTERNS_BY_TARGET.gemini) {
+    const out = compiler.compile({ ...base, pattern });
+    assert.equal(out.pattern, pattern, `${pattern} is kept for Gemini`);
+    // Edit and restyle describe a change to an attached image, not the idea.
+    if (pattern !== "edit" && pattern !== "restyle")
+      assert.ok(out.text.includes("tidal wetlands"), `${pattern} has the idea`);
+    assert.ok(out.text.length > 40);
+    assert.equal(out.negative, null, "no separate negative prompt");
+    assert.ok(!out.text.includes("--ar"), "no Midjourney parameters");
+  }
+});
