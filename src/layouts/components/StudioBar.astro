@@ -4,7 +4,7 @@ import ThemeSwitcher from "@/layouts/components/ThemeSwitcher.astro";
 export interface Props {
   /** `app` carries the recipe actions; `page` is the plain bar for secondary pages. */
   variant?: "app" | "page";
-  current?: "guide";
+  current?: "guide" | "compare";
 }
 
 const { variant = "app", current } = Astro.props;
@@ -34,6 +34,10 @@ const home = variant === "app" ? "" : "/";
         <a href={`${home}#compose`}>Compose</a>
         <a href="/guide" aria-current={current === "guide" ? "page" : undefined}
           >Guide</a
+        >
+        <a
+          href="/compare"
+          aria-current={current === "compare" ? "page" : undefined}>Compare</a
         >
         <a href={`${home}#inspiration`}>Inspiration</a>
         <a href="/blog">Blog</a>
