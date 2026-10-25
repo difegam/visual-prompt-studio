@@ -1,6 +1,10 @@
 ---
 import "@/lib/prompt-studio/ui/fonts.css";
 import "@/lib/prompt-studio/ui/styles.css";
+import StudioField from "@/layouts/components/StudioField.astro";
+import StudioDisclosure from "@/layouts/components/StudioDisclosure.astro";
+import ThemeSwitcher from "@/layouts/components/ThemeSwitcher.astro";
+import FieldInfo from "@/layouts/components/FieldInfo.astro";
 ---
 
 <div id="studio-app">
@@ -17,13 +21,20 @@ import "@/lib/prompt-studio/ui/styles.css";
       <a href="#inspiration">Inspiration</a>
     </nav>
     <div class="bar-actions">
-      <button type="button" class="btn ghost" id="btn-import"
-        >Import recipe</button
+      <button
+        type="button"
+        class="btn ghost"
+        id="btn-import"
+        aria-label="Import recipe">Import</button
       >
-      <button type="button" class="btn ghost" id="btn-export"
-        >Export recipe</button
+      <button
+        type="button"
+        class="btn ghost"
+        id="btn-export"
+        aria-label="Export recipe">Export</button
       >
       <button type="button" class="btn ghost" id="btn-reset">Reset</button>
+      <ThemeSwitcher className="studio-theme-switcher" />
     </div>
   </header>
 
@@ -31,9 +42,21 @@ import "@/lib/prompt-studio/ui/styles.css";
     <div class="composer">
       <section class="brief" aria-labelledby="brief-h">
         <h1 id="brief-h" class="lede">Give the image a point of view.</h1>
-        <label class="idea-label" for="f-idea">What are you making?</label>
-        <textarea id="f-idea" class="idea" rows="2" spellcheck="true"
-        ></textarea>
+        <div class="field-heading">
+          <label class="idea-label" for="f-idea">What are you making?</label>
+          <FieldInfo
+            label="What are you making?"
+            id="idea"
+            info="Describe the subject and where the image will be used. A clear brief gives the prompt a concrete starting point."
+          />
+        </div>
+        <textarea
+          id="f-idea"
+          class="idea textarea"
+          rows="2"
+          maxlength="400"
+          aria-describedby="idea-error"
+          spellcheck="true"></textarea>
         <p class="field-error" id="idea-error" hidden>
           Describe it in a few words so the model has a subject.
         </p>
@@ -52,12 +75,22 @@ import "@/lib/prompt-studio/ui/styles.css";
         </div>
 
         <div class="grid-fields">
-          <label class="field">
-            <span>Format</span>
-            <select id="f-purpose"></select>
-          </label>
+          <StudioField
+            label="Format"
+            controlId="f-purpose"
+            info="Choose the kind of image you are making. The selected format guides the prompt's composition and use."
+          >
+            <select id="f-purpose" class="select"></select>
+          </StudioField>
           <div class="field">
-            <span id="aspect-label">Aspect ratio</span>
+            <div class="field-heading">
+              <span id="aspect-label">Aspect ratio</span>
+              <FieldInfo
+                label="Aspect ratio"
+                id="aspect"
+                info="Choose the canvas shape that fits where you plan to use the image. This changes the prompt's framing."
+              />
+            </div>
             <div
               class="seg aspect-seg"
               id="f-aspect"
@@ -66,49 +99,88 @@ import "@/lib/prompt-studio/ui/styles.css";
             >
             </div>
           </div>
-          <label class="field">
-            <span>Headline</span>
+          <StudioField
+            label="Headline"
+            controlId="f-headline"
+            info="Enter the main words that should appear in the image. Keep it short for stronger placement and legibility."
+          >
             <input
               id="f-headline"
+              class="input"
               type="text"
               maxlength="80"
               autocomplete="off"
             />
-          </label>
-          <label class="field">
-            <span>Other text <small>one line each, up to 4</small></span>
-            <textarea id="f-extra" rows="2"></textarea>
-          </label>
+          </StudioField>
+          <StudioField
+            label="Other text"
+            controlId="f-extra"
+            hint="one line each, up to 4"
+            info="Add supporting words such as a date, venue, or credit. Put each separate text element on its own line."
+          >
+            <textarea id="f-extra" class="textarea" rows="2" maxlength="323"
+            ></textarea>
+          </StudioField>
           <div class="field span2">
-            <span id="textmode-label">Text in the image</span>
+            <div class="field-heading">
+              <span id="textmode-label">Text in the image</span>
+              <FieldInfo
+                label="Text in the image"
+                id="textmode"
+                info="Choose whether the image model should render the supplied wording or leave a clear area for you to add type later."
+              />
+            </div>
             <div class="seg" role="radiogroup" aria-labelledby="textmode-label">
-              <button type="button" role="radio" data-textmode="render"
-                >Render the exact text</button
-              >
-              <button type="button" role="radio" data-textmode="space"
-                >Leave clean space, I'll set it later</button
-              >
+              <label class="seg-option">
+                <input
+                  class="radio"
+                  type="radio"
+                  name="textmode"
+                  value="render"
+                  data-textmode="render"
+                />
+                <span>Render the exact text</span>
+              </label>
+              <label class="seg-option">
+                <input
+                  class="radio"
+                  type="radio"
+                  name="textmode"
+                  value="space"
+                  data-textmode="space"
+                />
+                <span>Leave clean space, I'll set it later</span>
+              </label>
             </div>
           </div>
-          <label class="field span2">
-            <span
-              >Your concept <small
-                >one specific image idea beats ten adjectives</small
-              ></span
-            >
+          <StudioField
+            label="Your concept"
+            controlId="f-detail"
+            hint="one specific image idea beats ten adjectives"
+            className="span2"
+            info="Describe one memorable visual metaphor or scene. A concrete image idea is easier for a model to follow than a list of style adjectives."
+          >
             <input
               id="f-detail"
+              class="input"
               type="text"
               maxlength="240"
               autocomplete="off"
             />
-          </label>
+          </StudioField>
         </div>
       </section>
 
       <section class="layers" aria-labelledby="layers-h">
         <div class="section-head">
-          <h2 id="layers-h">Visual language</h2>
+          <div class="field-heading section-title-row">
+            <h2 id="layers-h">Visual language</h2>
+            <FieldInfo
+              label="Visual language"
+              id="visual-language"
+              info="Choose one layout, one kind of imagery, and one finish. These layers combine into a single art direction."
+            />
+          </div>
           <p>
             Pick one per layer. Each controls a different part of the image, so
             they combine.
@@ -174,7 +246,14 @@ import "@/lib/prompt-studio/ui/styles.css";
 
         <div class="palette-block">
           <div class="palette-head">
-            <h3>Palette</h3>
+            <div class="field-heading section-title-row">
+              <h3>Palette</h3>
+              <FieldInfo
+                label="Palette"
+                id="palette"
+                info="The three inks define the image's ground and two main colors. The prompt asks the model to avoid adding extra colors."
+              />
+            </div>
             <p id="palette-note">Three inks. Click a swatch to change it.</p>
           </div>
           <div class="palette-row">
@@ -184,55 +263,88 @@ import "@/lib/prompt-studio/ui/styles.css";
         </div>
       </section>
 
-      <section aria-labelledby="type-h">
-        <div class="section-head">
-          <h2 id="type-h">Typography</h2>
-          <p>
-            Real fonts render here. The model only receives a description of the
-            type class, so composite exact brand type afterwards.
-          </p>
-        </div>
-        <div class="specimens" id="specimens"></div>
-      </section>
+      <StudioDisclosure
+        title="Fine-tune the direction"
+        description="Typography, exclusions and creative intent"
+        className="fine-tune"
+      >
+        <section aria-labelledby="type-h">
+          <div class="section-head">
+            <div class="field-heading section-title-row">
+              <h2 id="type-h">Typography</h2>
+              <FieldInfo
+                label="Typography"
+                id="typography"
+                info="These specimens set a broad type character for the image model. Add an exact brand font afterward if needed."
+              />
+            </div>
+            <p>
+              Choose a type character. Add the final brand font in your image
+              editor when exact lettering matters.
+            </p>
+          </div>
+          <div class="specimens" id="specimens"></div>
+        </section>
 
-      <section aria-labelledby="avoid-h">
-        <div class="section-head">
-          <h2 id="avoid-h">Remove the default look</h2>
-          <p>
-            Name what to leave out. Exclusions a chosen style depends on are
-            skipped automatically.
-          </p>
-        </div>
-        <label class="field inline">
-          <span>Clichés of this subject</span>
-          <select id="f-cliche"></select>
-        </label>
-        <p class="cliche-items" id="cliche-items"></p>
-        <div class="chip-groups" id="avoids"></div>
-        <div class="chip-actions">
-          <button type="button" class="link" id="avoid-defaults"
-            >Use sensible defaults</button
+        <section aria-labelledby="avoid-h">
+          <div class="section-head">
+            <div class="field-heading section-title-row">
+              <h2 id="avoid-h">Remove the default look</h2>
+              <FieldInfo
+                label="Remove the default look"
+                id="avoid"
+                info="Exclude familiar AI embellishments or subject clichés. An exclusion is skipped if the chosen print finish depends on it."
+              />
+            </div>
+            <p>
+              Name what to leave out. Exclusions a chosen style depends on are
+              skipped automatically.
+            </p>
+          </div>
+          <StudioField
+            label="Clichés of this subject"
+            controlId="f-cliche"
+            className="inline"
+            info="Pick a subject category to see common visual clichés you may want the prompt to avoid."
           >
-          <button type="button" class="link" id="avoid-clear">Clear all</button>
-        </div>
-      </section>
+            <select id="f-cliche" class="select"></select>
+          </StudioField>
+          <p class="cliche-items" id="cliche-items"></p>
+          <div class="chip-groups" id="avoids"></div>
+          <div class="chip-actions">
+            <button type="button" class="link" id="avoid-defaults"
+              >Use sensible defaults</button
+            >
+            <button type="button" class="link" id="avoid-clear"
+              >Clear all</button
+            >
+          </div>
+        </section>
 
-      <section aria-labelledby="sig-h">
-        <div class="section-head">
-          <h2 id="sig-h">Authorial intent</h2>
-          <p>
-            Optional. One or two lines that make the brief sound like a person
-            made a decision.
-          </p>
-        </div>
-        <div class="signatures" id="signatures"></div>
-      </section>
+        <section aria-labelledby="sig-h">
+          <div class="section-head">
+            <div class="field-heading section-title-row">
+              <h2 id="sig-h">Authorial intent</h2>
+              <FieldInfo
+                label="Authorial intent"
+                id="authorial-intent"
+                info="Choose the principles that should shape the result, such as material realism or confident restraint. This is optional."
+              />
+            </div>
+            <p>
+              Optional. One or two lines that make the brief sound like a person
+              made a decision.
+            </p>
+          </div>
+          <div class="signatures" id="signatures"></div>
+        </section>
+      </StudioDisclosure>
     </div>
 
     <aside class="proof" aria-labelledby="proof-h">
       <div class="proof-inner">
         <h2 id="proof-h" class="sr-only">Proof and prompt</h2>
-        <figure class="sheet">
+        <figure class="sheet card card-border">
           <div class="crop" id="proof"></div>
           <figcaption>
             <ul class="seps" id="seps"></ul>
@@ -243,7 +355,14 @@ import "@/lib/prompt-studio/ui/styles.css";
         </figure>
 
         <div class="target-block">
-          <span class="mini-label" id="target-label">Send to</span>
+          <div class="field-heading">
+            <span class="mini-label" id="target-label">Send to</span>
+            <FieldInfo
+              label="Send to"
+              id="target"
+              info="Select the image model you plan to use. The prompt and available settings adapt to that model; this studio does not generate the image."
+            />
+          </div>
           <div
             class="seg wrap"
             id="f-target"
@@ -255,69 +374,136 @@ import "@/lib/prompt-studio/ui/styles.css";
         </div>
 
         <div class="pattern-row">
-          <label class="field">
-            <span>Prompt shape</span>
-            <select id="f-pattern"></select>
-          </label>
+          <StudioField
+            label="Prompt shape"
+            controlId="f-pattern"
+            info="Choose how the prompt is organized. The art direction keeps it compact; the production spec adds more explicit constraints."
+          >
+            <select id="f-pattern" class="select"></select>
+          </StudioField>
           <div class="field" id="lang-field">
-            <span id="lang-label">Language</span>
+            <div class="field-heading">
+              <span id="lang-label">Language</span>
+              <FieldInfo
+                label="Language"
+                id="language"
+                info="This changes the language of the generated prompt. It does not translate the text entered for the image."
+              />
+            </div>
             <div class="seg" role="radiogroup" aria-labelledby="lang-label">
-              <button type="button" role="radio" data-lang="en">EN</button>
-              <button type="button" role="radio" data-lang="es">ES</button>
+              <label class="seg-option">
+                <input
+                  class="radio"
+                  type="radio"
+                  name="language"
+                  value="en"
+                  data-lang="en"
+                />
+                <span>EN</span>
+              </label>
+              <label class="seg-option">
+                <input
+                  class="radio"
+                  type="radio"
+                  name="language"
+                  value="es"
+                  data-lang="es"
+                />
+                <span>ES</span>
+              </label>
             </div>
           </div>
         </div>
         <p class="pattern-hint" id="pattern-hint"></p>
 
         <div class="ctx" id="edit-fields" hidden>
-          <label class="field"
-            ><span>Change only</span><input
+          <div class="field">
+            <div class="field-heading">
+              <label for="f-change">Change only</label>
+              <FieldInfo
+                label="Change only"
+                id="change-only"
+                info="Describe the specific part to edit. The prompt asks the model to leave everything else untouched."
+              />
+            </div>
+            <input
               id="f-change"
+              class="input"
               type="text"
               maxlength="240"
               placeholder="e.g. the background, to flat cobalt blue"
-            /></label
-          >
-          <label class="field"
-            ><span>Keep exactly</span><input
+            />
+          </div>
+          <div class="field">
+            <div class="field-heading">
+              <label for="f-preserve">Keep exactly</label>
+              <FieldInfo
+                label="Keep exactly"
+                id="keep-exactly"
+                info="List the subjects, placement, and text that should remain unchanged in the edit."
+              />
+            </div>
+            <input
               id="f-preserve"
+              class="input"
               type="text"
               maxlength="240"
               placeholder="e.g. the vase, its position and all text"
-            /></label
-          >
+            />
+          </div>
         </div>
 
         <div class="ctx" id="mj-fields" hidden>
-          <label class="field"
-            ><span
-              >Style reference codes <small>--sref, space separated</small
-              ></span
-            ><input
+          <div class="field">
+            <div class="field-heading">
+              <label for="f-sref"
+                >Style reference codes <small>--sref, space separated</small
+                ></label
+              >
+              <FieldInfo
+                label="Style reference codes"
+                id="style-reference-codes"
+                info="Add one or more numeric Midjourney style reference codes, separated by spaces. These are passed through as --sref values."
+              />
+            </div>
+            <input
               id="f-sref"
+              class="input"
               type="text"
               autocomplete="off"
               spellcheck="false"
               placeholder="e.g. 2378124706"
-            /></label
-          >
+            />
+          </div>
           <p class="field-error" id="sref-error" hidden></p>
           <div class="mj-row">
-            <label class="check"
-              ><input id="f-raw" type="checkbox" />
-              <span>--raw <small>skip default beautification</small></span
-              ></label
+            <div class="check-row">
+              <label class="check" for="f-raw">
+                <input id="f-raw" class="checkbox" type="checkbox" />
+                <span>--raw <small>skip default beautification</small></span>
+              </label>
+              <FieldInfo
+                label="Raw mode"
+                id="raw-mode"
+                info="Passes Midjourney's --raw flag to reduce its default beautification and give your art direction more influence."
+              />
+            </div>
+            <StudioField
+              label="--s stylize"
+              controlId="f-stylize"
+              className="small"
+              info="Controls how strongly Midjourney applies its own aesthetic defaults. Leave it blank to use the model's default."
             >
-            <label class="field small"
-              ><span>--s stylize</span><input
+              <input
                 id="f-stylize"
+                class="input"
                 type="number"
                 min="0"
                 max="1000"
                 step="50"
                 placeholder="default"
-              /></label
-            >
+              />
+            </StudioField>
           </div>
         </div>
 

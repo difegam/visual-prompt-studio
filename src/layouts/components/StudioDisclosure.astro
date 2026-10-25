@@ -1,0 +1,19 @@
+---
+interface Props {
+  title: string;
+  description: string;
+  className?: string;
+}
+
+const { title, description, className = "" } = Astro.props;
+---
+
+<details class:list={["collapse-arrow studio-disclosure collapse", className]}>
+  <summary class="collapse-title">
+    <span class="disclosure-title">{title}</span>
+    <span class="disclosure-description">{description}</span>
+  </summary>
+  <div class="collapse-content">
+    <slot />
+  </div>
+</details>

@@ -16,7 +16,7 @@ import { ClientRouter } from "astro:transitions";
 import Announcement from "./helpers/Announcement";
 import SearchModal from "./helpers/SearchModal";
 
-// font families - extract font names for Font component (filter out type keys)
+// Font families configured in theme.json (filter out fallback type entries).
 const fontEntries = Object.entries(theme.fonts.font_family).filter(
   ([key]) => !key.includes("_type"),
 );
@@ -81,7 +81,7 @@ const shouldNoindex = siteMode === "preview" || noindex;
     <meta name="generator" content={Astro.generator} />
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
-    <!-- google font css - Astro 6 built-in Font API -->
+    <!-- Astro bundles theme fonts retrieved from Bunny Fonts -->
     {
       !hideChrome &&
         fontEntries.map(([key]) => {

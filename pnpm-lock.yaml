@@ -72,9 +72,6 @@ importers:
       astro:
         specifier: 7.4.2
         version: 7.4.2(@astrojs/markdown-remark@7.3.4(supports-color@10.2.2))(@types/node@26.1.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)
-      astro-auto-import:
-        specifier: ^0.5.2
-        version: 0.5.2(astro@7.4.2(@astrojs/markdown-remark@7.3.4(supports-color@10.2.2))(@types/node@26.1.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
       astro-swiper:
         specifier: ^2.11.0
         version: 2.11.0
@@ -1474,12 +1471,6 @@ packages:
   astring@1.9.0:
     resolution: {integrity: sha512-LElXdjswlqjWrPpJFg1Fx4wpkOCxj1TDHlSV4PlaRxHGWko024xICaa97ZkMfs6DRKlCguiAI+rbXv5GWwXIkg==}
     hasBin: true
-
-  astro-auto-import@0.5.2:
-    resolution: {integrity: sha512-C7sxtj0nK4F7AiafNoS8lY/JyqW6/JlnkXTdNIT6CKroV/p4m5j6dkpKEAXZf/7Z+SeDcmAlWI6G1nVMssRRPQ==}
-    engines: {node: '>=20.0.0'}
-    peerDependencies:
-      astro: ^5.0.0 || ^6.0.0 || ^7.0.0
 
   astro-eslint-parser@3.2.0:
     resolution: {integrity: sha512-WavQUarfgwSbpCq4xsdcIBdX5KArfI2d6DD8EIloJIMthnB1508iNpx4C77EhUyMd03LpEt8HAPzwF/cG0V39g==}
@@ -4621,11 +4612,6 @@ snapshots:
   array-iterate@2.0.1: {}
 
   astring@1.9.0: {}
-
-  astro-auto-import@0.5.2(astro@7.4.2(@astrojs/markdown-remark@7.3.4(supports-color@10.2.2))(@types/node@26.1.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)):
-    dependencies:
-      acorn: 8.19.0
-      astro: 7.4.2(@astrojs/markdown-remark@7.3.4(supports-color@10.2.2))(@types/node@26.1.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)
 
   astro-eslint-parser@3.2.0(supports-color@10.2.2):
     dependencies:

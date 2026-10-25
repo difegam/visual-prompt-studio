@@ -18,7 +18,7 @@ Environment: Node `v22.23.4`, pnpm `11.17.0`.
 - `corepack pnpm install --frozen-lockfile`: passed; lockfile validated and 597 packages installed.
 - `corepack pnpm run check`: initially failed because Astroplate's generated `.json/search.json` was absent. After `corepack pnpm run generate-json`, it passed with 0 errors, warnings, or hints. The run emits an existing deprecation warning for `markdown.remarkPlugins`, `markdown.rehypePlugins`, and `markdown.remarkRehype` in Astro configuration.
 - `corepack pnpm run build`: passed; 28 routes built, then the existing LLM generator produced 27 page Markdown files plus `llms.txt` and `llms-full.txt`. The build emits the same Astro Markdown configuration deprecation warning.
-- A sandboxed build could not fetch Google Fonts metadata and produced missing-font warnings; the authorized network build copied both configured fonts successfully. The current upstream build therefore has a build-time Google Fonts network dependency.
+- At the imported baseline, a sandboxed build could not fetch Google Fonts metadata and produced missing-font warnings; the authorized network build copied both configured fonts successfully. The curated fork now uses Astro's Bunny provider instead.
 
 The first `check` result reflects the template's script-order requirement documented in `AGENTS.md`: its JSON generator must run before invoking Astro directly. The curated starter's `pnpm run check` now runs the generator first, so contributors can use that command from a fresh checkout.
 

@@ -194,7 +194,7 @@ export function startApp(): void {
   ).join("");
   $("f-aspect").innerHTML = ASPECTS.map(
     (a) =>
-      `<button type="button" role="radio" data-aspect="${a}" aria-label="${a} ${ASPECT_LABELS[a]}"><b>${a}</b><small>${ASPECT_LABELS[a]}</small></button>`,
+      `<label class="seg-option"><input class="radio" type="radio" name="aspect" value="${a}" data-aspect="${a}" /><span><b>${a}</b><small>${ASPECT_LABELS[a]}</small></span></label>`,
   ).join("");
 
   idea.addEventListener("input", () =>
@@ -223,18 +223,25 @@ export function startApp(): void {
     const p = PURPOSES.find((x) => x.id === purpose.value);
     if (p) patch({ purpose: p.id, aspect: p.aspect });
   });
-  $("f-aspect").addEventListener("click", (e) => {
-    const b = (e.target as HTMLElement).closest<HTMLButtonElement>(
+  $("f-aspect").addEventListener("change", (e) => {
+    const input = (e.target as HTMLElement).closest<HTMLInputElement>(
       "[data-aspect]",
     );
-    if (b) patch({ aspect: b.dataset.aspect as Aspect });
+    if (input && ASPECTS.includes(input.value as Aspect)) {
+      patch({ aspect: input.value as Aspect });
+    }
   });
   document
-    .querySelectorAll<HTMLButtonElement>("[data-textmode]")
-    .forEach((b) =>
-      b.addEventListener("click", () =>
-        patch({ textMode: b.dataset.textmode as Recipe["textMode"] }),
-      ),
+    .querySelectorAll<HTMLInputElement>("[data-textmode]")
+    .forEach((input) =>
+      input.addEventListener("change", () => {
+        if (
+          input.checked &&
+          (input.value === "render" || input.value === "space")
+        ) {
+          patch({ textMode: input.value });
+        }
+      }),
     );
 
   /* ── quick starts ── */
@@ -521,25 +528,27 @@ export function startApp(): void {
   /* ── target & pattern ── */
   $("f-target").innerHTML = TARGETS.map(
     (t) =>
-      `<button type="button" role="radio" data-target="${t.id}" title="${esc(t.model)}">${esc(t.label)}</button>`,
+      `<label class="seg-option"><input class="radio" type="radio" name="target" value="${t.id}" data-target="${t.id}" /><span title="${esc(t.model)}">${esc(t.label)}</span></label>`,
   ).join("");
-  $("f-target").addEventListener("click", (e) => {
-    const b = (e.target as HTMLElement).closest<HTMLButtonElement>(
+  $("f-target").addEventListener("change", (e) => {
+    const input = (e.target as HTMLElement).closest<HTMLInputElement>(
       "[data-target]",
     );
-    if (b) patch({ target: b.dataset.target as TargetId });
+    if (input && TARGETS.some((target) => target.id === input.value)) {
+      patch({ target: input.value as TargetId });
+    }
   });
   const pattern = $<HTMLSelectElement>("f-pattern");
   pattern.addEventListener("change", () =>
     patch({ pattern: pattern.value as PatternId }),
   );
-  document
-    .querySelectorAll<HTMLButtonElement>("[data-lang]")
-    .forEach((b) =>
-      b.addEventListener("click", () =>
-        patch({ language: b.dataset.lang as Recipe["language"] }),
-      ),
-    );
+  document.querySelectorAll<HTMLInputElement>("[data-lang]").forEach((input) =>
+    input.addEventListener("change", () => {
+      if (input.checked && (input.value === "en" || input.value === "es")) {
+        patch({ language: input.value });
+      }
+    }),
+  );
   const change = $<HTMLInputElement>("f-change");
   const preserve = $<HTMLInputElement>("f-preserve");
   change.addEventListener("input", () =>
@@ -833,19 +842,15 @@ export function startApp(): void {
     sync(detail, r.detail);
     sync(purpose, r.purpose);
     if (document.activeElement !== extra) sync(extra, r.extraText.join("\n"));
-    $("idea-error").hidden = r.idea.trim().length >= 3;
-    press(
-      $("f-aspect"),
-      "[data-aspect]",
-      "aria-checked",
-      (el) => el.dataset.aspect === r.aspect,
-    );
-    press(
-      document,
-      "[data-textmode]",
-      "aria-checked",
-      (el) => el.dataset.textmode === r.textMode,
-    );
+    const ideaIsInvalid = r.idea.trim().length < 3;
+    $("idea-error").hidden = !ideaIsInvalid;
+    idea.setAttribute("aria-invalid", String(ideaIsInvalid));
+    $("f-aspect")
+      .querySelectorAll<HTMLInputElement>("[data-aspect]")
+      .forEach((input) => (input.checked = input.value === r.aspect));
+    document
+      .querySelectorAll<HTMLInputElement>("[data-textmode]")
+      .forEach((input) => (input.checked = input.value === r.textMode));
     press(
       presetsEl,
       "[data-preset]",
@@ -962,12 +967,9 @@ export function startApp(): void {
       .join("");
 
     // target & pattern
-    press(
-      $("f-target"),
-      "[data-target]",
-      "aria-checked",
-      (el) => el.dataset.target === r.target,
-    );
+    $("f-target")
+      .querySelectorAll<HTMLInputElement>("[data-target]")
+      .forEach((input) => (input.checked = input.value === r.target));
     const t = TARGETS.find((x) => x.id === r.target)!;
     $("target-note").textContent = `${t.model}. ${t.note}`;
     const allowed = PATTERNS_BY_TARGET[r.target];
@@ -986,12 +988,9 @@ export function startApp(): void {
     $("lang-field").hidden = !(
       compiled.pattern === "seven-line" || compiled.pattern === "restyle"
     );
-    press(
-      document,
-      "[data-lang]",
-      "aria-checked",
-      (el) => el.dataset.lang === r.language,
-    );
+    document
+      .querySelectorAll<HTMLInputElement>("[data-lang]")
+      .forEach((input) => (input.checked = input.value === r.language));
     $("edit-fields").hidden = compiled.pattern !== "edit";
     sync(change, r.edit.change);
     sync(preserve, r.edit.preserve);

@@ -1,0 +1,23 @@
+---
+import FieldInfo from "@/layouts/components/FieldInfo.astro";
+
+interface Props {
+  label: string;
+  controlId: string;
+  hint?: string;
+  info?: string;
+  className?: string;
+}
+
+const { label, controlId, hint, info, className = "" } = Astro.props;
+---
+
+<div class:list={["field", className]}>
+  <div class="field-heading">
+    <label for={controlId}>
+      {label}{hint && <small>{hint}</small>}
+    </label>
+    {info && <FieldInfo label={label} info={info} id={controlId} />}
+  </div>
+  <slot />
+</div>

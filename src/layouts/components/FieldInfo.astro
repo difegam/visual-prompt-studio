@@ -1,0 +1,94 @@
+---
+import { IoInformationCircleOutline } from "react-icons/io5";
+
+interface Props {
+  label: string;
+  info: string;
+  id: string;
+}
+
+const { label, info, id } = Astro.props;
+const popoverId = `field-info-${id}`;
+---
+
+<span class="field-info">
+  <button
+    class="btn btn-circle btn-ghost btn-xs field-info-trigger"
+    type="button"
+    aria-label={`About ${label}`}
+    aria-describedby={popoverId}
+    aria-controls={popoverId}
+    popovertarget={popoverId}
+    popovertargetaction="toggle"
+    data-info-trigger
+  >
+    <IoInformationCircleOutline aria-hidden="true" size={17} />
+  </button>
+  <span
+    class="field-info-popover card card-border"
+    id={popoverId}
+    popover="auto"
+    role="note"
+    data-info-popover
+  >
+    <span class="field-info-popover-title">{label}</span>
+    <span>{info}</span>
+  </span>
+</span>
+
+<script>
+  const positionPopover = (popover: HTMLElement): void => {
+    const trigger = document.querySelector<HTMLButtonElement>(
+      `[popovertarget="${popover.id}"]`,
+    );
+    if (!trigger) return;
+
+    const rect = trigger.getBoundingClientRect();
+    const margin = 12;
+    const width = Math.min(300, window.innerWidth - margin * 2);
+    const left = Math.min(
+      Math.max(margin, rect.left),
+      window.innerWidth - width - margin,
+    );
+    popover.style.width = `${width}px`;
+    popover.style.left = `${left}px`;
+
+    const height = popover.getBoundingClientRect().height;
+    const below = rect.bottom + 8;
+    const top =
+      below + height <= window.innerHeight - margin
+        ? below
+        : Math.max(margin, rect.top - height - 8);
+    popover.style.top = `${top}px`;
+  };
+
+  const bindFieldPopovers = (): void => {
+    document
+      .querySelectorAll<HTMLElement>("[data-info-popover]")
+      .forEach((popover) => {
+        if (popover.dataset.positioning === "true") return;
+        popover.dataset.positioning = "true";
+        popover.addEventListener("toggle", (event) => {
+          if ((event as ToggleEvent).newState !== "open") return;
+          requestAnimationFrame(() => positionPopover(popover));
+        });
+      });
+  };
+
+  bindFieldPopovers();
+  document.addEventListener("astro:page-load", bindFieldPopovers);
+  document.addEventListener(
+    "scroll",
+    () => {
+      document
+        .querySelectorAll<HTMLElement>("[data-info-popover]:popover-open")
+        .forEach((popover) => popover.hidePopover());
+    },
+    true,
+  );
+  window.addEventListener("resize", () => {
+    document
+      .querySelectorAll<HTMLElement>("[data-info-popover]:popover-open")
+      .forEach((popover) => positionPopover(popover));
+  });
+</script>

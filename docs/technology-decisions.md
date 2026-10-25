@@ -8,7 +8,7 @@ Reviewed 2026-10-24. Exact installed dependency versions are recorded in `pnpm-l
 - React stays in the template for the existing search, announcement, Disqus adapter, and MDX shortcodes. The default site uses Astro for static markup; React hydrates only interactive UI.
 - Tailwind CSS 4 uses the official `@tailwindcss/vite` plugin. daisyUI 5 contributes CSS classes and theme tokens; it does not provide widget behavior.
 - TypeScript is strict. Shared data contracts belong in collection schemas or component props instead of being inferred from loose DOM conventions.
-- Astro's built-in Font API bundles the configured font files during the build. The current Heebo and Signika family names resolve through Google Fonts, so builds need network access. Use locally licensed font files or a system stack when offline builds are required; avoid adding runtime font requests from page components.
+- Heebo and Signika are retrieved from Bunny Fonts through Astro's built-in Bunny provider, then bundled into the build output. The browser loads the bundled files from the site; the configured system fallbacks remain available during loading.
 
 The theme value is stored in `document.documentElement.dataset.theme`. The theme switcher, Tailwind `dark:` variant, and daisyUI theme blocks all read that attribute; `scripts/themeGenerator.js` derives the generated CSS from `src/config/theme.json`.
 

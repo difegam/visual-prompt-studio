@@ -114,7 +114,7 @@ async function getAstroI18nConfig() {
   // Prepend fs import and polyfills
   const tempContent = `import fs from "node:fs";
 const defineConfig = (x) => x;
-const fontProviders = { google: () => ({}) };
+const fontProviders = { bunny: () => ({}) };
 ${content}`;
 
   const tempName = `astro.config.llms-temp-${Date.now()}.mjs`;

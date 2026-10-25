@@ -28,3 +28,5 @@ pnpm-debug.log*
 
 # skills
 .agents/skills/skill-creator
+# Playwright CLI output (may contain credentials)
+.playwright-cli/

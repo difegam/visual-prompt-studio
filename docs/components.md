@@ -82,4 +82,4 @@ Astro remains responsible for static presentation. React is retained for existin
 - `Tabs`
 - `Tab`
 
-Their registrations live in `astro.config.mjs` through `astro-auto-import`. Keep a React component when its stateful behavior or existing MDX use justifies the framework runtime. For any newly hydrated component, choose the narrowest `client:*` directive that meets its interaction; do not use `client:only` if the component can render useful HTML on the server.
+Import them explicitly at the top of each MDX file that uses them (for example `import Notice from "@/shortcodes/Notice";`). Keep a React component when its stateful behavior or existing MDX use justifies the framework runtime. For any newly hydrated component, choose the narrowest `client:*` directive that meets its interaction; do not use `client:only` if the component can render useful HTML on the server.
