@@ -1,0 +1,28 @@
+name: Bug report
+description: Something in Prompt Studio is broken or wrong
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you expect, and what did you see instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: If a recipe triggers it, export it as JSON and paste it here.
+    validations:
+      required: true
+  - type: input
+    id: target
+    attributes:
+      label: Target model and prompt shape
+      placeholder: Midjourney, Seven-line brief
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and OS
+      placeholder: Firefox 140 on macOS

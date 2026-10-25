@@ -2,8 +2,16 @@
   "name": "visual-prompt-studio",
   "version": "1.0.0",
   "description": "Compose clear, art-directed image prompts, locally in your browser.",
+  "homepage": "https://vps.dgamboa.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/difegam/visual-prompt-studio.git"
+  },
+  "bugs": {
+    "url": "https://github.com/difegam/visual-prompt-studio/issues"
+  },
   "author": "Diego Gamboa",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "packageManager": "pnpm@11.17.0",
   "engines": {
     "node": ">=22.23.4"

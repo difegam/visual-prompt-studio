@@ -1,6 +1,6 @@
 # Git hooks and quality checks
 
-The starter uses [Lefthook](https://lefthook.dev/) to run a small set of local checks from one `lefthook.yml`. It works across languages and filters pre-commit commands to staged files. The current setup runs ESLint auto-fix, then Prettier, and stages their fixes. Those commands run sequentially because both can edit the same file. Hook commands go through `scripts/with-node.sh`, which puts the Node version from `.nvmrc` first on `PATH` (when installed with nvm) so commits from Git GUIs and desktop apps do not fail on an older default Node.
+The project uses [Lefthook](https://lefthook.dev/) to run a small set of local checks from one `lefthook.yml`. It works across languages and filters pre-commit commands to staged files. The current setup runs ESLint auto-fix, then Prettier, and stages their fixes. Those commands run sequentially because both can edit the same file. Hook commands go through `scripts/with-node.sh`, which puts the Node version from `.nvmrc` first on `PATH` (when installed with nvm) so commits from Git GUIs and desktop apps do not fail on an older default Node.
 
 The formatter intentionally skips the pnpm lockfile, generated search/theme files, build output, and agent scratch. Reformat the source inputs instead of generated files.
 
@@ -21,7 +21,7 @@ pnpm run check
 pnpm run build:preview
 ```
 
-The lint configuration uses Astro's recommended rules and TypeScript's recommended rules, with `no-explicit-any` disabled for TypeScript and Astro files because several retained Astroplate helpers use it today. `astro check` still runs over the whole project. A derived project can re-enable that rule after tightening the inherited helpers.
+The lint configuration uses Astro's recommended rules and TypeScript's recommended rules, with `no-explicit-any` disabled for TypeScript and Astro files because several helpers inherited from Astroplate use it today. `astro check` still runs over the whole project. Re-enable that rule after tightening those helpers.
 
 ## Add checks when a project needs them
 
@@ -41,7 +41,7 @@ Keep hook commands quick and predictable. Add a hook only when the project has t
 | Large client bundles or image-heavy pages                 | Bundle-size and image-budget checks                                 | Run against production output in CI, where the build artifact is available.                                                  |
 | Complex standalone CSS beyond Tailwind utilities          | Stylelint with project-specific rules                               | Add only when CSS has enough independent structure to benefit; Prettier already handles formatting.                          |
 
-For a JS-only repository that already uses the common Husky and lint-staged setup, keep that convention rather than migrating solely for the template. A Python or polyglot repository may prefer `pre-commit`; Lefthook is the starter's single-tool default because it handles multiple languages with one configuration. `simple-git-hooks` is another lightweight option for teams that want its smaller configuration surface.
+For a JS-only repository that already uses the common Husky and lint-staged setup, keep that convention rather than migrating solely for this project. A Python or polyglot repository may prefer `pre-commit`; Lefthook is this project's single-tool default because it handles multiple languages with one configuration. `simple-git-hooks` is another lightweight option for teams that want its smaller configuration surface.
 
 ## References
 

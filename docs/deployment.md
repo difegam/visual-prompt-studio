@@ -1,6 +1,6 @@
 # Deployment
 
-This starter builds a static Astro site and deploys its `dist/` output as Cloudflare Workers Static Assets. Development and production use separate, named Wrangler environments and separate Worker names. Pull requests build a noindex preview and cannot deploy. Deployment runs only when a GitHub release is published or a `v*` tag is pushed, and only if the tagged commit is part of `main`.
+Visual Prompt Studio builds a static Astro site and deploys its `dist/` output as Cloudflare Workers Static Assets. Development and production use separate, named Wrangler environments and separate Worker names. Pull requests build a noindex preview and cannot deploy. Deployment runs only when a GitHub release is published or a `v*` tag is pushed, and only if the tagged commit is part of `main`.
 
 ## First-time Cloudflare setup
 
@@ -60,13 +60,13 @@ pnpm run deploy:cf-workers:production
 ## Configuration notes
 
 - `wrangler.jsonc` is the deployment source of truth. `assets.directory` points to Astro's `dist/` output and `not_found_handling` serves Astro's generated `404.html`.
-- The compatibility date is set to the date this starter was prepared. Review Cloudflare runtime changes before advancing it.
+- The compatibility date is set to the date the Workers config was last reviewed. Review Cloudflare runtime changes before advancing it.
 - Preview builds add `noindex,nofollow` to every page and deny all crawlers in `robots.txt`; production builds use the configured site URL for canonical and sitemap output.
-- The starter does not set custom domains or routes. Configure those after creating and verifying the Workers, and scope any additional Cloudflare token permission to the relevant zone.
+- `wrangler.jsonc` sets a custom domain per environment (`vps-dev.dgamboa.com` for development, `vps.dgamboa.com` for production). If you fork the project, replace them with your own, and scope any additional Cloudflare token permission to the relevant zone.
 
 ## Verify a deployment
 
-After deploying, open the Worker URL shown in Cloudflare and inspect its home page, a blog route, `robots.txt`, and `sitemap-index.xml`. Confirm the development Worker retains the preview noindex directive and the production Worker does not. The CI deployment does not publish or assume a domain for this template.
+After deploying, open the Worker URL shown in Cloudflare and inspect its home page, a blog route, `robots.txt`, and `sitemap-index.xml`. Confirm the development Worker retains the preview noindex directive and the production Worker does not.
 
 ## References
 
