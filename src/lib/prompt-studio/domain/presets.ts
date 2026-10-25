@@ -510,6 +510,16 @@ export const PRESETS: readonly Direction[] = [
 
 export const DIRECTIONS = PRESETS;
 
+const PRESETS_BY_ID = new Map(
+  PRESETS.map((direction) => [direction.id, direction]),
+);
+
+export function getDirection(
+  id: string | null | undefined,
+): Direction | undefined {
+  return id == null ? undefined : PRESETS_BY_ID.get(id);
+}
+
 /** Three-layer mixes that clash on purpose (beailabs guide, section 5). */
 export const MIXES: readonly {
   name: string;

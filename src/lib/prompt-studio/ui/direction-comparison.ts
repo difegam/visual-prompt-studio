@@ -3,6 +3,7 @@ import { getFont } from "../domain/fonts";
 import type { Direction } from "../domain/presets";
 import { aspectRatio, type Recipe } from "../domain/recipe";
 import { getStyle } from "../domain/styles";
+import { esc } from "./escape";
 import { inksFrom, proofSvg } from "./sketch";
 
 export interface ComparisonSelectionResult {
@@ -10,16 +11,7 @@ export interface ComparisonSelectionResult {
   readonly replacedId?: string;
 }
 
-const esc = (value: string): string =>
-  value.replace(
-    /[&<>"']/g,
-    (character) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
-        character
-      ]!,
-  );
-
-function stableIds(ids: readonly string[]): string[] {
+function firstTwoUniqueIds(ids: readonly string[]): string[] {
   return [...new Set(ids.map((id) => id.trim()).filter(Boolean))].slice(0, 2);
 }
 
@@ -27,7 +19,7 @@ export function toggleComparisonSelection(
   current: readonly string[],
   directionId: string,
 ): ComparisonSelectionResult {
-  const ids = stableIds(current);
+  const ids = firstTwoUniqueIds(current);
   const id = directionId.trim();
   if (!id) return { ids };
 

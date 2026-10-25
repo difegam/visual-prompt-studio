@@ -5,6 +5,7 @@ import { getReference } from "../domain/references";
 import { getStyle } from "../domain/styles";
 import { getTrendEdition } from "../domain/trends";
 import { renderInfoPopover } from "./info-popover";
+import { esc } from "./escape";
 import { inksFrom, proofSvg } from "./sketch";
 
 export type DirectionCardVariant = "suggested" | "explorer";
@@ -15,15 +16,6 @@ export interface RenderDirectionCardOptions {
   selected: boolean;
   readonly compared: boolean;
 }
-
-const esc = (value: string): string =>
-  value.replace(
-    /[&<>"']/g,
-    (character) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
-        character
-      ]!,
-  );
 
 /** Render catalog content without accessing browser state or attaching handlers. */
 export function renderDirectionCard(
