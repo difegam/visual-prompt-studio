@@ -16,7 +16,7 @@
   "env": {
     "development": {
       "name": "astroplate-starter-development",
-      "routes": [{ "pattern": "vps.dev.dgamboa.com", "custom_domain": true }],
+      "routes": [{ "pattern": "vps-dev.dgamboa.com", "custom_domain": true }],
     },
     "production": {
       "name": "astroplate-starter-production",
