@@ -481,6 +481,132 @@ function spec(ctx: Context, o: Out, flux: boolean): void {
   );
 }
 
+/** One section: a heading, one line on what it controls and how it shapes the read, then the content. */
+function section(o: Out, first: boolean, heading: string, why: string): void {
+  o.add("frame", `${first ? "" : "\n\n"}${heading}\n${why}\n`);
+}
+
+function pointOfView(ctx: Context, o: Out, flux: boolean): void {
+  const { r } = ctx;
+  section(
+    o,
+    true,
+    "POINT OF VIEW",
+    "The one-sentence read of the whole piece. Every section below serves it.",
+  );
+  o.add("frame", `A ${formatEn(r.aspect)} ${ctx.purpose.noun}. `).add(
+    "subject",
+    `${trimEnd(r.idea)}.`,
+  );
+
+  const concept = [
+    r.detail.trim() ? `${capitalize(trimEnd(r.detail))}.` : "",
+    ...signatures(ctx, "en"),
+  ].filter(Boolean);
+  if (concept.length) {
+    section(
+      o,
+      false,
+      "CONCEPT",
+      "The idea the viewer should get in one second. It decides what the image is about before any style is noticed.",
+    );
+    o.add("subject", concept.join(" "));
+  }
+
+  section(
+    o,
+    false,
+    "LAYOUT",
+    "Where the eye enters and how it travels. Structure sets the hierarchy before any detail is read.",
+  );
+  o.add("design", `${capitalize(ctx.design.prompt)}.`);
+
+  section(
+    o,
+    false,
+    "IMAGERY",
+    "How the subject is drawn. This gives the piece its voice and its emotional temperature.",
+  );
+  o.add(
+    "art",
+    ctx.art
+      ? `${capitalize(ctx.art.prompt)}.`
+      : `Imagery drawn in the visual language of ${ctx.design.name}.`,
+  );
+
+  section(
+    o,
+    false,
+    "FINISH",
+    "The printed surface: grain, ink and texture. It makes the image feel like an object, not a render.",
+  );
+  o.add("technique", `${capitalize(ctx.technique.prompt)}.`);
+
+  section(
+    o,
+    false,
+    "TYPOGRAPHY",
+    "The tone of the lettering. It tells the viewer how to hear the words before reading them.",
+  );
+  o.add("type", `${capitalize(ctx.typeEn)}.`);
+
+  section(
+    o,
+    false,
+    "PALETTE",
+    "The mood set by color. A tight palette holds the layers together as one piece.",
+  );
+  o.add("palette", `${capitalize(paletteEn(ctx))}. Use no other colors.`);
+
+  section(
+    o,
+    false,
+    "COPY",
+    "The words that anchor the image. Exact text keeps the message intact.",
+  );
+  if (r.textMode === "space") {
+    o.add(
+      "text",
+      "No text. Reserve clean space for a headline added in layout software.",
+    );
+  } else {
+    const [head, ...rest] = ctx.texts;
+    const lines = [
+      head ? `${quote(head)} as the dominant headline` : "",
+      ...rest.map(quote),
+    ].filter(Boolean);
+    o.add(
+      "text",
+      `Render exactly ${joinList(lines)}. No other text, letters or numbers.`,
+    );
+  }
+
+  const pos = ctx.avoids.map((id) => getAvoid(id).positive);
+  const av = avoidPhrasesEn(ctx);
+  if (flux ? pos.length : av.length) {
+    section(
+      o,
+      false,
+      flux ? "DETAILS" : "AVOID",
+      flux
+        ? "Finish details that keep the result clean and deliberate."
+        : "What would break the point of view. Stating it keeps the generic AI look out.",
+    );
+    o.add("avoid", `${capitalize((flux ? pos : av).join("; "))}.`);
+  }
+
+  section(
+    o,
+    false,
+    "OUTPUT",
+    "The final frame: one finished piece, with nothing around it competing for attention.",
+  );
+  o.add(
+    "frame",
+    `One finished ${ctx.purpose.noun}, full bleed. No mockup, frame, wall or device.`,
+  );
+}
+
 function restyle(ctx: Context, o: Out): void {
   const es = ctx.lang === "es";
   if (es) {
@@ -711,6 +837,9 @@ export function compile(recipe: Recipe): CompiledPrompt {
         break;
       case "spec":
         spec(ctx, o, flux);
+        break;
+      case "point-of-view":
+        pointOfView(ctx, o, flux);
         break;
       case "restyle":
         restyle(ctx, o);

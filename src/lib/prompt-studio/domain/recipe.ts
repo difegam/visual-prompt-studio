@@ -193,6 +193,11 @@ export const PATTERNS = [
     hint: "Sectioned brief for complex layouts and handoff.",
   },
   {
+    id: "point-of-view",
+    label: "Point-of-view brief",
+    hint: "Each section says what it controls and how it shapes the way the image reads.",
+  },
+  {
     id: "restyle",
     label: "Restyle in same chat",
     hint: "Forces a clean restart so the last image does not leak in.",
@@ -208,9 +213,23 @@ const PATTERN_IDS = PATTERNS.map((p) => p.id) as [PatternId, ...PatternId[]];
 
 /** Midjourney and SDXL want keyword prompts; long structured briefs don't fit them. */
 export const PATTERNS_BY_TARGET: Record<TargetId, readonly PatternId[]> = {
-  "gpt-image": ["concise", "seven-line", "spec", "restyle", "edit"],
-  flux: ["concise", "seven-line", "spec", "edit"],
-  generic: ["concise", "seven-line", "spec", "restyle", "edit"],
+  "gpt-image": [
+    "concise",
+    "seven-line",
+    "spec",
+    "point-of-view",
+    "restyle",
+    "edit",
+  ],
+  flux: ["concise", "seven-line", "spec", "point-of-view", "edit"],
+  generic: [
+    "concise",
+    "seven-line",
+    "spec",
+    "point-of-view",
+    "restyle",
+    "edit",
+  ],
   midjourney: ["concise"],
   sdxl: ["concise"],
 };
