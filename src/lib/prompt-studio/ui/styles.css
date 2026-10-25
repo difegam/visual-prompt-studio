@@ -1865,9 +1865,23 @@ textarea:hover {
   color: var(--ink);
 }
 .status {
+  /* reset daisyUI's .status indicator dot */
+  display: block;
+  width: auto;
+  height: auto;
+  aspect-ratio: auto;
+  background: none;
+  border-radius: 0;
   font-size: 13px;
   color: var(--ok);
   min-height: 1.3em;
+}
+.actions + .baseline,
+.baseline + .status {
+  margin: 0;
+}
+.status:empty {
+  min-height: 0;
 }
 
 /* ── inspiration ── */
@@ -2805,6 +2819,24 @@ dialog::backdrop {
 .font-picker-browser .font-popularity-note {
   margin: 0;
 }
+.font-explore-link {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 5px;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+}
+.font-explore-link svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.6;
+}
 .font-picker-browser .font-result-count {
   margin: 0;
 }
@@ -3048,4 +3080,64 @@ dialog::backdrop {
     padding-inline: 9px;
     font-size: 12px;
   }
+}
+
+/* ── generated prompt disclosure + copy icon ── */
+.prompt-disclosure {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: clip;
+}
+.prompt-disclosure > summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  padding: 12px 14px;
+  cursor: pointer;
+  list-style: none;
+}
+.prompt-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+.prompt-disclosure > summary::after {
+  content: "";
+  order: 3;
+  width: 8px;
+  height: 8px;
+  border: solid currentColor;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform 0.15s;
+  align-self: center;
+}
+.prompt-disclosure[open] > summary::after {
+  transform: rotate(-135deg);
+}
+.prompt-disclosure > summary .count {
+  margin-left: auto;
+}
+.prompt-disclosure > .prompt-box {
+  padding: 0 14px 14px;
+}
+.prompt-wrap {
+  position: relative;
+}
+.prompt-wrap .prompt {
+  padding-right: 48px;
+}
+.prompt-copy {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 1;
+}
+.prompt-copy svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
 }

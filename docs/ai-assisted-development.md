@@ -29,6 +29,21 @@ Ask for it explicitly when authoring daisyUI UI, for example: “Use the daisyUI
 
 For package-specific questions, a docs lookup tool such as Context7 can help retrieve current references. Prefer the framework or package's official documentation when checking behavior or breaking changes.
 
+### Browser automation
+
+Agents drive a real browser with [`playwright-cli`](https://github.com/microsoft/playwright-cli); no test runner dependency is added. Install it once with `npm install -g @playwright/cli@latest`. The shared config in `.playwright/cli.config.json` loads automatically: Chrome, an in-memory profile, and a 1440×900 viewport. The CLI ignores `baseURL`, so pass full URLs.
+
+```sh
+pnpm dev                     # start the site first
+playwright-cli open          # Chrome by default
+playwright-cli goto http://localhost:4321/
+playwright-cli snapshot
+playwright-cli console
+playwright-cli close
+```
+
+Use `open --browser=firefox` or `--browser=webkit` for cross-browser checks and `open --mobile` for responsive layouts. Output lands in the gitignored `.playwright-cli/` directory. For Lighthouse, performance, and accessibility audits, use the Chrome DevTools MCP instead.
+
 ## Project-specific implementation guidance
 
 - **Render with Astro first.** Keep content, layouts, and page structure as static Astro output. Add hydration only for browser behavior that needs state, and choose the narrowest suitable `client:*` directive.

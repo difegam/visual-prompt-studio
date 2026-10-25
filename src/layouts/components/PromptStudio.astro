@@ -604,6 +604,21 @@ import FieldInfo from "@/layouts/components/FieldInfo.astro";
                       Popular marks families with high general web usage; it is
                       not an image-model ranking.
                     </p>
+                    <a
+                      class="link link-hover font-explore-link"
+                      href="https://fonts.bunny.net/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Explore more fonts on Bunny Fonts
+                      <svg
+                        viewBox="0 0 20 20"
+                        aria-hidden="true"
+                        focusable="false"
+                      >
+                        <path d="M7 13 14 6M7 6h7v7"></path>
+                      </svg>
+                    </a>
                     <button
                       type="button"
                       class="spec auto"
@@ -769,6 +784,23 @@ import FieldInfo from "@/layouts/components/FieldInfo.astro";
           </figcaption>
         </figure>
 
+        <div class="actions">
+          <button type="button" class="btn primary" id="btn-copy"
+            >Copy prompt</button
+          >
+          <button type="button" class="btn" id="btn-copy-neg" hidden
+            >Copy negative</button
+          >
+          <button
+            type="button"
+            class="btn ghost"
+            id="btn-baseline"
+            aria-pressed="false">Compare with an undirected prompt</button
+          >
+        </div>
+        <p class="baseline" id="baseline" hidden></p>
+        <p class="status" id="status" role="status" aria-live="polite"></p>
+
         <div class="target-block">
           <div class="field-heading">
             <span class="mini-label" id="target-label">Send to</span>
@@ -922,51 +954,50 @@ import FieldInfo from "@/layouts/components/FieldInfo.astro";
           </div>
         </div>
 
-        <div class="prompt-box">
-          <div class="prompt-head">
-            <span class="mini-label" id="prompt-label">Prompt</span>
+        <details class="prompt-disclosure">
+          <summary>
+            <span class="mini-label" id="prompt-label">Generated prompt</span>
             <span class="count" id="prompt-count"></span>
-          </div>
-          <div
-            class="prompt"
-            id="prompt"
-            role="group"
-            tabindex="0"
-            aria-labelledby="prompt-label"
-          >
-          </div>
-          <div id="neg-wrap" hidden>
-            <div class="prompt-head">
-              <span class="mini-label" id="neg-label">Negative prompt</span>
+          </summary>
+          <div class="prompt-box">
+            <div class="prompt-wrap">
+              <button
+                type="button"
+                class="btn btn-ghost btn-sm btn-square prompt-copy"
+                id="btn-copy-icon"
+                aria-label="Copy prompt"
+                title="Copy prompt"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <rect x="9" y="9" width="11" height="11" rx="2"></rect>
+                  <path d="M5 15V6a2 2 0 0 1 2-2h9"></path>
+                </svg>
+              </button>
+              <div
+                class="prompt"
+                id="prompt"
+                role="group"
+                tabindex="0"
+                aria-labelledby="prompt-label"
+              >
+              </div>
             </div>
-            <div
-              class="prompt neg"
-              id="neg"
-              role="group"
-              tabindex="0"
-              aria-labelledby="neg-label"
-            >
+            <div id="neg-wrap" hidden>
+              <div class="prompt-head">
+                <span class="mini-label" id="neg-label">Negative prompt</span>
+              </div>
+              <div
+                class="prompt neg"
+                id="neg"
+                role="group"
+                tabindex="0"
+                aria-labelledby="neg-label"
+              >
+              </div>
             </div>
+            <ul class="notices" id="notices"></ul>
           </div>
-          <ul class="notices" id="notices"></ul>
-        </div>
-
-        <div class="actions">
-          <button type="button" class="btn primary" id="btn-copy"
-            >Copy prompt</button
-          >
-          <button type="button" class="btn" id="btn-copy-neg" hidden
-            >Copy negative</button
-          >
-          <button
-            type="button"
-            class="btn ghost"
-            id="btn-baseline"
-            aria-pressed="false">Compare with an undirected prompt</button
-          >
-        </div>
-        <p class="baseline" id="baseline" hidden></p>
-        <p class="status" id="status" role="status" aria-live="polite"></p>
+        </details>
       </div>
     </aside>
   </main>

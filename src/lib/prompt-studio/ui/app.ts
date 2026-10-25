@@ -1223,8 +1223,20 @@ export function startApp(): void {
   /* ── prompt & copy ── */
   const promptEl = $("prompt");
   const negEl = $("neg");
+  const copyIcon = $("btn-copy-icon");
+  const copyIconHtml = copyIcon.innerHTML;
+  let copyIconTimer = 0;
   async function copyPrompt(): Promise<void> {
     const ok = await copyText(compiled.text, promptEl);
+    if (!ok) promptEl.closest("details")?.setAttribute("open", "");
+    if (ok) {
+      copyIcon.innerHTML =
+        '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m5 12 5 5 9-10"></path></svg>';
+      window.clearTimeout(copyIconTimer);
+      copyIconTimer = window.setTimeout(() => {
+        copyIcon.innerHTML = copyIconHtml;
+      }, 1500);
+    }
     say(
       ok
         ? `Copied ${compiled.text.length.toLocaleString()} characters.`
@@ -1233,6 +1245,7 @@ export function startApp(): void {
   }
   $("btn-copy").addEventListener("click", () => void copyPrompt());
   $("btn-copy-mobile").addEventListener("click", () => void copyPrompt());
+  copyIcon.addEventListener("click", () => void copyPrompt());
   $("btn-copy").title = "Ctrl+Enter or ⌘+Enter";
   $("btn-copy-neg").addEventListener("click", async () => {
     const ok = await copyText(compiled.negativeText ?? "", negEl);
