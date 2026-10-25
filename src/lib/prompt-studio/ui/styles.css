@@ -1872,6 +1872,7 @@ textarea:hover {
   aspect-ratio: auto;
   background: none;
   border-radius: 0;
+  box-shadow: none;
   font-size: 13px;
   color: var(--ok);
   min-height: 1.3em;
@@ -3127,12 +3128,18 @@ dialog::backdrop {
   padding-right: 48px;
 }
 .prompt-copy {
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  min-height: 0;
   position: absolute;
   top: 6px;
   right: 6px;
   z-index: 1;
 }
 .prompt-copy svg {
+  flex: none;
+  min-width: 18px;
   width: 18px;
   height: 18px;
   fill: none;
