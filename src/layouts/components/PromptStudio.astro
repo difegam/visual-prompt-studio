@@ -903,26 +903,28 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
 
         <div class="copy-dock">
           <div class="actions">
-            <button type="button" class="btn primary" id="btn-copy"
-              >Copy prompt</button
-            >
+            <div class="join copy-join">
+              <button type="button" class="btn primary join-item" id="btn-copy"
+                >Copy prompt</button
+              >
+              <button
+                type="button"
+                class="btn btn-compare join-item"
+                id="btn-baseline"
+                aria-pressed="false"
+                aria-label="Compare with an undirected prompt"
+                data-tip="Compare with an undirected prompt"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M12 4v16"></path>
+                  <rect x="3.5" y="6" width="6.5" height="12" rx="1.5"></rect>
+                  <rect x="14" y="6" width="6.5" height="12" rx="1.5"></rect>
+                </svg>
+              </button>
+            </div>
             <button type="button" class="btn" id="btn-copy-neg" hidden
               >Copy negative</button
             >
-            <button
-              type="button"
-              class="btn btn-compare"
-              id="btn-baseline"
-              aria-pressed="false"
-              aria-label="Compare with an undirected prompt"
-              data-tip="Compare with an undirected prompt"
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                <path d="M12 4v16"></path>
-                <rect x="3.5" y="6" width="6.5" height="12" rx="1.5"></rect>
-                <rect x="14" y="6" width="6.5" height="12" rx="1.5"></rect>
-              </svg>
-            </button>
           </div>
           <p class="baseline" id="baseline" hidden></p>
           <p class="status" id="status" role="status" aria-live="polite"></p>

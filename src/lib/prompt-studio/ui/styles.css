@@ -2056,8 +2056,24 @@ textarea:hover {
   flex-wrap: wrap;
   gap: 8px;
 }
-.actions .primary {
+.copy-join {
   flex: 1 1 160px;
+  gap: 2px;
+}
+.copy-join .join-item {
+  border-radius: 0;
+  margin-inline: 0;
+}
+.copy-join .join-item:first-child {
+  border-start-start-radius: var(--r);
+  border-end-start-radius: var(--r);
+}
+.copy-join .join-item:last-child {
+  border-start-end-radius: var(--r);
+  border-end-end-radius: var(--r);
+}
+.actions .primary {
+  flex: 1;
   padding-block: 12px;
   font-size: 15px;
 }
