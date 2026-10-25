@@ -11,6 +11,7 @@ let references;
 let recipe;
 let cards;
 let trends;
+let readability;
 
 before(async () => {
   server = await createServer({
@@ -35,6 +36,9 @@ before(async () => {
   cards = await server.ssrLoadModule("/src/lib/prompt-studio/ui/directions.ts");
   trends = await server.ssrLoadModule(
     "/src/lib/prompt-studio/domain/trends.ts",
+  );
+  readability = await server.ssrLoadModule(
+    "/src/lib/prompt-studio/domain/readability.ts",
   );
 });
 
@@ -358,6 +362,94 @@ test("edition and practice metadata never enter recipes or compiled prompts", as
   ]) {
     assert.ok(!recipeJson.includes(catalogText));
     assert.ok(!compiled.includes(catalogText));
+  }
+});
+
+test("op-art exact text receives the highest-priority readability hint", () => {
+  const hints = readability.getReadabilityHints({
+    ...recipe.DEFAULT_RECIPE,
+    headline: "  READ THIS  ",
+    extraText: ["  Supporting line  "],
+    textMode: "render",
+    styles: { ...recipe.DEFAULT_RECIPE.styles, art: "op-art" },
+  });
+  assert.equal(hints[0].id, "op-art-exact-text");
+  assert.equal(hints[0].priority, 10);
+  assert.equal(hints[0].actionLabel, "Review headline");
+  assert.equal(hints[0].target, "headline");
+
+  const textOnly = readability.getReadabilityHints({
+    ...recipe.DEFAULT_RECIPE,
+    headline: "   ",
+    extraText: ["  Supporting line  "],
+    textMode: "render",
+    styles: { ...recipe.DEFAULT_RECIPE.styles, art: "op-art" },
+  });
+  assert.equal(textOnly[0].actionLabel, "Review text");
+  assert.equal(textOnly[0].target, "text");
+});
+
+test("three supporting lines receive the dense-copy hint", () => {
+  const dense = readability.getReadabilityHints({
+    ...recipe.DEFAULT_RECIPE,
+    extraText: ["  One  ", "Two", "   ", "Three"],
+  });
+  assert.deepEqual(
+    dense.map(({ id }) => id),
+    ["dense-supporting-text"],
+  );
+  assert.equal(dense[0].priority, 20);
+  assert.equal(dense[0].actionLabel, "Review text");
+  assert.equal(dense[0].target, "text");
+
+  assert.deepEqual(
+    readability.getReadabilityHints({
+      ...recipe.DEFAULT_RECIPE,
+      extraText: ["One", "Two"],
+    }),
+    [],
+  );
+});
+
+test("blank actual text and space-reservation mode receive no hints", () => {
+  const opArt = {
+    ...recipe.DEFAULT_RECIPE,
+    styles: { ...recipe.DEFAULT_RECIPE.styles, art: "op-art" },
+  };
+  assert.deepEqual(
+    readability.getReadabilityHints({
+      ...opArt,
+      headline: "   ",
+      extraText: ["  ", "\t"],
+    }),
+    [],
+  );
+  assert.deepEqual(
+    readability.getReadabilityHints({
+      ...opArt,
+      textMode: "space",
+      extraText: ["One", "Two", "Three"],
+    }),
+    [],
+  );
+});
+
+test("readability rules do not mutate or enter the recipe", () => {
+  const input = {
+    ...recipe.DEFAULT_RECIPE,
+    headline: "  READ THIS  ",
+    extraText: ["  One  ", "Two", "Three"],
+    styles: { ...recipe.DEFAULT_RECIPE.styles, art: "op-art" },
+  };
+  const before = JSON.stringify(input);
+  const hints = readability.getReadabilityHints(input);
+  assert.equal(JSON.stringify(input), before);
+  assert.deepEqual(
+    hints.map(({ priority }) => priority),
+    [10, 20],
+  );
+  for (const hint of hints) {
+    assert.ok(!JSON.stringify(input).includes(hint.message));
   }
 });
 
