@@ -18,6 +18,7 @@ import { FONTS, getFont, type FontId } from "../domain/fonts";
 import { PALETTE_VARIATIONS, nameForHex } from "../domain/palettes";
 import { MIXES, PRESETS, clonePalette } from "../domain/presets";
 import { getReadabilityHints } from "../domain/readability";
+import { openInFor } from "../domain/open-in";
 import {
   GOALS,
   applyDirection,
@@ -518,6 +519,15 @@ export function startApp(): void {
   let comparisonFallback = comparisonBars[0]!;
   let applyingFromComparison = false;
   let directionPage = 1;
+
+  /* Blur the summary when the explorer opens so the :focus-visible ring
+     does not persist on the "Explore all directions" button. */
+  const explorer = document.querySelector(
+    ".direction-explorer",
+  ) as HTMLDetailsElement | null;
+  explorer?.addEventListener("toggle", () => {
+    if (explorer.open) explorer.querySelector("summary")?.blur();
+  });
 
   function selectedComparisonDirections() {
     return view.comparisonIds.flatMap((id) => {
@@ -1651,6 +1661,25 @@ export function startApp(): void {
         : "Copy was blocked. The prompt is selected: press Ctrl+C or ⌘C.",
     );
   }
+  const openInBtn = $("btn-open-in") as HTMLAnchorElement;
+  // A real link, so the browser opens the tab and popup blockers stay out of it.
+  openInBtn.addEventListener("click", () => {
+    const link = openInFor(store.get().target, compiled.text);
+    if (!link) return;
+    const name = link.label.replace(/^(Open in|Copy & open) /, "");
+    if (!link.needsCopy) {
+      say(`Opened ${name} with your prompt.`);
+      return;
+    }
+    void copyText(compiled.text, promptEl).then((ok) => {
+      if (ok) {
+        say(`Prompt copied. Paste it into ${name} (⌘V / Ctrl+V).`);
+      } else {
+        promptEl.closest("details")?.setAttribute("open", "");
+        say("Copy was blocked. The prompt is selected: press Ctrl+C or ⌘C.");
+      }
+    });
+  });
   $("btn-copy").addEventListener("click", () => void copyPrompt());
   $("btn-copy-mobile").addEventListener("click", () => void copyPrompt());
 
@@ -2210,6 +2239,12 @@ export function startApp(): void {
       `${compiled.text.length.toLocaleString()} characters`;
     $("neg-wrap").hidden = compiled.negative === null;
     $("btn-copy-neg").hidden = compiled.negative === null;
+    const openLink = openInFor(r.target, compiled.text);
+    openInBtn.hidden = openLink === null;
+    if (openLink) {
+      openInBtn.textContent = openLink.label;
+      openInBtn.href = openLink.url;
+    }
     if (compiled.negative) renderPrompt(compiled.negative, negEl);
     $("notices").innerHTML = compiled.notices
       .map((n) => `<li class="${n.level}">${esc(n.message)}</li>`)

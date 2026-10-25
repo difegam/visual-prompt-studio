@@ -13,6 +13,7 @@ let cards;
 let trends;
 let readability;
 let comparison;
+let openIn;
 
 before(async () => {
   server = await createServer({
@@ -43,6 +44,9 @@ before(async () => {
   );
   comparison = await server.ssrLoadModule(
     "/src/lib/prompt-studio/ui/direction-comparison.ts",
+  );
+  openIn = await server.ssrLoadModule(
+    "/src/lib/prompt-studio/domain/open-in.ts",
   );
 });
 
@@ -985,4 +989,26 @@ test("Gemini is a target that accepts every pattern and compiles in plain langua
     assert.equal(out.negative, null, "no separate negative prompt");
     assert.ok(!out.text.includes("--ar"), "no Midjourney parameters");
   }
+});
+
+test("open-in links carry the prompt for ChatGPT and fall back to copying", () => {
+  const prompt = "A poster & more: 100% tidal?";
+  const chatgpt = openIn.openInFor("gpt-image", prompt);
+  assert.equal(
+    chatgpt.url,
+    `https://chatgpt.com/?q=${encodeURIComponent(prompt)}`,
+  );
+  assert.equal(chatgpt.needsCopy, false);
+  const long = openIn.openInFor("gpt-image", "x".repeat(3000));
+  assert.deepEqual(long, {
+    label: "Open in ChatGPT",
+    url: "https://chatgpt.com/",
+    needsCopy: true,
+  });
+  const gemini = openIn.openInFor("gemini", prompt);
+  assert.equal(gemini.label, "Copy & open Gemini");
+  assert.equal(gemini.url, "https://gemini.google.com/app");
+  assert.equal(gemini.needsCopy, true);
+  for (const id of ["midjourney", "flux", "sdxl", "generic"])
+    assert.equal(openIn.openInFor(id, prompt), null);
 });
