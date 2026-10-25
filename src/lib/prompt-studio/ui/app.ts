@@ -1612,6 +1612,7 @@ export function startApp(): void {
   const copyIcon = $("btn-copy-icon");
   const copyIconHtml = copyIcon.innerHTML;
   const copyButtons = [$("btn-copy"), $("btn-copy-mobile")];
+  const promptBox = promptEl.closest<HTMLElement>(".prompt-box");
   let copyIconTimer = 0;
   const setCopyLabel = (text: string): void => {
     for (const b of copyButtons) {
@@ -1619,21 +1620,34 @@ export function startApp(): void {
     }
   };
   async function copyPrompt(): Promise<void> {
+    for (const b of copyButtons) {
+      b.classList.remove("btn-copy-press");
+      void b.offsetWidth;
+      b.classList.add("btn-copy-press");
+    }
+    setCopyLabel("Pressing...");
     const ok = await copyText(compiled.text, promptEl);
     if (!ok) promptEl.closest("details")?.setAttribute("open", "");
     if (ok) {
+      if (promptBox) {
+        promptBox.classList.remove("is-pressing");
+        void promptBox.offsetWidth;
+        promptBox.classList.add("is-pressing");
+      }
       copyIcon.innerHTML =
         '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m5 12 5 5 9-10"></path></svg>';
-      setCopyLabel("Copied ✓");
+      setCopyLabel("Proof approved ✓");
       window.clearTimeout(copyIconTimer);
       copyIconTimer = window.setTimeout(() => {
         copyIcon.innerHTML = copyIconHtml;
         setCopyLabel("Copy prompt");
-      }, 1500);
+        for (const b of copyButtons) b.classList.remove("btn-copy-press");
+        if (promptBox) promptBox.classList.remove("is-pressing");
+      }, 1800);
     }
     say(
       ok
-        ? `Copied ${compiled.text.length.toLocaleString()} characters.`
+        ? `Proof approved: ${compiled.text.length.toLocaleString()} characters.`
         : "Copy was blocked. The prompt is selected: press Ctrl+C or ⌘C.",
     );
   }

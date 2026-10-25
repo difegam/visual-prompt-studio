@@ -2266,6 +2266,75 @@ textarea:hover {
   min-height: 0;
 }
 
+/* ── press: tactile copy moment ── */
+@keyframes btn-press {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  40% {
+    transform: scale(0.94) rotate(-1.5deg);
+  }
+  70% {
+    transform: scale(1.02) rotate(0deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+.btn-copy-press {
+  animation: btn-press 280ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn-copy-press {
+    animation: none;
+  }
+}
+@keyframes crop-draw {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+.prompt-box.is-pressing {
+  position: relative;
+}
+.prompt-box.is-pressing::before,
+.prompt-box.is-pressing::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+  z-index: 1;
+  animation: crop-draw 400ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+.prompt-box.is-pressing::before {
+  top: -7px;
+  left: -7px;
+  border-top: 2px solid var(--ink);
+  border-left: 2px solid var(--ink);
+}
+.prompt-box.is-pressing::after {
+  bottom: -7px;
+  right: -7px;
+  border-bottom: 2px solid var(--ink);
+  border-right: 2px solid var(--ink);
+}
+@media (prefers-reduced-motion: reduce) {
+  .prompt-box.is-pressing::before,
+  .prompt-box.is-pressing::after {
+    animation: none;
+    opacity: 0;
+  }
+}
+
 /* ── inspiration ── */
 .inspiration {
   margin-inline: calc(-1 * max(16px, env(safe-area-inset-left, 0px)));
