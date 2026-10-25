@@ -29,6 +29,8 @@
 
 <p align="center">
   <img src="docs/media/demo.gif" alt="30-second tour: a poster brief is directed layer by layer, resized, recoloured, compiled for six image models and copied" width="860">
+  <br>
+  <sub><a href="docs/media/visual-prompt-studio-promo.mp4">Watch the 30 s promo (MP4)</a></sub>
 </p>
 
 ## Why Visual Prompt Studio
