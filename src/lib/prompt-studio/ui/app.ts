@@ -43,6 +43,7 @@ import {
   parseRecipeJson,
   type Aspect,
   type PatternId,
+  type PurposeId,
   type Recipe,
   type SignatureId,
   type TargetId,
@@ -432,6 +433,7 @@ export function startApp(): void {
   const directionSearch = $<HTMLInputElement>("direction-search");
   const directionFormat = $<HTMLSelectElement>("direction-format");
   const directionGoal = $<HTMLSelectElement>("direction-goal");
+  const directionStyle = $<HTMLSelectElement>("direction-style");
   const directionGroup = $<HTMLSelectElement>("direction-group");
   const curatedOnly = $<HTMLInputElement>("direction-curated");
   const directionPagination = $("direction-pagination");
@@ -493,13 +495,42 @@ export function startApp(): void {
   renderDirections(store.get());
   directionFormat.innerHTML = `<option value="all">All project types</option>${PURPOSES.map((item) => `<option value="${item.id}">${esc(item.label)}</option>`).join("")}`;
   directionGoal.innerHTML = `<option value="all">All goals</option>${GOALS.map((item) => `<option value="${item.id}">${esc(item.label)}</option>`).join("")}`;
+  const styleOptions = (
+    [
+      ["design", "Layout"],
+      ["art", "Imagery"],
+      ["technique", "Finish"],
+    ] as const
+  )
+    .map(
+      ([layer, label]) =>
+        `<optgroup label="${label}">${stylesOf(layer)
+          .map(
+            (style) =>
+              `<option value="${style.id}">${esc(style.name)}</option>`,
+          )
+          .join("")}</optgroup>`,
+    )
+    .join("");
+  directionStyle.innerHTML = `<option value="all">All styles</option>${styleOptions}`;
 
-  function applyChosenDirection(id: string | undefined): void {
+  function applyChosenDirection(
+    id: string | undefined,
+    origin?: HTMLElement,
+  ): void {
     const direction = PRESETS.find((item) => item.id === id);
     if (!direction) return;
     const before = store.get();
     view.presetId = direction.id;
     store.set(applyDirection(before, direction));
+    // Applying a direction rebuilds both result lists. Return keyboard focus to
+    // the activated control after the store's scheduled render replaces it.
+    requestAnimationFrame(() => {
+      const replacement = [
+        ...(origin?.querySelectorAll<HTMLButtonElement>("[data-preset]") ?? []),
+      ].find((button) => button.dataset.preset === direction.id);
+      replacement?.focus();
+    });
     say(
       `Applied “${direction.name}”. Your brief and output settings are unchanged.`,
       () => store.set(before),
@@ -509,7 +540,7 @@ export function startApp(): void {
     const button = (event.target as HTMLElement).closest<HTMLButtonElement>(
       "[data-preset]",
     );
-    if (button) applyChosenDirection(button.dataset.preset);
+    if (button) applyChosenDirection(button.dataset.preset, presetsEl);
   });
 
   function renderDirectionExplorer(): void {
@@ -517,6 +548,7 @@ export function startApp(): void {
       query: directionSearch.value,
       format: directionFormat.value as DirectionFilters["format"],
       goal: directionGoal.value as DirectionFilters["goal"],
+      styleId: directionStyle.value,
       curatedOnly: curatedOnly.checked,
     };
     const filtered = filterDirections(PRESETS, filters).toSorted(
@@ -528,12 +560,25 @@ export function startApp(): void {
     const page = paginateItems(filtered, directionPage, 6);
     directionPage = page.page;
     const by = directionGroup.value;
-    const groupFor = (direction: (typeof PRESETS)[number]): string =>
-      by === "goal"
-        ? (GOALS.find((goal) => direction.goals.includes(goal.id))?.label ??
-          "Other goals")
-        : (PURPOSES.find((purpose) => direction.formats.includes(purpose.id))
-            ?.label ?? "Other project types");
+    const groupFor = (direction: (typeof PRESETS)[number]): string => {
+      if (by === "goal") {
+        const selectedGoal = directionGoal.value as GoalId | "all";
+        const primaryGoal = direction.goals[0];
+        const goal = GOALS.find(
+          (item) =>
+            item.id === (selectedGoal === "all" ? primaryGoal : selectedGoal),
+        );
+        return goal?.label ?? "Other goals";
+      }
+      const selectedFormat = directionFormat.value as PurposeId | "all";
+      const primaryFormat = direction.formats[0];
+      const purpose = PURPOSES.find(
+        (item) =>
+          item.id ===
+          (selectedFormat === "all" ? primaryFormat : selectedFormat),
+      );
+      return purpose?.label ?? "Other project types";
+    };
     const groups = Map.groupBy(page.items, groupFor);
     const groupsMarkup = [...groups]
       .map(
@@ -580,12 +625,17 @@ export function startApp(): void {
     directionPage = 1;
     renderDirectionExplorer();
   });
-  [directionFormat, directionGoal, directionGroup, curatedOnly].forEach(
-    (input) =>
-      input.addEventListener("change", () => {
-        directionPage = 1;
-        renderDirectionExplorer();
-      }),
+  [
+    directionFormat,
+    directionGoal,
+    directionStyle,
+    directionGroup,
+    curatedOnly,
+  ].forEach((input) =>
+    input.addEventListener("change", () => {
+      directionPage = 1;
+      renderDirectionExplorer();
+    }),
   );
   directionResults.addEventListener("click", (event) => {
     const target = event.target as HTMLElement;
@@ -593,6 +643,7 @@ export function startApp(): void {
       directionSearch.value = "";
       directionFormat.value = "all";
       directionGoal.value = "all";
+      directionStyle.value = "all";
       curatedOnly.checked = false;
       directionPage = 1;
       renderDirectionExplorer();
@@ -600,7 +651,7 @@ export function startApp(): void {
       return;
     }
     const button = target.closest<HTMLButtonElement>("[data-preset]");
-    if (button) applyChosenDirection(button.dataset.preset);
+    if (button) applyChosenDirection(button.dataset.preset, directionResults);
   });
   directionPagination.addEventListener("click", (event) => {
     const button = (event.target as HTMLElement).closest<HTMLButtonElement>(
@@ -674,7 +725,11 @@ export function startApp(): void {
       const paletteKey =
         layer === "design"
           ? ""
-          : recipe.palette.map((color) => color.hex).join("|");
+          : JSON.stringify({
+              palette: recipe.palette.map((color) => color.hex),
+              design: recipe.styles.design,
+              technique: recipe.styles.technique,
+            });
       const renderKey = JSON.stringify([
         search.value,
         group.value,
@@ -787,7 +842,18 @@ export function startApp(): void {
         return;
       }
       const button = target.closest<HTMLButtonElement>("[data-style]");
-      if (button) selectStyle(layer, button.dataset.style!);
+      if (button) {
+        const selectedId = button.dataset.style!;
+        selectStyle(layer, selectedId);
+        requestAnimationFrame(() => {
+          const replacement = [
+            ...panels[layer].querySelectorAll<HTMLButtonElement>(
+              "[data-style]",
+            ),
+          ].find((tile) => tile.dataset.style === selectedId);
+          replacement?.focus();
+        });
+      }
     });
     panels[layer].tabIndex = -1;
     $(`style-pagination-${layer}`).addEventListener("click", (event) => {
@@ -912,7 +978,8 @@ export function startApp(): void {
   const specimensEl = $("specimens");
   const fontOptionsEl = $("font-options");
   const fontSearchEl = $<HTMLInputElement>("font-search");
-  const fontDropdown = $<HTMLDetailsElement>("font-dropdown");
+  const fontDialog = $<HTMLDialogElement>("font-picker-dialog");
+  const fontTrigger = $<HTMLButtonElement>("font-picker-trigger");
   let fontCategoryFilter = "all";
 
   const categoryName: Record<(typeof FONTS)[number]["category"], string> = {
@@ -957,6 +1024,11 @@ export function startApp(): void {
   }
 
   renderFontOptions();
+  fontTrigger.addEventListener("click", () => {
+    if (!fontDialog.open) fontDialog.showModal();
+    requestAnimationFrame(() => fontSearchEl.focus());
+  });
+  fontDialog.addEventListener("close", () => fontTrigger.focus());
   fontSearchEl.addEventListener("input", renderFontOptions);
   specimensEl.addEventListener("click", (e) => {
     const target = e.target as HTMLElement;
@@ -1009,8 +1081,6 @@ export function startApp(): void {
             : current.fontWeight,
         fontItalic: current.fontItalic && (font?.italic ?? true),
       });
-      fontDropdown.open = false;
-      fontDropdown.querySelector<HTMLElement>("summary")?.focus();
     }
   });
 
@@ -1442,6 +1512,15 @@ export function startApp(): void {
     $("spec-auto-note").textContent = lettering
       ? `${lettering.name} lettering`
       : (getFont(getStyle(r.styles.design).fontId ?? "")?.classification ?? "");
+    const selectedDescription = selectedFont
+      ? `${categoryName[selectedFont.category]} · ${selectedFont.classification}`
+      : lettering
+        ? `${lettering.name} lettering`
+        : `${getStyle(r.styles.design).name} style lettering`;
+    $("selected-font-caption").textContent = selectedDescription;
+    $("font-picker-current-name").textContent =
+      selectedFont?.family ?? "Let the style decide";
+    $("font-picker-current-meta").textContent = selectedDescription;
     const previewFont =
       selectedFont ?? getFont(getStyle(r.styles.design).fontId ?? "inter");
     const supportsBold =

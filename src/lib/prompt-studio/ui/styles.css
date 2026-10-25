@@ -1293,18 +1293,6 @@ textarea:hover {
   justify-content: space-between;
   gap: 10px;
 }
-.font-dropdown {
-  position: relative;
-  display: block;
-  flex: 1 1 320px;
-  min-width: 0;
-}
-.font-dropdown > summary {
-  list-style: none;
-}
-.font-dropdown > summary::-webkit-details-marker {
-  display: none;
-}
 .font-trigger {
   justify-content: space-between;
   width: 100%;
@@ -1340,25 +1328,6 @@ textarea:hover {
   stroke-linejoin: round;
   stroke-width: 1.8;
   transition: transform 140ms ease-out;
-}
-.font-dropdown[open] .font-trigger > svg {
-  transform: rotate(180deg);
-}
-.font-dropdown .font-browser {
-  position: absolute;
-  inset: calc(100% + 7px) auto auto 0;
-  z-index: 20;
-  display: grid;
-  align-content: start;
-  width: min(620px, calc(100vw - 40px));
-  max-height: min(64vh, 560px);
-  gap: 10px;
-  overflow: auto;
-  padding: 14px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--sheet);
-  box-shadow: 0 12px 28px rgb(17 24 20 / 18%);
 }
 .font-search-label,
 .font-preview-label {
@@ -2481,15 +2450,6 @@ textarea {
     flex-direction: column;
   }
 
-  .font-dropdown {
-    width: 100%;
-    flex-basis: auto;
-  }
-
-  .font-dropdown .font-browser {
-    max-height: 62vh;
-  }
-
   .font-modifiers {
     width: 100%;
   }
@@ -2746,5 +2706,346 @@ dialog::backdrop {
   }
   .seps {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* focused font picker */
+.font-picker-modal {
+  margin: auto;
+  width: min(1080px, calc(100vw - 48px));
+  max-width: none;
+  max-height: min(760px, calc(100dvh - 48px));
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  color: var(--ink);
+  background: var(--paper);
+  box-shadow: 0 24px 64px rgb(17 24 20 / 28%);
+}
+.font-picker-modal::backdrop {
+  background: rgb(12 16 14 / 58%);
+  backdrop-filter: blur(3px);
+}
+.font-picker-box {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: inherit;
+  padding: 22px;
+  overflow: hidden;
+  border: 0;
+  border-radius: inherit;
+  color: var(--ink);
+  background: var(--paper);
+  box-shadow: none;
+}
+.font-picker-header {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+.font-picker-header h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+.font-picker-header p {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.font-picker-close-form {
+  flex: 0 0 auto;
+}
+.font-picker-close-form .btn {
+  width: 38px;
+  height: 38px;
+  min-height: 38px;
+  color: var(--ink);
+}
+.font-picker-close-form svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.8;
+}
+.font-picker-layout {
+  display: grid;
+  flex: 1 1 auto;
+  grid-template-columns: minmax(0, 1.1fr) minmax(300px, 0.9fr);
+  gap: 20px;
+  min-height: 0;
+  padding-top: 18px;
+}
+.font-picker-browser {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.font-picker-browser .font-search-label {
+  margin: 0;
+}
+.font-picker-browser .font-search {
+  min-height: 42px;
+}
+.font-picker-browser .font-popularity-note {
+  margin: 0;
+}
+.font-picker-browser .font-result-count {
+  margin: 0;
+}
+.font-picker-browser .spec.auto {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  justify-self: stretch;
+  min-height: 0;
+  padding: 9px 12px;
+}
+.font-picker-browser .spec.auto .foot {
+  flex: 0 0 auto;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  flex-direction: row;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.font-picker-browser .spec.auto .foot span {
+  text-align: right;
+}
+.font-picker-browser .font-options {
+  flex: 1 1 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: start;
+  overflow: auto;
+  padding: 2px 4px 4px 0;
+  scrollbar-color: var(--muted) transparent;
+  scrollbar-width: thin;
+}
+.font-picker-browser .font-options[hidden] {
+  display: none;
+}
+.font-picker-browser .font-options .spec {
+  min-height: 92px;
+  padding: 10px;
+}
+.font-picker-browser .font-options .spec .foot {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  flex-direction: row;
+}
+.font-picker-browser .font-options .spec .sample {
+  font-size: 19px;
+}
+.font-picker-browser .font-empty {
+  align-self: start;
+  margin: 0;
+}
+.font-picker-browser .font-empty[hidden] {
+  display: none;
+}
+.font-picker-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--sheet);
+}
+.font-picker-current {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.font-picker-current strong {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.font-picker-current > span:last-child {
+  color: var(--muted);
+  font-size: 12px;
+}
+.font-picker-preview .font-preview {
+  flex: 1 1 auto;
+  align-content: center;
+  min-height: 180px;
+  padding: 18px;
+  border-color: var(--line);
+  background: var(--paper);
+}
+.font-picker-preview .font-preview-sample {
+  font-size: clamp(34px, 4vw, 58px);
+}
+.font-picker-preview .font-modifiers {
+  align-items: center;
+}
+.font-picker-hint {
+  color: var(--muted);
+  font-size: 12px;
+}
+.font-trigger {
+  min-height: 66px;
+}
+.font-trigger-copy span {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 400;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.font-trigger > svg {
+  transform: rotate(-90deg);
+}
+.font-trigger:focus-visible,
+.font-picker-modal :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (max-width: 800px) {
+  .font-picker-modal {
+    margin: auto;
+    width: min(680px, calc(100vw - 32px));
+  }
+  .font-picker-layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: 12px;
+  }
+  .font-picker-browser .font-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .font-picker-preview {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+    align-items: center;
+    gap: 8px 14px;
+    padding: 12px;
+  }
+  .font-picker-preview .font-preview {
+    grid-row: span 2;
+    min-height: 120px;
+    padding: 12px;
+  }
+  .font-picker-preview .font-preview-sample {
+    font-size: clamp(28px, 6vw, 40px);
+  }
+  .font-picker-preview .font-modifiers {
+    align-self: start;
+  }
+  .font-picker-hint {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .font-picker-modal {
+    margin: 0;
+    inset: 0;
+    width: 100vw;
+    max-width: none;
+    max-height: 100dvh;
+    height: 100dvh;
+    border: 0;
+    border-radius: 0;
+  }
+  .font-picker-box {
+    height: 100%;
+    max-height: 100%;
+    padding: max(14px, env(safe-area-inset-top, 0px)) 14px
+      max(14px, env(safe-area-inset-bottom, 0px));
+  }
+  .font-picker-header {
+    padding-bottom: 12px;
+  }
+  .font-picker-header h2 {
+    font-size: 18px;
+  }
+  .font-picker-header p {
+    font-size: 12px;
+  }
+  .font-picker-layout {
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: 10px;
+    padding-top: 12px;
+  }
+  .font-picker-browser {
+    gap: 7px;
+  }
+  .font-picker-browser .font-categories {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+  .font-picker-browser .font-categories::-webkit-scrollbar {
+    display: none;
+  }
+  .font-picker-browser .font-categories .btn {
+    flex: 0 0 auto;
+  }
+  .font-picker-browser .font-popularity-note {
+    font-size: 10px;
+  }
+  .font-picker-browser .font-options {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .font-picker-browser .font-options .spec {
+    min-height: 76px;
+  }
+  .font-picker-preview {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    padding: 10px;
+  }
+  .font-picker-preview .font-preview {
+    min-height: 98px;
+    gap: 5px;
+    padding: 9px;
+  }
+  .font-picker-preview .font-preview-sample {
+    font-size: clamp(24px, 7vw, 34px);
+  }
+  .font-picker-preview .font-preview-label,
+  .font-picker-preview .font-preview-caption {
+    font-size: 10px;
+  }
+  .font-picker-preview .font-modifiers {
+    grid-column: 1 / -1;
+    gap: 5px;
+  }
+  .font-picker-preview .font-modifier-note {
+    grid-column: 1 / -1;
+    margin: 0;
+  }
+  .font-picker-preview .font-modifiers .btn {
+    min-height: 34px;
+    height: 34px;
+    padding-inline: 9px;
+    font-size: 12px;
   }
 }

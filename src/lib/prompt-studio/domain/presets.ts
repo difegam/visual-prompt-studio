@@ -61,10 +61,10 @@ export const PRESETS: readonly Direction[] = [
     curatedRank: 1,
     rationale: {
       attention:
-        "Bauhaus geometry gives the headline a clear place to land, and the stepped bass image creates a distinct focal point.",
+        "Bauhaus geometry gives the headline a clear place to land, while Cubist forms create a distinct focal point.",
       atmosphere:
-        "Cubist rhythm and screen-printed inks suggest the syncopation and intimacy of a late-night set.",
-      bold: "Large geometric forms and a tightly limited palette make the event read quickly at a distance.",
+        "Cubist rhythm and screen-printed inks suggest syncopation and intimacy without relying on literal music symbols.",
+      bold: "Large geometric forms and a tightly limited palette help the message read quickly at a distance.",
     },
     patch: {
       idea: "A poster for a late-night jazz trio residency in a basement club",
@@ -85,10 +85,10 @@ export const PRESETS: readonly Direction[] = [
     curatedRank: 2,
     rationale: {
       attention:
-        "One cup and its long shadow give the eye a single focal point, while the open space keeps the opening time easy to find.",
+        "One clear focal point and generous open space make the headline easy to find.",
       atmosphere:
         "Japanese minimalism and letterpress texture make the shop feel calm, tactile, and local.",
-      bold: "A single oversized object can make a quiet, memorable statement without adding decorative clutter.",
+      bold: "An oversized focal point can make a quiet, memorable statement without decorative clutter.",
     },
     patch: {
       idea: "A poster for a small neighborhood coffee roaster opening at dawn",
@@ -113,7 +113,7 @@ export const PRESETS: readonly Direction[] = [
     curatedRank: 4,
     rationale: {
       story:
-        "The paper-crane stage turns the festival setting into a visual metaphor that gives the lineup a story.",
+        "Cut-paper forms invite a visual metaphor, giving the subject room to suggest a story.",
       atmosphere:
         "Cut-paper shapes and risograph inks bring a handmade, communal mood to the event.",
       bold: "Memphis shapes create high contrast and playful movement without leaning on the usual neon concert look.",
@@ -137,11 +137,11 @@ export const PRESETS: readonly Direction[] = [
     curatedRank: 5,
     rationale: {
       explain:
-        "A clear geometric system makes the bridge's structure the lesson, and the arch-shaped headline links the words to the idea.",
+        "A clear geometric system and deliberate grouping help explain how parts relate to a whole.",
       attention:
-        "Primary shapes and a simple hierarchy direct attention to the central engineering concept.",
+        "Primary shapes and a simple hierarchy direct attention to the central idea.",
       story:
-        "The arch formed from the headline connects a familiar structure to the question of how bridges hold weight.",
+        "A close relationship between typography and geometry helps connect the headline to its subject.",
     },
     patch: {
       idea: "A poster for a family workshop on how bridges carry weight",
@@ -161,11 +161,11 @@ export const PRESETS: readonly Direction[] = [
     group: "Learning and information",
     rationale: {
       story:
-        "One unfolding fern gives the exhibition a clear visual narrative, from a closed frond to a full specimen.",
+        "Art Nouveau's flowing lines and specimen-like imagery can give a subject a clear visual narrative.",
       atmosphere:
         "Cyanotype's blue-on-paper process gives the botanical study a quiet archival mood.",
       attention:
-        "The long fern frond provides one strong path through the poster instead of several competing images.",
+        "A strong directional line provides one path through the composition instead of several competing images.",
     },
     patch: {
       idea: "A poster for a herbarium exhibition at a university garden",
@@ -185,11 +185,11 @@ export const PRESETS: readonly Direction[] = [
     curatedRank: 6,
     rationale: {
       story:
-        "The lighthouse beam becoming an eyelid turns the novel's premise into one compact visual metaphor.",
+        "Surrealist imagery turns a complex subject into one compact visual metaphor.",
       atmosphere:
         "A painterly Polish poster treatment and linocut texture make the cover feel literary and nocturnal.",
       attention:
-        "A single surreal image gives the title room and makes the book's central tension easy to remember.",
+        "A single surreal image gives the title room and makes the central idea easier to remember.",
     },
     patch: {
       idea: "A cover for a literary novel about a lighthouse keeper who stops sleeping",
@@ -215,8 +215,8 @@ export const PRESETS: readonly Direction[] = [
     group: "Culture and events",
     rationale: {
       attention:
-        "The route becomes one red diagonal, so the eye moves through the city before it reaches the event details.",
-      bold: "Constructivist scale and a single red route give the race urgency without relying on generic running figures.",
+        "A strong diagonal gives the eye a clear path through the composition before it reaches supporting details.",
+      bold: "Constructivist scale and directional movement create urgency without relying on generic sports imagery.",
     },
     patch: {
       idea: "A poster for a 10 km night run through the old town",
@@ -238,7 +238,7 @@ export const PRESETS: readonly Direction[] = [
       atmosphere:
         "Art Deco symmetry, stepped forms, and screen-printed inks give the invitation a formal winter mood.",
       attention:
-        "The centered sunburst creates a clear focal point and leaves room for the date.",
+        "Centered symmetry creates a clear focal point and leaves room for supporting information.",
       bold: "Optical geometry gives the formal event a sharper visual character than a conventional gold flourish.",
     },
     patch: {
@@ -258,10 +258,10 @@ export const PRESETS: readonly Direction[] = [
     group: "Books and editorial",
     rationale: {
       story:
-        "Found shop lettering turns the subject into the cover itself, making the story visible before it is read.",
+        "Collage lets found forms suggest the subject, making a story visible before it is read.",
       bold: "Dada collage and halftone create a deliberately rough surface with a strong editorial headline.",
       attention:
-        "Oversized found letters establish the first read, while the halftone finish supports the local archive feel.",
+        "A strong typographic anchor establishes the first read, while halftone supports a printed, archival feel.",
     },
     patch: {
       idea: "A cover for a local culture zine issue about forgotten shop signs",

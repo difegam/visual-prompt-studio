@@ -83,6 +83,30 @@ test("direction search and format filters combine", () => {
   );
 });
 
+test("direction filters can narrow by a specific style from any visual layer", () => {
+  const { DIRECTIONS } = data;
+  const matches = api.filterDirections(DIRECTIONS, { styleId: "surrealism" });
+  assert.ok(matches.length > 0);
+  assert.ok(
+    matches.every((direction) =>
+      Object.values(direction.patch.styles).includes("surrealism"),
+    ),
+  );
+});
+
+test("text, format, goal, and style filters return their shared intersection", () => {
+  const matches = api.filterDirections(data.DIRECTIONS, {
+    query: "literary",
+    format: "book-cover",
+    goal: "story",
+    styleId: "surrealism",
+  });
+  assert.deepEqual(
+    matches.map(({ id }) => id),
+    ["book"],
+  );
+});
+
 test("pagination clamps page bounds and reports empty results", () => {
   const { paginateItems } = api;
   assert.deepEqual(paginateItems([1, 2, 3, 4], 2, 2), {

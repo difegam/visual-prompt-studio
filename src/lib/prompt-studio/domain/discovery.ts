@@ -51,6 +51,7 @@ export interface DirectionFilters {
   readonly query?: string;
   readonly format?: PurposeId | "all";
   readonly goal?: GoalId | "all";
+  readonly styleId?: string | "all";
   readonly group?: string | "all";
   readonly curatedOnly?: boolean;
 }
@@ -151,6 +152,14 @@ export function filterDirections(
       filters.goal &&
       filters.goal !== "all" &&
       !direction.goals.includes(filters.goal)
+    )
+      return false;
+    if (
+      filters.styleId &&
+      filters.styleId !== "all" &&
+      !Object.values(direction.patch.styles).some(
+        (styleId) => styleId === filters.styleId,
+      )
     )
       return false;
     if (

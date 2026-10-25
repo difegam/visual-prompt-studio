@@ -210,6 +210,11 @@ import FieldInfo from "@/layouts/components/FieldInfo.astro";
                   <select id="direction-goal" class="select select-bordered"
                   ></select>
                 </label>
+                <label for="direction-style"
+                  >Style layer
+                  <select id="direction-style" class="select select-bordered"
+                  ></select>
+                </label>
                 <label for="direction-group"
                   >Group directions by
                   <select id="direction-group" class="select select-bordered">
@@ -491,153 +496,208 @@ import FieldInfo from "@/layouts/components/FieldInfo.astro";
           </div>
           <div class="type-browser" id="specimens">
             <div class="type-controls">
-              <details class="dropdown font-dropdown" id="font-dropdown">
-                <summary class="btn btn-outline font-trigger">
-                  <span class="font-trigger-copy">
-                    <small>Typeface</small>
-                    <b id="selected-font-label">Let the style decide</b>
-                  </span>
-                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                    <path d="m7 10 5 5 5-5"></path>
-                  </svg>
-                </summary>
-                <div
-                  class="dropdown-content font-browser"
-                  role="group"
-                  aria-label="Browse typefaces"
-                >
-                  <label class="font-search-label" for="font-search"
-                    >Search fonts</label
-                  >
-                  <input
-                    class="input input-sm font-search"
-                    id="font-search"
-                    type="search"
-                    placeholder="Try ‘serif’ or ‘Oswald’"
-                    autocomplete="off"
-                    data-font-search
-                  />
-                  <div
-                    class="font-categories"
-                    role="group"
-                    aria-label="Filter fonts by category"
-                  >
-                    <button
-                      type="button"
-                      class="btn btn-sm"
-                      data-font-category="all"
-                      aria-pressed="true">All</button
-                    >
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-ghost"
-                      data-font-category="popular"
-                      aria-pressed="false">Popular</button
-                    >
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-ghost"
-                      data-font-category="sans"
-                      aria-pressed="false">Sans</button
-                    >
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-ghost"
-                      data-font-category="serif"
-                      aria-pressed="false">Serif</button
-                    >
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-ghost"
-                      data-font-category="display"
-                      aria-pressed="false">Display</button
-                    >
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-ghost"
-                      data-font-category="mono"
-                      aria-pressed="false">Mono</button
-                    >
-                  </div>
-                  <p class="font-popularity-note">
-                    Popular marks families with high general web usage; it is
-                    not an image-model ranking.
-                  </p>
-                  <button
-                    type="button"
-                    class="spec auto"
-                    data-font="style"
-                    aria-pressed="false"
-                  >
-                    <span class="sample">Let the style decide</span>
-                    <span class="foot"
-                      ><b>Recommended</b><span id="spec-auto-note"></span></span
-                    >
-                  </button>
-                  <p
-                    class="font-result-count"
-                    id="font-result-count"
-                    aria-live="polite"
-                  >
-                  </p>
-                  <div class="font-options" id="font-options"></div>
-                  <p class="font-empty" id="font-empty" hidden>
-                    No fonts match those filters.
-                    <button
-                      type="button"
-                      class="btn btn-link btn-sm"
-                      data-font-clear>Clear search</button
-                    >
-                  </p>
-                </div>
-              </details>
-              <div
-                class="font-modifiers"
-                role="group"
-                aria-label="Preview font style"
+              <button
+                type="button"
+                class="btn btn-outline font-trigger"
+                id="font-picker-trigger"
+                aria-haspopup="dialog"
+                aria-controls="font-picker-dialog"
               >
-                <div class="join" aria-label="Font weight">
-                  <button
-                    type="button"
-                    class="btn btn-sm join-item"
-                    data-font-weight="regular"
-                    aria-pressed="true">Regular</button
+                <span class="font-trigger-copy">
+                  <small>Typeface</small>
+                  <b id="selected-font-label">Let the style decide</b>
+                  <span id="selected-font-caption"
+                    >Preview a typeface for your prompt</span
                   >
-                  <button
-                    type="button"
-                    class="btn btn-sm join-item"
-                    data-font-weight="bold"
-                    aria-pressed="false">Bold</button
-                  >
-                </div>
-                <button
-                  type="button"
-                  class="btn btn-sm font-italic"
-                  data-font-italic
-                  aria-pressed="false"
-                  aria-label="Toggle italic preview"><i>Italic</i></button
-                >
-              </div>
+                </span>
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="m7 10 5 5 5-5"></path>
+                </svg>
+              </button>
             </div>
-            <p class="font-modifier-note">
-              Bold and italic availability depends on the bundled font files.
-            </p>
-            <div
-              class="font-preview"
-              role="group"
-              aria-label="Typeface specimen preview"
+            <dialog
+              class="modal font-picker-modal"
+              id="font-picker-dialog"
+              aria-labelledby="font-picker-title"
             >
-              <span class="font-preview-label">Poster specimen</span>
-              <p
-                class="font-preview-sample"
-                id="font-preview-sample"
-                data-preview-sample
-                aria-live="polite"
-              >
-              </p>
-              <span class="font-preview-caption" id="font-preview-caption"
-              ></span>
-            </div>
+              <div class="modal-box font-picker-box">
+                <header class="font-picker-header">
+                  <div>
+                    <h2 id="font-picker-title">Choose a typeface</h2>
+                    <p>Compare local fonts with your current lettering.</p>
+                  </div>
+                  <form method="dialog" class="font-picker-close-form">
+                    <button
+                      type="submit"
+                      class="btn btn-ghost btn-sm btn-square"
+                      aria-label="Close font picker"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                        focusable="false"
+                      >
+                        <path d="m6 6 12 12M18 6 6 18"></path>
+                      </svg>
+                    </button>
+                  </form>
+                </header>
+                <div class="font-picker-layout">
+                  <section
+                    class="font-picker-browser"
+                    aria-label="Browse typefaces"
+                  >
+                    <label class="font-search-label" for="font-search"
+                      >Search fonts</label
+                    >
+                    <input
+                      class="input input-sm font-search"
+                      id="font-search"
+                      type="search"
+                      placeholder="Try ‘serif’ or ‘Oswald’"
+                      autocomplete="off"
+                      data-font-search
+                    />
+                    <div
+                      class="font-categories"
+                      role="group"
+                      aria-label="Filter fonts by category"
+                    >
+                      <button
+                        type="button"
+                        class="btn btn-sm"
+                        data-font-category="all"
+                        aria-pressed="true">All</button
+                      >
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-ghost"
+                        data-font-category="popular"
+                        aria-pressed="false">Popular</button
+                      >
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-ghost"
+                        data-font-category="sans"
+                        aria-pressed="false">Sans</button
+                      >
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-ghost"
+                        data-font-category="serif"
+                        aria-pressed="false">Serif</button
+                      >
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-ghost"
+                        data-font-category="display"
+                        aria-pressed="false">Display</button
+                      >
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-ghost"
+                        data-font-category="mono"
+                        aria-pressed="false">Mono</button
+                      >
+                    </div>
+                    <p class="font-popularity-note">
+                      Popular marks families with high general web usage; it is
+                      not an image-model ranking.
+                    </p>
+                    <button
+                      type="button"
+                      class="spec auto"
+                      data-font="style"
+                      aria-pressed="false"
+                    >
+                      <span class="sample">Let the style decide</span>
+                      <span class="foot"
+                        ><b>Recommended</b><span id="spec-auto-note"
+                        ></span></span
+                      >
+                    </button>
+                    <p
+                      class="font-result-count"
+                      id="font-result-count"
+                      role="status"
+                      aria-live="polite"
+                    >
+                    </p>
+                    <div class="font-options" id="font-options"></div>
+                    <p class="font-empty" id="font-empty" hidden>
+                      No fonts match those filters.
+                      <button
+                        type="button"
+                        class="btn btn-link btn-sm"
+                        data-font-clear>Clear search</button
+                      >
+                    </p>
+                  </section>
+                  <aside
+                    class="font-picker-preview"
+                    aria-label="Typeface specimen preview"
+                  >
+                    <div class="font-picker-current">
+                      <span class="font-preview-label">Current selection</span>
+                      <strong id="font-picker-current-name"
+                        >Let the style decide</strong
+                      >
+                      <span id="font-picker-current-meta"></span>
+                    </div>
+                    <div class="font-preview">
+                      <span class="font-preview-label">Poster specimen</span>
+                      <p
+                        class="font-preview-sample"
+                        id="font-preview-sample"
+                        data-preview-sample
+                        aria-live="polite"
+                      >
+                      </p>
+                      <span
+                        class="font-preview-caption"
+                        id="font-preview-caption"></span>
+                    </div>
+                    <div
+                      class="font-modifiers"
+                      role="group"
+                      aria-label="Preview font style"
+                    >
+                      <div class="join" role="group" aria-label="Font weight">
+                        <button
+                          type="button"
+                          class="btn btn-sm join-item"
+                          data-font-weight="regular"
+                          aria-pressed="true">Regular</button
+                        >
+                        <button
+                          type="button"
+                          class="btn btn-sm join-item"
+                          data-font-weight="bold"
+                          aria-pressed="false">Bold</button
+                        >
+                      </div>
+                      <button
+                        type="button"
+                        class="btn btn-sm font-italic"
+                        data-font-italic
+                        aria-pressed="false"
+                        aria-label="Toggle italic preview"><i>Italic</i></button
+                      >
+                    </div>
+                    <p class="font-modifier-note">
+                      Bold and italic availability depends on the bundled font
+                      files.
+                    </p>
+                    <p class="font-picker-hint">
+                      Your selection updates the prompt preview as you browse.
+                    </p>
+                  </aside>
+                </div>
+              </div>
+              <form method="dialog" class="modal-backdrop">
+                <button aria-label="Close font picker">close</button>
+              </form>
+            </dialog>
           </div>
         </section>
 
