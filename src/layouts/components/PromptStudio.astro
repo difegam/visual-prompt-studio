@@ -904,9 +904,18 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
         <div class="copy-dock">
           <div class="actions">
             <div class="join copy-join">
-              <button type="button" class="btn primary join-item" id="btn-copy"
-                >Copy prompt</button
-              >
+              <button type="button" class="btn primary join-item" id="btn-copy">
+                <svg
+                  class="btn-icon"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <rect x="9" y="9" width="11" height="11" rx="2"></rect>
+                  <path d="M5 15V6a2 2 0 0 1 2-2h9"></path>
+                </svg>
+                <span class="btn-label">Copy prompt</span>
+              </button>
               <button
                 type="button"
                 class="btn btn-compare join-item"

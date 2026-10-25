@@ -2097,6 +2097,7 @@ textarea:hover {
   background: var(--ink);
   border-color: var(--ink);
 }
+.btn-icon,
 .btn-compare svg {
   flex: none;
   width: 20px;

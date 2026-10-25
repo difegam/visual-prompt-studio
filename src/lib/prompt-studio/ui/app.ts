@@ -1455,17 +1455,22 @@ export function startApp(): void {
   const copyIconHtml = copyIcon.innerHTML;
   const copyButtons = [$("btn-copy"), $("btn-copy-mobile")];
   let copyIconTimer = 0;
+  const setCopyLabel = (text: string): void => {
+    for (const b of copyButtons) {
+      (b.querySelector(".btn-label") ?? b).textContent = text;
+    }
+  };
   async function copyPrompt(): Promise<void> {
     const ok = await copyText(compiled.text, promptEl);
     if (!ok) promptEl.closest("details")?.setAttribute("open", "");
     if (ok) {
       copyIcon.innerHTML =
         '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m5 12 5 5 9-10"></path></svg>';
-      for (const b of copyButtons) b.textContent = "Copied ✓";
+      setCopyLabel("Copied ✓");
       window.clearTimeout(copyIconTimer);
       copyIconTimer = window.setTimeout(() => {
         copyIcon.innerHTML = copyIconHtml;
-        for (const b of copyButtons) b.textContent = "Copy prompt";
+        setCopyLabel("Copy prompt");
       }, 1500);
     }
     say(
