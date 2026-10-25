@@ -28,9 +28,226 @@ export interface Direction extends Preset {
   readonly rationale: Readonly<Partial<Record<GoalId, string>>>;
   /** Editorial ordering only. This does not represent user activity. */
   readonly curatedRank?: number;
+  readonly trendYear?: 2026;
+  readonly principle?: string;
+  readonly tradeoff?: string;
+  readonly sourceIds?: readonly string[];
 }
 
 export const PRESETS: readonly Direction[] = [
+  {
+    id: "raw-human-voice",
+    name: "Raw human voice",
+    blurb: "Visible cuts, imperfect layers, and a clear editorial anchor.",
+    formats: ["poster", "flyer", "social", "editorial"],
+    goals: ["story", "bold", "attention"],
+    group: "Contemporary 2026",
+    curatedRank: 1.5,
+    trendYear: 2026,
+    principle:
+      "Visible construction and controlled irregularity can make a message feel authored rather than automated.",
+    tradeoff:
+      "Rough layering competes with dense supporting copy, so the headline and one image should carry the first read.",
+    sourceIds: ["adobe-design-trends-2026", "behance-design-trends-2026"],
+    rationale: {
+      story:
+        "Visible cuts and irregular layers suggest an authored account, giving found imagery a role in the story.",
+      bold: "Controlled irregularity and a strong editorial headline give the statement a distinct human voice.",
+      attention:
+        "One image and a clear headline anchor the rough layers so the first read stays easy to find.",
+    },
+    patch: {
+      styles: {
+        design: "editorial",
+        art: "dada-collage",
+        technique: "halftone",
+      },
+      palette: [
+        { hex: "#F1E8D5", name: "newsprint" },
+        { hex: "#1B1B1B", name: "carbon" },
+        { hex: "#D9472B", name: "tomato ink" },
+      ],
+      font: "style",
+      fontWeight: "bold",
+      fontItalic: false,
+      signatures: ["variation", "material"],
+    },
+  },
+  {
+    id: "one-loud-detail",
+    name: "One loud detail",
+    blurb: "Generous space around one exaggerated focal point.",
+    formats: ["poster", "social", "story", "album-cover"],
+    goals: ["attention", "bold"],
+    group: "Contemporary 2026",
+    curatedRank: 2.5,
+    trendYear: 2026,
+    principle:
+      "Generous empty space makes one exaggerated element more noticeable.",
+    tradeoff: "It works poorly when many messages need equal emphasis.",
+    sourceIds: ["behance-design-trends-2026", "figma-web-trends-2026"],
+    rationale: {
+      attention:
+        "Generous empty space isolates one exaggerated element and gives the viewer a clear first read.",
+      bold: "One oversized pop-art detail makes a decisive statement because the surrounding space gives it room.",
+    },
+    patch: {
+      styles: {
+        design: "japanese-minimal",
+        art: "pop-art",
+        technique: "mono-accent",
+      },
+      palette: [
+        { hex: "#F3F0E8", name: "warm white" },
+        { hex: "#3157D5", name: "cobalt" },
+        { hex: "#161616", name: "black" },
+      ],
+      font: "archivo-black",
+      fontWeight: "bold",
+      fontItalic: false,
+      signatures: ["restraint"],
+    },
+  },
+  {
+    id: "chromatic-pulse",
+    name: "Chromatic pulse",
+    blurb: "Repeated geometry and deliberate color contrast set the rhythm.",
+    formats: ["poster", "social", "story", "banner", "album-cover"],
+    goals: ["bold", "atmosphere", "attention"],
+    group: "Contemporary 2026",
+    curatedRank: 3.5,
+    trendYear: 2026,
+    principle:
+      "Repeated geometry and deliberate color contrast create rhythm without adding literal action imagery.",
+    tradeoff:
+      "Vibrating color and optical pattern can reduce text legibility, so text must remain limited and strongly separated.",
+    sourceIds: ["figma-web-trends-2026", "behance-design-trends-2026"],
+    rationale: {
+      bold: "Repeated optical shapes and deliberate color contrast give a short statement force and rhythm.",
+      atmosphere:
+        "Color contrast and repeated geometry suggest a pulsing mood without literal action imagery.",
+      attention:
+        "Strong color contrast draws the eye, while separated text keeps the headline readable against the optical rhythm.",
+    },
+    patch: {
+      styles: { design: "memphis", art: "op-art", technique: "screenprint" },
+      palette: [
+        { hex: "#FBE7CF", name: "peach" },
+        { hex: "#FF5AA8", name: "hot pink" },
+        { hex: "#139AA4", name: "teal" },
+      ],
+      font: "bebas",
+      fontWeight: "bold",
+      fontItalic: false,
+      signatures: ["concept"],
+    },
+  },
+  {
+    id: "soft-surreal-tactility",
+    name: "Soft surreal tactility",
+    blurb: "One impossible metaphor with consistent paper, ink, and scale.",
+    formats: ["poster", "book-cover", "album-cover", "editorial", "social"],
+    goals: ["story", "atmosphere", "attention"],
+    group: "Contemporary 2026",
+    curatedRank: 4.5,
+    trendYear: 2026,
+    principle:
+      "A single impossible metaphor feels more convincing when paper, ink, and scale behave consistently.",
+    tradeoff:
+      "The metaphor needs a direct connection to the subject or it becomes decorative ambiguity.",
+    sourceIds: ["adobe-creative-trends-2026", "adobe-design-trends-2026"],
+    rationale: {
+      story:
+        "One impossible metaphor tied to the subject compresses its story, while consistent materials make it believable.",
+      atmosphere:
+        "Consistent paper, ink, and scale give the surreal image a tactile mood the viewer can imagine touching.",
+      attention:
+        "A single impossible image invites a second look, while consistent material cues keep the focal point coherent.",
+    },
+    patch: {
+      styles: {
+        design: "polish-poster",
+        art: "surrealism",
+        technique: "letterpress",
+      },
+      palette: [
+        { hex: "#E8E2D2", name: "chalk" },
+        { hex: "#1E1E1E", name: "charcoal" },
+        { hex: "#C9302C", name: "red" },
+      ],
+      font: "style",
+      fontWeight: "regular",
+      fontItalic: false,
+      signatures: ["concept", "material"],
+    },
+  },
+  {
+    id: "local-cut-paper-story",
+    name: "Local cut-paper story",
+    blurb: "Place-specific details told through cut paper and printed ink.",
+    formats: ["poster", "editorial", "social", "flyer", "book-cover"],
+    goals: ["story", "atmosphere"],
+    group: "Contemporary 2026",
+    curatedRank: 5.5,
+    trendYear: 2026,
+    principle:
+      "A place-specific object, pattern, or material gives a story more meaning than generic cultural decoration.",
+    tradeoff:
+      "The starter cannot invent local cues. The user's brief or concept must name them.",
+    sourceIds: ["adobe-creative-trends-2026", "adobe-design-trends-2026"],
+    rationale: {
+      story:
+        "A place-specific object from the brief gives the cut-paper story a concrete subject and cultural context.",
+      atmosphere:
+        "Local patterns or materials named in the brief give the paper and printed ink a sense of place.",
+    },
+    patch: {
+      styles: { design: "editorial", art: "cut-paper", technique: "risograph" },
+      palette: [
+        { hex: "#F2EEE8", name: "paper" },
+        { hex: "#C75B3A", name: "terracotta" },
+        { hex: "#315C8C", name: "cobalt" },
+      ],
+      font: "fraunces",
+      fontWeight: "bold",
+      fontItalic: false,
+      signatures: ["material", "variation"],
+    },
+  },
+  {
+    id: "retro-future-grid",
+    name: "Retro-future grid",
+    blurb: "A stable typographic grid holds experimental optical imagery.",
+    formats: ["poster", "album-cover", "social", "banner"],
+    goals: ["attention", "bold", "atmosphere"],
+    group: "Contemporary 2026",
+    curatedRank: 6.5,
+    trendYear: 2026,
+    principle:
+      "A strict typographic grid gives experimental optical imagery a stable reading order.",
+    tradeoff:
+      "The clean system can feel generic unless the central image or headline contains a specific idea.",
+    sourceIds: ["figma-web-trends-2026", "dribbble-design-trends"],
+    rationale: {
+      attention:
+        "A strict typographic grid establishes the reading order before the optical image adds visual tension.",
+      bold: "Experimental optical imagery creates a strong statement while the grid keeps its headline deliberate and clear.",
+      atmosphere:
+        "Optical geometry and monospaced type suggest a retrofuturist mood within a stable typographic system.",
+    },
+    patch: {
+      styles: { design: "swiss", art: "op-art", technique: "clean" },
+      palette: [
+        { hex: "#F1F1EC", name: "off-white" },
+        { hex: "#2A52D8", name: "electric blue" },
+        { hex: "#F05A30", name: "signal orange" },
+      ],
+      font: "plex-mono",
+      fontWeight: "bold",
+      fontItalic: false,
+      signatures: ["concept", "restraint"],
+    },
+  },
   {
     id: "gallery",
     name: "Gallery opening",

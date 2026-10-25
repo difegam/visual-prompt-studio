@@ -6,6 +6,8 @@ let server;
 let api;
 let data;
 let styles;
+let references;
+let recipe;
 
 before(async () => {
   server = await createServer({
@@ -21,10 +23,93 @@ before(async () => {
   styles = await server.ssrLoadModule(
     "/src/lib/prompt-studio/domain/styles.ts",
   );
+  references = await server.ssrLoadModule(
+    "/src/lib/prompt-studio/domain/references.ts",
+  );
+  recipe = await server.ssrLoadModule(
+    "/src/lib/prompt-studio/domain/recipe.ts",
+  );
 });
 
 after(async () => {
   await server?.close();
+});
+
+function validateStarter(direction) {
+  assert.ok(direction.principle?.trim(), `${direction.id} needs a principle`);
+  assert.ok(direction.tradeoff?.trim(), `${direction.id} needs a tradeoff`);
+  assert.ok(direction.sourceIds?.length, `${direction.id} needs sources`);
+  assert.equal(new Set(direction.sourceIds).size, direction.sourceIds.length);
+  for (const sourceId of direction.sourceIds) {
+    assert.ok(references.getReference(sourceId), `Unknown source: ${sourceId}`);
+  }
+  assert.ok(direction.formats.length);
+  assert.ok(direction.goals.length);
+  for (const format of direction.formats) {
+    assert.ok(recipe.PURPOSES.some(({ id }) => id === format));
+  }
+  for (const goal of direction.goals) {
+    assert.ok(api.GOALS.some(({ id }) => id === goal));
+    assert.ok(direction.rationale[goal]?.trim());
+  }
+  for (const key of [
+    "styles",
+    "palette",
+    "font",
+    "fontWeight",
+    "fontItalic",
+    "signatures",
+  ]) {
+    assert.ok(
+      Object.hasOwn(direction.patch, key),
+      `${direction.id} needs ${key}`,
+    );
+  }
+  assert.equal(direction.patch.palette.length, 3);
+  assert.ok(direction.patch.signatures.length);
+  assert.equal(direction.patch.fontItalic, false);
+  assert.ok(
+    recipe.RecipeSchema.safeParse({
+      ...recipe.DEFAULT_RECIPE,
+      ...direction.patch,
+    }).success,
+    `${direction.id} must contain valid recipe values`,
+  );
+}
+
+test("2026 starters have complete valid educational metadata", () => {
+  const starters = data.DIRECTIONS.filter(
+    ({ trendYear }) => trendYear === 2026,
+  );
+  assert.deepEqual(
+    starters.map(({ id }) => id),
+    [
+      "raw-human-voice",
+      "one-loud-detail",
+      "chromatic-pulse",
+      "soft-surreal-tactility",
+      "local-cut-paper-story",
+      "retro-future-grid",
+    ],
+  );
+  for (const starter of starters) validateStarter(starter);
+});
+
+test("starter validation rejects an unresolved learning source", () => {
+  const starter = data.DIRECTIONS.find(({ id }) => id === "raw-human-voice");
+  assert.ok(starter, "Raw human voice must exist before checking its sources");
+  assert.throws(
+    () => validateStarter({ ...starter, sourceIds: ["missing"] }),
+    /Unknown source: missing/,
+  );
+});
+
+test("reference lookup resolves catalog entries and leaves unknown IDs unresolved", () => {
+  assert.equal(typeof references.getReference, "function");
+  for (const reference of references.REFERENCES) {
+    assert.equal(references.getReference(reference.id), reference);
+  }
+  assert.equal(references.getReference("missing"), undefined);
 });
 
 test("recommendations prefer exact format and goal matches", () => {

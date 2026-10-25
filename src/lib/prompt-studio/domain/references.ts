@@ -15,6 +15,7 @@ export type ReferenceKind =
   | "builder"
   | "community"
   | "marketplace"
+  | "learning"
   | "docs";
 export type Cost = "free" | "freemium" | "paid";
 export type RefStatus = "active" | "dormant" | "pivoted";
@@ -42,6 +43,7 @@ export interface ReferenceDef {
 }
 
 const CHECKED = "2026-10-24";
+const RESEARCH_CHECKED = "2026-10-25";
 
 export const KIND_LABELS: Record<ReferenceKind, string> = {
   styles: "Style library",
@@ -50,10 +52,101 @@ export const KIND_LABELS: Record<ReferenceKind, string> = {
   builder: "Prompt builder",
   community: "Community",
   marketplace: "Marketplace",
+  learning: "Design learning",
   docs: "Model docs",
 };
 
 export const REFERENCES: readonly ReferenceDef[] = [
+  {
+    id: "figma-web-trends-2026",
+    name: "Figma web design trends for 2026",
+    url: "https://www.figma.com/resource-library/web-design-trends/",
+    kind: "learning",
+    bestFor:
+      "Expressive typography, saturated color, collage, retrofuturism, and the role of white space.",
+    models: "Model-independent design principles",
+    cost: "free",
+    status: "active",
+    note: "An editorial overview. Web interaction trends do not translate directly into image prompts.",
+    checked: RESEARCH_CHECKED,
+  },
+  {
+    id: "adobe-design-trends-2026",
+    name: "Adobe Express design trends for 2026",
+    url: "https://www.adobe.com/express/learn/blog/design-trends-2026",
+    kind: "learning",
+    bestFor:
+      "Organic imperfection, sensory materials, collage, and local visual storytelling.",
+    models: "Model-independent design principles",
+    cost: "free",
+    status: "active",
+    note: "A design forecast that offers directions to explore, not a universal recipe for a brief.",
+    checked: RESEARCH_CHECKED,
+  },
+  {
+    id: "adobe-creative-trends-2026",
+    name: "Adobe 2026 Creative Trends Forecast",
+    url: "https://business.adobe.com/resources/creative-trends-report.html",
+    kind: "learning",
+    bestFor:
+      "Sensory imagery, authentic connection, surreal play, and culturally specific details.",
+    models: "Model-independent design principles",
+    cost: "free",
+    status: "active",
+    note: "A creative forecast. Local cues still need to come from the subject and the user's brief.",
+    checked: RESEARCH_CHECKED,
+  },
+  {
+    id: "behance-design-trends-2026",
+    name: "Behance Design Trends 2026",
+    url: "https://www.behance.net/gallery/239027109/Design-Trends-2026",
+    kind: "community",
+    bestFor:
+      "Practitioner examples of raw aesthetics, imperfect lettering, micro-maximalism, and chromatic expression.",
+    models: "Model-independent visual references",
+    cost: "free",
+    status: "active",
+    note: "A practitioner synthesis, not a measured ranking of design effectiveness.",
+    checked: RESEARCH_CHECKED,
+  },
+  {
+    id: "dribbble-design-trends",
+    name: "Dribbble Design Trends gallery",
+    url: "https://dribbble.com/tags/design-trends",
+    kind: "community",
+    bestFor:
+      "A visual reference gallery for comparing typography, grids, color, and optical imagery.",
+    models: "Model-independent visual references",
+    cost: "free",
+    status: "active",
+    note: "Visual examples only. Engagement counts are not research evidence or a basis for popularity claims.",
+    checked: RESEARCH_CHECKED,
+  },
+  {
+    id: "figma-typography",
+    name: "Figma typography in design",
+    url: "https://www.figma.com/resource-library/typography-in-design/",
+    kind: "learning",
+    bestFor:
+      "Type hierarchy, alignment, spacing, type selection, and legibility.",
+    models: "Model-independent design principles",
+    cost: "free",
+    status: "active",
+    checked: RESEARCH_CHECKED,
+  },
+  {
+    id: "cooper-how-posters-work",
+    name: "Cooper Hewitt: How Posters Work",
+    url: "https://www.si.edu/exhibitions/how-posters-work%3Aevent-exhib-5759",
+    kind: "learning",
+    bestFor:
+      "Focusing attention, telling a story, amplifying a message, and using scale, diagonals, and systems.",
+    models: "Model-independent design principles",
+    cost: "free",
+    status: "active",
+    note: "An archived exhibition overview with enduring poster-design strategies.",
+    checked: RESEARCH_CHECKED,
+  },
   {
     id: "midlibrary",
     name: "Midlibrary",
@@ -227,3 +320,11 @@ export const REFERENCES: readonly ReferenceDef[] = [
     checked: CHECKED,
   },
 ];
+
+const REFERENCES_BY_ID = new Map(
+  REFERENCES.map((reference) => [reference.id, reference]),
+);
+
+export function getReference(id: string): ReferenceDef | undefined {
+  return REFERENCES_BY_ID.get(id);
+}
