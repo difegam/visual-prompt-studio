@@ -92,7 +92,7 @@ Each target offers the prompt shapes that suit it: Art direction (concise), Seve
 
 ### Copy actions and comparison
 
-Copy the prompt, copy the negative prompt when the target supports one, or compare your directed prompt with an undirected one to see what art direction adds.
+Copy the prompt, copy the negative prompt when the target supports one, or compare your directed prompt with an undirected one to see what art direction adds. "Open in" links hand the prompt to ChatGPT, Gemini, Midjourney or FLUX, and the `/compare` page shows generic and studio prompts side by side. You can also compare two visual directions before applying one.
 
 ### Recipes stay on your device
 

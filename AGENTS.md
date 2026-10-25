@@ -14,6 +14,14 @@ Before modifying the template structure, styles, pages, or configuration, trigge
 
 <!-- END:astro-template-guidance-rules -->
 
+# Dependency policy
+
+Use the existing stack and vanilla TypeScript as the first implementation option.
+
+Before adding or replacing a dependency, record a short comparison with the no-dependency approach. Evaluate total code and state complexity, maintenance activity, API stability, failure behavior, security history and transitive packages, browser support, bundle cost, and license fit. Add the dependency only when it materially improves maintainability, reliability, or security after those costs are included. When the options are equivalent, keep the vanilla implementation.
+
+For an approved dependency change, use the repository package manager and versioning conventions, update the lockfile, inspect the installed dependency tree, and run the relevant tests, type checks, build, and security audit. Prefer small packages with a narrow responsibility. A dependency must not replace an existing platform capability without a documented benefit.
+
 # Browser verification
 
 Verify UI changes (especially Prompt Studio, `/`) in a real browser with `playwright-cli`; config lives in `.playwright/cli.config.json`.

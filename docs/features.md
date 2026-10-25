@@ -5,6 +5,7 @@ A reference for what the Studio does. The in-app guide at `/guide` covers the sa
 ## Brief
 
 - **What are you making?** Free text.
+- **Try an example.** One pill per format loads a sample brief (format, aspect, idea, headline, text and detail) so you can test the tool quickly. Your look, target and pattern stay as they are, and Undo restores the previous brief.
 - **Format.** Poster, Flyer, Book cover, Album cover, Social post, Story / Reel cover, Editorial illustration, Event banner. Each suggests an aspect ratio.
 - **Goal.** What the piece must communicate. Format and goal drive the recommendations.
 - **Aspect ratio.** Nine presets plus a custom-ratio dialog.
@@ -15,6 +16,9 @@ A reference for what the Studio does. The in-app guide at `/guide` covers the sa
 - **Recommended directions** match the chosen format and goal.
 - **Explorer** searches and filters all 16 directions, with grouping, curated-only and "2026 starters only" filters, removable filter pills with a clear-all control, and pagination that keeps the current filters.
 - **2026 starters:** Raw human voice, One loud detail, Chromatic pulse, Soft surreal tactility, Local cut-paper story, Retro-future grid. Each shows a principle, a tradeoff and supporting reading.
+- **Compare directions** puts any two directions (suggested or from the explorer) side by side: layout, imagery, finish, palette, type, principle, tradeoff and a practical tip. Selection is session-only and nothing is applied until you choose a direction. Applying keeps Undo.
+- **Readability advice** is optional and appears only when the recipe carries a known legibility risk, with an action to review the text.
+- **Starter editions** come from a catalog (`trends.ts`), so the badge, filter label and status follow the current edition.
 - **Applying a direction** changes only layout, imagery, finish, palette, typeface, type weight and italics, and creative intent. It keeps your brief, exact text, concept, format, aspect ratio, text mode, exclusions and output settings, and it can be undone. Every control stays editable afterwards.
 
 ## Style layers
@@ -51,10 +55,14 @@ Prompts can be written in English or Spanish. Notices explain target-specific be
 
 Copy prompt, Copy negative (when the target has one), and Compare with an undirected prompt.
 
+**Open in** links open ChatGPT, Gemini, Midjourney or FLUX. ChatGPT receives the prompt in the link (when it fits in 2000 characters), so it can appear in browser history. The other targets copy the prompt first, then open the tool.
+
+The `/compare` page shows before/after sliders of a generic prompt against a studio prompt.
+
 ## Recipes and privacy
 
 The recipe is saved in `localStorage` (a version-2 schema validated with Zod). JSON import and export use the same schema. Unreadable stored data is backed up under an `.unreadable` key. The app makes no API calls and sends no recipe data to a server.
 
 ## Site
 
-User guide, inspiration links (a filterable registry of 19 references), blog with tags, categories and authors, About page, light and dark themes, and search. The build also generates `llms.txt` and `llms-full.txt`.
+User guide, inspiration links (a filterable registry of 19 references, with topic filters and "Start with a principle" paths for design learning), blog with tags, categories and authors, About page, light and dark themes, and search. The build also generates `llms.txt` and `llms-full.txt`.

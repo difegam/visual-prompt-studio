@@ -1,0 +1,504 @@
+---
+import { Image } from "astro:assets";
+import Base from "@/layouts/Base.astro";
+import StudioBar from "@/layouts/components/StudioBar.astro";
+import SiteFooter from "@/layouts/components/SiteFooter.astro";
+import {
+  CASES,
+  GENERIC_CASE,
+  TYPO_NOTE,
+} from "@/lib/prompt-studio/compare-cases";
+import "@/lib/prompt-studio/ui/fonts.css";
+import "@/lib/prompt-studio/ui/styles.css";
+
+const imageSizes = "(min-width: 900px) 480px, calc(100vw - 32px)";
+const imageWidths = [480, 720, 960];
+
+const takeaways = [
+  {
+    title: "Name the style",
+    body: "“Japanese minimal” or “Swiss grid” tells the model what to leave out as well as what to draw. “Make a poster” leaves it to guess.",
+  },
+  {
+    title: "Lock the palette",
+    body: "Three named colours with hex codes and “no other colors” are the quickest way to a poster that looks designed.",
+  },
+  {
+    title: "List the exact text",
+    body: "Quote every line and say “no other text”. Then proof-read your own quotes, because the model copies them.",
+  },
+  {
+    title: "Say what to avoid",
+    body: "An avoid list removes the clichés the model reaches for first, such as gloss, sparkles and stock decorations.",
+  },
+];
+---
+
+<Base
+  title="Compare"
+  meta_title="Compare a generic prompt with Studio directions — Visual Prompt Studio"
+  description="The same Halloween poster brief written as one generic prompt and as five Studio art directions, with a slider to compare each result."
+  hideChrome={true}
+  pageTheme="dark"
+>
+  <div id="studio-app">
+    <StudioBar variant="page" current="compare" />
+
+    <main class="compare">
+      <header class="compare-head">
+        <h1 class="lede">One brief, two ways to ask.</h1>
+        <p>
+          Every poster below is for the same event: Halloween in Amby, October
+          31 at 18:00. The left side of each slider is a generic prompt. The
+          right side is a prompt built in the studio from a design layout, an
+          imagery style and a print finish. Drag the handle, or focus it and use
+          the arrow keys.
+        </p>
+      </header>
+
+      <section class="compare-block" aria-labelledby="generic-h">
+        <h2 id="generic-h">The generic prompt</h2>
+        <div class="compare-generic">
+          <div>
+            <div class="mockup-code w-full">
+              {
+                GENERIC_CASE.prompt
+                  .split("\n")
+                  .map((line) => (
+                    <pre
+                      class="flex w-auto whitespace-pre-wrap before:shrink-0"
+                      set:text={line}
+                    />
+                  ))
+              }
+            </div>
+            <p class="compare-lead">
+              It names the event and the three lines of text. Everything else
+              was left to the model, so it chose:
+            </p>
+            <ul class="compare-list">
+              {GENERIC_CASE.guesses.map((g) => <li>{g}</li>)}
+            </ul>
+            <p class="guide-note">
+              Nothing here is wrong. It is the poster most people would expect
+              from this brief, and it looks like thousands of others.
+            </p>
+          </div>
+          <figure class="compare-solo">
+            <Image
+              src={GENERIC_CASE.image}
+              alt={GENERIC_CASE.alt}
+              widths={imageWidths}
+              sizes={imageSizes}
+              loading="eager"
+              class="compare-solo-img"
+            />
+            <figcaption>Generic prompt result</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      {
+        CASES.map((c, i) => {
+          const layerName = [c.layers.layout, c.layers.imagery, c.layers.finish]
+            .filter(Boolean)
+            .join(" × ");
+          const ratio = `${c.image.width} / ${c.image.height}`;
+          return (
+            <section
+              class="compare-block"
+              id={c.id}
+              aria-labelledby={`${c.id}-h`}
+            >
+              <p class="compare-kicker">
+                Direction {i + 1} of {CASES.length}
+              </p>
+              <h2 id={`${c.id}-h`}>{layerName}</h2>
+              {c.directionName && (
+                <p class="compare-direction">
+                  Same layers as the studio direction{" "}
+                  <strong>{c.directionName}</strong>.
+                </p>
+              )}
+              {c.caveat && <p class="guide-note">{c.caveat}</p>}
+
+              <div class="compare-case">
+                <div class="compare-stage">
+                  <figure
+                    class="diff"
+                    style={`aspect-ratio: ${ratio}`}
+                    aria-label={`Slider comparing the generic poster with the ${layerName} poster`}
+                  >
+                    <div
+                      class="diff-item-1"
+                      role="img"
+                      tabindex="0"
+                      aria-label={GENERIC_CASE.alt}
+                    >
+                      <Image
+                        src={GENERIC_CASE.image}
+                        alt=""
+                        widths={imageWidths}
+                        sizes={imageSizes}
+                        loading={i === 0 ? "eager" : "lazy"}
+                      />
+                    </div>
+                    <div class="diff-item-2" role="img" aria-label={c.alt}>
+                      <Image
+                        src={c.image}
+                        alt=""
+                        widths={imageWidths}
+                        sizes={imageSizes}
+                        loading={i === 0 ? "eager" : "lazy"}
+                      />
+                    </div>
+                    <div class="diff-resizer" />
+                  </figure>
+                  <span class="badge badge-neutral compare-tag compare-tag-l">
+                    Generic
+                  </span>
+                  <span class="badge badge-primary compare-tag compare-tag-r">
+                    Studio
+                  </span>
+                </div>
+
+                <div class="compare-detail">
+                  <h3>What changed</h3>
+                  <ul class="compare-list">
+                    {c.changes.map((t) => (
+                      <li>{t}</li>
+                    ))}
+                  </ul>
+
+                  <h3>What the prompt specified</h3>
+                  <dl class="compare-layers">
+                    <div>
+                      <dt>
+                        <i class="sep c" aria-hidden="true" />
+                        Layout
+                      </dt>
+                      <dd>{c.layers.layout}</dd>
+                    </div>
+                    <div>
+                      <dt>
+                        <i class="sep m" aria-hidden="true" />
+                        Imagery
+                      </dt>
+                      <dd>{c.layers.imagery ?? "Not set, the model chose"}</dd>
+                    </div>
+                    <div>
+                      <dt>
+                        <i class="sep y" aria-hidden="true" />
+                        Finish
+                      </dt>
+                      <dd>{c.layers.finish}</dd>
+                    </div>
+                    <div>
+                      <dt>Type</dt>
+                      <dd>{c.typography}</dd>
+                    </div>
+                    <div>
+                      <dt>Palette</dt>
+                      <dd>
+                        <ul class="compare-palette">
+                          {c.palette.map((p) => (
+                            <li>
+                              <span
+                                class="compare-swatch"
+                                style={`background:${p.hex}`}
+                                aria-hidden="true"
+                              />
+                              {p.name} <code>{p.hex}</code>
+                            </li>
+                          ))}
+                        </ul>
+                      </dd>
+                    </div>
+                  </dl>
+
+                  <div class="stats compare-stats">
+                    <div class="stat">
+                      <div class="stat-title">Colours</div>
+                      <div class="stat-value">{c.palette.length}</div>
+                      <div class="stat-desc">generic: not set</div>
+                    </div>
+                    <div class="stat">
+                      <div class="stat-title">Text lines</div>
+                      <div class="stat-value">{c.text.length}</div>
+                      <div class="stat-desc">exact, nothing else</div>
+                    </div>
+                    <div class="stat">
+                      <div class="stat-title">Avoided</div>
+                      <div class="stat-value">{c.avoid.length}</div>
+                      <div class="stat-desc">generic: none</div>
+                    </div>
+                  </div>
+
+                  <details class="collapse-arrow compare-prompt collapse">
+                    <summary class="collapse-title">
+                      Show the full prompt
+                    </summary>
+                    <div class="collapse-content">
+                      <p class="compare-prompt-text">{c.prompt}</p>
+                    </div>
+                  </details>
+                </div>
+              </div>
+            </section>
+          );
+        })
+      }
+
+      <section class="compare-block" aria-labelledby="learn-h">
+        <h2 id="learn-h">What to take from this</h2>
+        <ul class="compare-takeaways">
+          {
+            takeaways.map((t) => (
+              <li>
+                <h3>{t.title}</h3>
+                <p>{t.body}</p>
+              </li>
+            ))
+          }
+        </ul>
+        <p class="guide-note">{TYPO_NOTE}</p>
+        <p class="compare-foot">
+          These are single generations, one per prompt. Another run of the same
+          prompt will differ in the details. The point is the range between a
+          vague prompt and a specific one, not a ranking of styles.
+        </p>
+        <aside class="guide-cta" aria-label="Open the studio">
+          <p>Build your own direction.</p>
+          <span class="compare-cta-links">
+            <a class="btn ghost" href="/guide">Read the guide</a>
+            <a class="btn primary" href="/#compose">Open the studio</a>
+          </span>
+        </aside>
+      </section>
+    </main>
+
+    <SiteFooter variant="studio" />
+  </div>
+</Base>
+
+<style is:global>
+  .compare {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 16px 72px;
+  }
+  .compare-head {
+    margin-bottom: 8px;
+  }
+  .compare-head .lede {
+    max-width: 18ch;
+    margin-bottom: 14px;
+  }
+  .compare-head p {
+    max-width: 62ch;
+    color: var(--muted);
+    font-size: 17px;
+    line-height: 1.55;
+  }
+  .compare-block {
+    margin-top: 48px;
+    padding-top: 36px;
+    border-top: 1px solid var(--line);
+  }
+  .compare-block > h2 {
+    font-size: 26px;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    margin-bottom: 14px;
+  }
+  .compare-block h3 {
+    font-size: 15px;
+    letter-spacing: -0.01em;
+    margin: 22px 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .compare-kicker {
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .compare-direction {
+    color: var(--muted);
+    margin: -6px 0 14px;
+  }
+  .compare-lead {
+    margin-top: 16px;
+  }
+  .compare-generic,
+  .compare-case {
+    display: grid;
+    gap: 28px;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+  }
+  @media (min-width: 900px) {
+    .compare-generic,
+    .compare-case {
+      grid-template-columns: minmax(0, 480px) minmax(0, 1fr);
+      gap: 48px;
+    }
+    .compare-generic {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 480px);
+    }
+    .compare-stage {
+      position: sticky;
+      top: calc(var(--barh) + 24px);
+    }
+  }
+  .compare-solo {
+    margin: 0;
+  }
+  .compare-solo-img {
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+  }
+  .compare-solo figcaption {
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .compare-stage {
+    position: relative;
+  }
+  .compare-stage .diff {
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+  }
+  .compare-tag {
+    position: absolute;
+    top: 10px;
+    z-index: 2;
+    pointer-events: none;
+  }
+  .compare-tag-l {
+    left: 10px;
+  }
+  .compare-tag-r {
+    right: 10px;
+  }
+  .compare-list {
+    margin: 0;
+    padding-left: 1.2em;
+  }
+  .compare-list li {
+    line-height: 1.6;
+  }
+  .compare-list li + li {
+    margin-top: 6px;
+  }
+  .compare-layers {
+    margin: 0;
+    display: grid;
+    gap: 0;
+    font-size: 14px;
+  }
+  .compare-layers > div {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .compare-layers dt {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+  }
+  .compare-layers dd {
+    margin: 0;
+  }
+  .compare-palette {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+  }
+  .compare-palette li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .compare-swatch {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 1px solid var(--line);
+    flex: none;
+  }
+  .compare-palette code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .compare-stats {
+    width: 100%;
+    margin-top: 20px;
+    border: 1px solid var(--line);
+    background: transparent;
+  }
+  .compare-stats .stat-value {
+    font-size: 1.75rem;
+  }
+  .compare-prompt {
+    margin-top: 16px;
+    border: 1px solid var(--line);
+  }
+  .compare-prompt-text {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--muted);
+    overflow-wrap: anywhere;
+  }
+  .compare-takeaways {
+    list-style: none;
+    margin: 0 0 20px;
+    padding: 0;
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+  .compare-takeaways li {
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--sheet);
+  }
+  .compare-takeaways h3 {
+    margin-top: 0;
+  }
+  .compare-takeaways p {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--muted);
+  }
+  .compare-foot {
+    margin-top: 14px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .compare-cta-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .compare .guide-note a,
+  .compare code {
+    color: inherit;
+  }
+</style>

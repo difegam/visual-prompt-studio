@@ -16,7 +16,11 @@ import {
 } from "../domain/avoids";
 import { FONTS, getFont, type FontId } from "../domain/fonts";
 import { PALETTE_VARIATIONS, nameForHex } from "../domain/palettes";
-import { MIXES, PRESETS, clonePalette } from "../domain/presets";
+import { MIXES, PRESETS, clonePalette, getDirection } from "../domain/presets";
+import { getReadabilityHints } from "../domain/readability";
+import { BRIEF_EXAMPLES, applyBriefExample } from "../domain/brief-examples";
+import { openInFor } from "../domain/open-in";
+import { CURRENT_TREND_EDITION } from "../domain/trends";
 import {
   GOALS,
   applyDirection,
@@ -31,7 +35,7 @@ import {
 import {
   ASPECT_LABELS,
   DEFAULT_ASPECTS,
-  DEFAULT_RECIPE,
+  BLANK_RECIPE,
   PATTERNS,
   PATTERNS_BY_TARGET,
   PURPOSES,
@@ -51,7 +55,10 @@ import {
 } from "../domain/recipe";
 import {
   KIND_LABELS,
+  LEARNING_TOPICS,
   REFERENCES,
+  filterReferences,
+  type LearningTopicId,
   type ReferenceKind,
 } from "../domain/references";
 import {
@@ -66,7 +73,13 @@ import {
 } from "../domain/styles";
 import { finishSvg, inksFrom, motifSvg, proofSvg } from "./sketch";
 import { renderDirectionCard } from "./directions";
+import {
+  renderComparisonBar,
+  renderDirectionComparison,
+  toggleComparisonSelection,
+} from "./direction-comparison";
 import { bindInfoPopovers } from "./info-popover";
+import { esc } from "./escape";
 
 /* ── tiny utilities ──────────────────────────────────────────────────── */
 
@@ -75,15 +88,6 @@ function $<T extends HTMLElement = HTMLElement>(id: string): T {
   if (!el) throw new Error(`Missing #${id}`);
   return el as T;
 }
-
-const esc = (s: string): string =>
-  s.replace(
-    /[&<>"']/g,
-    (c) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
-        c
-      ]!,
-  );
 
 type ActiveFilter = { key: string; label: string; value: string };
 
@@ -203,21 +207,27 @@ interface View {
   layer: StyleLayer;
   baseline: boolean;
   refKind: ReferenceKind | "all";
+  refTopic: LearningTopicId | "all";
   presetId: string | null;
   goal: GoalId;
   highlight: string | null;
+  comparisonIds: string[];
 }
 
 export function startApp(): void {
   bindInfoPopovers();
-  const store = new Store(loadSaved() ?? DEFAULT_RECIPE);
+  const savedRecipe = loadSaved();
+  const initialRecipe = savedRecipe ?? { ...BLANK_RECIPE };
+  const store = new Store(initialRecipe);
   const view: View = {
     layer: "design",
     baseline: false,
     refKind: "all",
+    refTopic: "all",
     presetId: null,
     goal: "attention",
     highlight: null,
+    comparisonIds: [],
   };
   let compiled: CompiledPrompt = compile(store.get());
   let frame = 0;
@@ -264,7 +274,7 @@ export function startApp(): void {
 
   if (savedRecipeUnreadable) {
     say(
-      "Your saved recipe couldn't be read, so the example brief is loaded. The old data is kept in this browser.",
+      "Your saved recipe couldn't be read, so a blank brief is loaded. The old data is kept in this browser.",
     );
   }
 
@@ -273,6 +283,11 @@ export function startApp(): void {
 
   /* ── brief ── */
   const idea = $<HTMLTextAreaElement>("f-idea");
+  let ideaBlurred = false;
+  idea.addEventListener("blur", () => {
+    ideaBlurred = true;
+    render();
+  });
   const headline = $<HTMLInputElement>("f-headline");
   const extra = $<HTMLTextAreaElement>("f-extra");
   const detail = $<HTMLInputElement>("f-detail");
@@ -357,6 +372,25 @@ export function startApp(): void {
   const aspectLiveLabel = $("aspect-live-label");
   const aspectLiveOrientation = $("aspect-live-orientation");
   const aspectError = $("aspect-error");
+
+  const examplesEl = $("brief-examples");
+  examplesEl.innerHTML = PURPOSES.map(
+    (p) =>
+      `<button type="button" class="chip" data-example="${p.id}" aria-pressed="false">${esc(BRIEF_EXAMPLES[p.id].pill)}</button>`,
+  ).join("");
+  examplesEl.addEventListener("click", (event) => {
+    const id = (event.target as HTMLElement).closest<HTMLElement>(
+      "[data-example]",
+    )?.dataset.example;
+    const item = PURPOSES.find((p) => p.id === id);
+    if (!item) return;
+    const before = store.get();
+    store.set(applyBriefExample(before, item.id));
+    say(
+      `Loaded the ${BRIEF_EXAMPLES[item.id].pill.toLowerCase()} example. Your look is unchanged.`,
+      () => store.set(before),
+    );
+  });
 
   purpose.addEventListener("change", () => {
     const p = PURPOSES.find((x) => x.id === purpose.value);
@@ -488,10 +522,36 @@ export function startApp(): void {
   const directionStyle = $<HTMLSelectElement>("direction-style");
   const directionGroup = $<HTMLSelectElement>("direction-group");
   const curatedOnly = $<HTMLInputElement>("direction-curated");
-  const trendOnly = $<HTMLInputElement>("direction-2026");
+  const trendOnly = $<HTMLInputElement>("direction-current-edition");
   const directionActiveFilters = $("direction-active-filters");
   const directionPagination = $("direction-pagination");
+  const comparisonBars = [
+    $("direction-comparison-bar"),
+    $("direction-explorer-comparison-bar"),
+  ];
+  const comparisonDialog = $<HTMLDialogElement>("direction-comparison-dialog");
+  const comparisonContent = $("direction-comparison-content");
+  let comparisonOpener: HTMLElement | null = null;
+  let comparisonFallback = comparisonBars[0]!;
+  let applyingFromComparison = false;
   let directionPage = 1;
+
+  function selectedComparisonDirections() {
+    return view.comparisonIds.flatMap((id) => {
+      const direction = getDirection(id);
+      return direction ? [direction] : [];
+    });
+  }
+
+  function renderComparisonBars(): void {
+    const selected = selectedComparisonDirections();
+    const markup = renderComparisonBar(selected);
+    for (const bar of comparisonBars) {
+      bar.hidden = selected.length === 0;
+      bar.innerHTML = markup;
+    }
+  }
+
   function renderDirections(recipe: Recipe): void {
     const goal = GOALS.find((item) => item.id === view.goal)!;
     const directions = getRecommendations(recipe.purpose, view.goal, 4);
@@ -504,6 +564,7 @@ export function startApp(): void {
           variant: "suggested",
           goal: view.goal,
           selected: view.presetId === direction.id,
+          compared: view.comparisonIds.includes(direction.id),
         }),
       )
       .join("");
@@ -511,7 +572,7 @@ export function startApp(): void {
   }
   function renderDirectionSummary(recipe: Recipe): void {
     const el = $("direction-summary");
-    const direction = PRESETS.find((item) => item.id === view.presetId);
+    const direction = getDirection(view.presetId);
     el.hidden = !direction;
     if (!direction) return;
     const layers = [
@@ -550,11 +611,46 @@ export function startApp(): void {
     .join("");
   directionStyle.innerHTML = `<option value="all">All styles</option>${styleOptions}`;
 
+  function refreshComparisonUi(): void {
+    const recipe = store.get();
+    renderDirections(recipe);
+    renderDirectionExplorer();
+    renderComparisonBars();
+  }
+
+  function toggleComparedDirection(
+    id: string | undefined,
+    origin: HTMLElement,
+  ): void {
+    if (!id || !getDirection(id)) return;
+    const result = toggleComparisonSelection(view.comparisonIds, id);
+    view.comparisonIds = [...result.ids];
+    refreshComparisonUi();
+
+    const direction = getDirection(id)!;
+    const replaced = getDirection(result.replacedId);
+    say(
+      replaced
+        ? `Replaced “${replaced.name}” with “${direction.name}” in the comparison.`
+        : view.comparisonIds.includes(id)
+          ? `Added “${direction.name}” to the comparison.`
+          : `Removed “${direction.name}” from the comparison.`,
+    );
+    requestAnimationFrame(() => {
+      const replacement = [
+        ...origin.querySelectorAll<HTMLButtonElement>(
+          "[data-compare-direction]",
+        ),
+      ].find((button) => button.dataset.compareDirection === id);
+      replacement?.focus();
+    });
+  }
+
   function applyChosenDirection(
     id: string | undefined,
     origin?: HTMLElement,
   ): void {
-    const direction = PRESETS.find((item) => item.id === id);
+    const direction = getDirection(id);
     if (!direction) return;
     const before = store.get();
     view.presetId = direction.id;
@@ -568,16 +664,23 @@ export function startApp(): void {
       replacement?.focus();
     });
     say(
-      direction.trendYear === 2026
+      direction.trendYear !== undefined
         ? `Applied “${direction.name}” visual starter. Your content and output settings are unchanged.`
         : `Applied “${direction.name}”. Your brief and output settings are unchanged.`,
       () => store.set(before),
     );
+    view.comparisonIds = [];
   }
   presetsEl.addEventListener("click", (event) => {
-    const button = (event.target as HTMLElement).closest<HTMLButtonElement>(
-      "[data-preset]",
+    const target = event.target as HTMLElement;
+    const compare = target.closest<HTMLButtonElement>(
+      "[data-compare-direction]",
     );
+    if (compare) {
+      toggleComparedDirection(compare.dataset.compareDirection, presetsEl);
+      return;
+    }
+    const button = target.closest<HTMLButtonElement>("[data-preset]");
     if (button) applyChosenDirection(button.dataset.preset, presetsEl);
   });
 
@@ -588,7 +691,7 @@ export function startApp(): void {
       goal: directionGoal.value as DirectionFilters["goal"],
       styleId: directionStyle.value,
       curatedOnly: curatedOnly.checked,
-      trendYear: trendOnly.checked ? 2026 : "all",
+      trendYear: trendOnly.checked ? CURRENT_TREND_EDITION.year : "all",
     };
     directionActiveFilters.innerHTML = renderFilterSummary("directions", [
       ...(directionSearch.value.trim()
@@ -633,7 +736,13 @@ export function startApp(): void {
         ? [{ key: "curatedOnly", label: "Curated picks", value: "Only" }]
         : []),
       ...(trendOnly.checked
-        ? [{ key: "trendYear", label: "Edition", value: "2026 starters" }]
+        ? [
+            {
+              key: "trendYear",
+              label: "Edition",
+              value: CURRENT_TREND_EDITION.label,
+            },
+          ]
         : []),
     ]);
     const filtered = filterDirections(PRESETS, filters).toSorted(
@@ -679,6 +788,7 @@ export function startApp(): void {
                   ? direction.goals[0]!
                   : (directionGoal.value as GoalId),
               selected: view.presetId === direction.id,
+              compared: view.comparisonIds.includes(direction.id),
             }),
           )
           .join("")}
@@ -690,13 +800,72 @@ export function startApp(): void {
       ? groupsMarkup
       : `<div class="empty-directions"><p>No directions match these filters.</p><button type="button" class="btn btn-ghost btn-sm" data-clear-direction-search>Clear search and filters</button></div>`;
     $("explorer-status").textContent =
-      `${page.total} ${page.total === 1 ? "direction" : "directions"}${curatedOnly.checked ? " · studio-curated picks" : ""}${trendOnly.checked ? " · 2026 starters" : ""}`;
+      `${page.total} ${page.total === 1 ? "direction" : "directions"}${curatedOnly.checked ? " · studio-curated picks" : ""}${trendOnly.checked ? ` · ${CURRENT_TREND_EDITION.label}` : ""}`;
     directionPagination.innerHTML =
       page.pageCount > 1
         ? `<div class="join"><button class="btn btn-sm join-item" type="button" data-page="${page.page - 1}" ${page.page === 1 ? "disabled" : ""} aria-label="Previous page">Previous</button><span class="btn btn-sm join-item pagination-current" aria-current="page">Page ${page.page} of ${page.pageCount}</span><button class="btn btn-sm join-item" type="button" data-page="${page.page + 1}" ${page.page === page.pageCount ? "disabled" : ""} aria-label="Next page">Next</button></div>`
         : "";
   }
   renderDirectionExplorer();
+  renderComparisonBars();
+
+  for (const bar of comparisonBars) {
+    bar.addEventListener("click", (event) => {
+      const target = event.target as HTMLElement;
+      if (target.closest("[data-clear-comparison]")) {
+        view.comparisonIds = [];
+        refreshComparisonUi();
+        say("Cleared the direction comparison.");
+        requestAnimationFrame(() =>
+          presetsEl
+            .querySelector<HTMLButtonElement>("[data-compare-direction]")
+            ?.focus(),
+        );
+        return;
+      }
+      const open = target.closest<HTMLButtonElement>("[data-open-comparison]");
+      if (!open || open.disabled) return;
+      const selected = selectedComparisonDirections();
+      if (selected.length !== 2) return;
+      comparisonContent.innerHTML = renderDirectionComparison(
+        [selected[0]!, selected[1]!],
+        store.get(),
+      );
+      comparisonOpener = open;
+      comparisonFallback = bar;
+      setProofOpen(false);
+      if (!comparisonDialog.open) comparisonDialog.showModal();
+    });
+  }
+
+  comparisonContent.addEventListener("click", (event) => {
+    const apply = (event.target as HTMLElement).closest<HTMLButtonElement>(
+      "[data-preset]",
+    );
+    if (!apply) return;
+    applyingFromComparison = true;
+    applyChosenDirection(apply.dataset.preset);
+    comparisonDialog.close();
+    requestAnimationFrame(() => $("direction-summary").focus());
+  });
+
+  comparisonDialog.addEventListener("close", () => {
+    if (applyingFromComparison) {
+      applyingFromComparison = false;
+      comparisonOpener = null;
+      return;
+    }
+    const focusTarget =
+      comparisonOpener?.isConnected && !comparisonOpener.hidden
+        ? comparisonOpener
+        : comparisonFallback;
+    comparisonOpener = null;
+    requestAnimationFrame(() => focusTarget.focus());
+  });
+  comparisonDialog.addEventListener("click", (event) => {
+    if (event.target === comparisonDialog) comparisonDialog.close();
+  });
+
   directionSearch.addEventListener("input", () => {
     directionPage = 1;
     renderDirectionExplorer();
@@ -728,6 +897,16 @@ export function startApp(): void {
       directionSearch.focus();
       return;
     }
+    const compare = target.closest<HTMLButtonElement>(
+      "[data-compare-direction]",
+    );
+    if (compare) {
+      toggleComparedDirection(
+        compare.dataset.compareDirection,
+        directionResults,
+      );
+      return;
+    }
     const button = target.closest<HTMLButtonElement>("[data-preset]");
     if (button) applyChosenDirection(button.dataset.preset, directionResults);
   });
@@ -742,7 +921,7 @@ export function startApp(): void {
       goal: "direction-goal",
       styleId: "direction-style",
       curatedOnly: "direction-curated",
-      trendYear: "direction-2026",
+      trendYear: "direction-current-edition",
     };
     if (remove) {
       const focusId = focusIds[remove.dataset.removeFilter ?? ""];
@@ -752,7 +931,7 @@ export function startApp(): void {
       if (focusId === "direction-goal") directionGoal.value = "all";
       if (focusId === "direction-style") directionStyle.value = "all";
       if (focusId === "direction-curated") curatedOnly.checked = false;
-      if (focusId === "direction-2026") trendOnly.checked = false;
+      if (focusId === "direction-current-edition") trendOnly.checked = false;
       directionPage = 1;
       renderDirectionExplorer();
       requestAnimationFrame(() => $(focusId).focus());
@@ -1454,31 +1633,66 @@ export function startApp(): void {
   const copyIcon = $("btn-copy-icon");
   const copyIconHtml = copyIcon.innerHTML;
   const copyButtons = [$("btn-copy"), $("btn-copy-mobile")];
+  const promptBox = promptEl.closest<HTMLElement>(".prompt-box");
   let copyIconTimer = 0;
   const setCopyLabel = (text: string): void => {
     for (const b of copyButtons) {
       (b.querySelector(".btn-label") ?? b).textContent = text;
     }
   };
+  /** Reveal the selected prompt so the user can copy it by hand. */
+  const copyBlocked = (): void => {
+    promptEl.closest("details")?.setAttribute("open", "");
+    say("Copy was blocked. The prompt is selected: press Ctrl+C or ⌘C.");
+  };
   async function copyPrompt(): Promise<void> {
+    for (const b of copyButtons) {
+      b.classList.remove("btn-copy-press");
+      void b.offsetWidth; // force a reflow so the CSS animation restarts
+      b.classList.add("btn-copy-press");
+    }
+    setCopyLabel("Pressing...");
     const ok = await copyText(compiled.text, promptEl);
-    if (!ok) promptEl.closest("details")?.setAttribute("open", "");
     if (ok) {
+      if (promptBox) {
+        promptBox.classList.remove("is-pressing");
+        void promptBox.offsetWidth; // force a reflow so the animation restarts
+        promptBox.classList.add("is-pressing");
+      }
       copyIcon.innerHTML =
         '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m5 12 5 5 9-10"></path></svg>';
-      setCopyLabel("Copied ✓");
+      setCopyLabel("Proof approved ✓");
       window.clearTimeout(copyIconTimer);
       copyIconTimer = window.setTimeout(() => {
         copyIcon.innerHTML = copyIconHtml;
         setCopyLabel("Copy prompt");
-      }, 1500);
+        for (const b of copyButtons) b.classList.remove("btn-copy-press");
+        if (promptBox) promptBox.classList.remove("is-pressing");
+      }, 1800);
+    }
+    if (!ok) {
+      copyBlocked();
+      return;
     }
     say(
-      ok
-        ? `Copied ${compiled.text.length.toLocaleString()} characters.`
-        : "Copy was blocked. The prompt is selected: press Ctrl+C or ⌘C.",
+      `Copied ${compiled.text.length.toLocaleString()} characters. Proof approved.`,
     );
   }
+  const openInBtn = $("btn-open-in") as HTMLAnchorElement;
+  // A real link, so the browser opens the tab and popup blockers stay out of it.
+  openInBtn.addEventListener("click", () => {
+    const link = openInFor(store.get().target, compiled.text);
+    if (!link) return;
+    const name = link.label.replace(/^(Open in|Copy & open) /, "");
+    if (!link.needsCopy) {
+      say(`Opened ${name} with your prompt.`);
+      return;
+    }
+    void copyText(compiled.text, promptEl).then((ok) => {
+      if (ok) say(`Prompt copied. Paste it into ${name} (⌘V / Ctrl+V).`);
+      else copyBlocked();
+    });
+  });
   $("btn-copy").addEventListener("click", () => void copyPrompt());
   $("btn-copy-mobile").addEventListener("click", () => void copyPrompt());
 
@@ -1510,6 +1724,28 @@ export function startApp(): void {
       proofToggle.focus();
     }
   });
+
+  const readabilityHint = $("readability-hint");
+  function renderReadabilityHint(recipe: Recipe): void {
+    const hint = getReadabilityHints(recipe)[0];
+    readabilityHint.hidden = !hint;
+    readabilityHint.innerHTML = hint
+      ? `<span>${esc(hint.message)}</span><button type="button" class="btn btn-sm" data-readability-target="${hint.target}">${esc(hint.actionLabel)}</button>`
+      : "";
+  }
+  readabilityHint.addEventListener("click", (event) => {
+    const action = (event.target as HTMLElement).closest<HTMLButtonElement>(
+      "[data-readability-target]",
+    );
+    if (!action) return;
+    const field =
+      action.dataset.readabilityTarget === "headline" ? headline : extra;
+    setProofOpen(false);
+    field.closest("details")?.setAttribute("open", "");
+    field.scrollIntoView({ block: "center" });
+    requestAnimationFrame(() => field.focus());
+  });
+
   copyIcon.addEventListener("click", () => void copyPrompt());
   $("btn-copy").title = "Ctrl+Enter or ⌘+Enter";
   $("btn-copy-neg").addEventListener("click", async () => {
@@ -1600,8 +1836,8 @@ export function startApp(): void {
   $("btn-reset").addEventListener("click", () => {
     const before = store.get();
     view.presetId = null;
-    store.set(DEFAULT_RECIPE);
-    say("Reset to the example brief.", () => store.set(before));
+    store.set(BLANK_RECIPE);
+    say("Reset to a blank brief.", () => store.set(before));
   });
 
   /* ── inspiration ── */
@@ -1623,7 +1859,61 @@ export function startApp(): void {
     );
     if (!b) return;
     view.refKind = b.dataset.kind as View["refKind"];
+    // A topic only means something under Design learning; never keep it hidden.
+    view.refTopic = "all";
     renderRefs(store.get());
+  });
+  const learningToolsEl = $("ref-learning-tools");
+  const topicFiltersEl = $("ref-topic-filters");
+  const learningPathsEl = $("ref-learning-paths");
+  const refActiveFilters = $("ref-active-filters");
+  // Each path selects an existing topic; the articles stay in the source cards.
+  const LEARNING_PATHS: readonly {
+    label: string;
+    topic: LearningTopicId;
+  }[] = [
+    { label: "Focus and hierarchy", topic: "hierarchy" },
+    { label: "Type and legibility", topic: "typography" },
+    { label: "Material and place", topic: "story-place" },
+  ];
+  topicFiltersEl.innerHTML = [
+    `<button type="button" class="chip" data-topic="all">All topics</button>`,
+  ]
+    .concat(
+      LEARNING_TOPICS.map(
+        (t) =>
+          `<button type="button" class="chip" data-topic="${t.id}">${esc(t.label)}</button>`,
+      ),
+    )
+    .join("");
+  learningPathsEl.innerHTML = LEARNING_PATHS.map(
+    (p) =>
+      `<button type="button" class="btn btn-sm" data-topic="${p.topic}">${esc(p.label)}</button>`,
+  ).join("");
+  const setRefTopic = (e: Event) => {
+    const b = (e.target as HTMLElement).closest<HTMLButtonElement>(
+      "[data-topic]",
+    );
+    if (!b) return;
+    view.refTopic = b.dataset.topic as View["refTopic"];
+    renderRefs(store.get());
+  };
+  topicFiltersEl.addEventListener("click", setRefTopic);
+  learningPathsEl.addEventListener("click", setRefTopic);
+  refActiveFilters.addEventListener("click", (event) => {
+    const target = event.target as HTMLElement;
+    const remove = target.closest<HTMLButtonElement>("[data-remove-filter]");
+    const clear = target.closest<HTMLButtonElement>("[data-clear-filter-area]");
+    if (!remove && !clear) return;
+    // Removing the topic keeps the kind; removing the kind drops both.
+    const topicOnly = remove?.dataset.removeFilter === "topic";
+    if (!topicOnly) view.refKind = "all";
+    view.refTopic = "all";
+    renderRefs(store.get());
+    const next = topicOnly
+      ? topicFiltersEl.querySelector<HTMLElement>('[data-topic="all"]')
+      : filtersEl.querySelector<HTMLElement>('[data-kind="all"]');
+    next?.focus();
   });
   const refsEl = $("refs");
   const refsPrev = $<HTMLButtonElement>("refs-prev");
@@ -1673,11 +1963,31 @@ export function startApp(): void {
       getStyle(r.styles.design).name,
       getStyle(r.styles.technique).name,
     ].filter((x): x is string => x !== null);
-    const references = REFERENCES.filter(
-      (x) => view.refKind === "all" || x.kind === view.refKind,
+    const learning = view.refKind === "learning";
+    learningToolsEl.hidden = !learning;
+    press(
+      learningToolsEl,
+      "[data-topic]",
+      "aria-pressed",
+      (el) => el.dataset.topic === view.refTopic,
+    );
+    const topicLabel =
+      LEARNING_TOPICS.find((t) => t.id === view.refTopic)?.label ?? "";
+    refActiveFilters.innerHTML = renderFilterSummary("sources", [
+      ...(view.refKind === "all"
+        ? []
+        : [{ key: "kind", label: "Source", value: KIND_LABELS[view.refKind] }]),
+      ...(learning && view.refTopic !== "all"
+        ? [{ key: "topic", label: "Topic", value: topicLabel }]
+        : []),
+    ]);
+    const references = filterReferences(
+      REFERENCES,
+      view.refKind,
+      view.refTopic,
     );
     $("ref-filter-status").textContent =
-      `${references.length} ${references.length === 1 ? "source" : "sources"}${view.refKind === "all" ? "" : ` · ${KIND_LABELS[view.refKind]}`}`;
+      `${references.length} ${references.length === 1 ? "source" : "sources"}${view.refKind === "all" ? "" : ` · ${KIND_LABELS[view.refKind]}`}${learning && view.refTopic !== "all" ? ` · ${topicLabel}` : ""}`;
     const infoIcon = `<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4M12 8h.01"></path></svg>`;
     refsEl.innerHTML = references
       .map((x) => {
@@ -1755,6 +2065,7 @@ export function startApp(): void {
     sync(goalPicker, view.goal);
     renderDirections(r);
     renderDirectionExplorer();
+    renderComparisonBars();
     if (document.activeElement !== extra) sync(extra, r.extraText.join("\n"));
     renderAspectOptions(r);
     const hasBriefText = Boolean(r.headline || r.detail || r.extraText.length);
@@ -1765,7 +2076,8 @@ export function startApp(): void {
     }
     briefTextSeen = hasBriefText;
     const ideaIsInvalid = r.idea.trim().length < 3;
-    $("idea-error").hidden = !ideaIsInvalid;
+    const showIdeaError = ideaBlurred && ideaIsInvalid;
+    $("idea-error").hidden = !showIdeaError;
     idea.setAttribute("aria-invalid", String(ideaIsInvalid));
     $("f-aspect")
       .querySelectorAll<HTMLInputElement>("[data-aspect]")
@@ -1782,6 +2094,13 @@ export function startApp(): void {
       "[data-preset]",
       "aria-current",
       (el) => el.dataset.preset === view.presetId,
+    );
+
+    press(
+      examplesEl,
+      "[data-example]",
+      "aria-pressed",
+      (el) => r.idea === BRIEF_EXAMPLES[el.dataset.example as PurposeId]?.idea,
     );
 
     // layers
@@ -1943,6 +2262,7 @@ export function startApp(): void {
       uid: "proof",
       label: `Sketch: ${design.name} layout, ${getStyle(r.styles.art).name}, ${getStyle(r.styles.technique).name} finish`,
     });
+    renderReadabilityHint(r);
     const typeName = lettering
       ? `${lettering.name} lettering`
       : r.font === "style"
@@ -1971,7 +2291,7 @@ export function startApp(): void {
       targetNote.textContent = noteText;
       if ($("f-target").dataset.motion) {
         targetNote.classList.remove("is-in");
-        void targetNote.offsetWidth;
+        void targetNote.offsetWidth; // force a reflow so the animation restarts
         targetNote.classList.add("is-in");
       }
     }
@@ -2013,6 +2333,12 @@ export function startApp(): void {
       `${compiled.text.length.toLocaleString()} characters`;
     $("neg-wrap").hidden = compiled.negative === null;
     $("btn-copy-neg").hidden = compiled.negative === null;
+    const openLink = openInFor(r.target, compiled.text);
+    openInBtn.hidden = openLink === null;
+    if (openLink) {
+      openInBtn.textContent = openLink.label;
+      openInBtn.href = openLink.url;
+    }
     if (compiled.negative) renderPrompt(compiled.negative, negEl);
     $("notices").innerHTML = compiled.notices
       .map((n) => `<li class="${n.level}">${esc(n.message)}</li>`)

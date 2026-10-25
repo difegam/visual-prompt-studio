@@ -6,6 +6,7 @@ import StudioDisclosure from "@/layouts/components/StudioDisclosure.astro";
 import StudioBar from "@/layouts/components/StudioBar.astro";
 import FieldInfo from "@/layouts/components/FieldInfo.astro";
 import SiteFooter from "@/layouts/components/SiteFooter.astro";
+import { CURRENT_TREND_EDITION } from "@/lib/prompt-studio/domain/trends";
 ---
 
 <div id="studio-app">
@@ -81,11 +82,18 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
           class="idea textarea"
           rows="2"
           maxlength="400"
+          placeholder="A concert poster for a jazz quartet performing at a rooftop venue..."
           aria-describedby="idea-error"
           spellcheck="true"></textarea>
         <p class="field-error" id="idea-error" hidden>
-          Describe it in a few words so the model has a subject.
+          Describe what you're making in a few words so the AI has a clear
+          subject to work with.
         </p>
+
+        <div class="examples" role="group" aria-labelledby="examples-label">
+          <span class="examples-label" id="examples-label">Try an example</span>
+          <div class="chips" id="brief-examples"></div>
+        </div>
 
         <div class="grid-fields">
           <StudioField
@@ -139,6 +147,7 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
                   class="input"
                   type="text"
                   maxlength="80"
+                  placeholder="SUMMER NIGHTS"
                   autocomplete="off"
                 />
               </StudioField>
@@ -149,8 +158,13 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
                 hint="one line each, up to 4"
                 info="Add supporting words such as a date, venue, or credit. Put each separate text element on its own line."
               >
-                <textarea id="f-extra" class="textarea" rows="2" maxlength="323"
-                ></textarea>
+                <textarea
+                  id="f-extra"
+                  class="textarea"
+                  rows="2"
+                  maxlength="323"
+                  placeholder="August 15, 2026
+Brooklyn, NY"></textarea>
               </StudioField>
             </div>
             <div class="field span2">
@@ -201,6 +215,7 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
                 class="input"
                 type="text"
                 maxlength="240"
+                placeholder="Musicians silhouetted against a golden sunset skyline"
                 autocomplete="off"
               />
             </StudioField>
@@ -229,13 +244,22 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
             aria-labelledby="directions-h"
           >
           </div>
-          <p class="direction-summary" id="direction-summary" hidden></p>
+          <div id="direction-comparison-bar" tabindex="-1" hidden></div>
+          <p
+            class="direction-summary"
+            id="direction-summary"
+            tabindex="-1"
+            hidden
+          >
+          </p>
           <p class="curation-note">
             Curated picks are studio recommendations, not usage counts.
           </p>
           <details class="direction-explorer">
             <summary class="btn btn-ghost">Explore all directions</summary>
             <div class="explorer-body">
+              <div id="direction-explorer-comparison-bar" tabindex="-1" hidden>
+              </div>
               <div class="explorer-filters" aria-label="Filter all directions">
                 <label class="explorer-search" for="direction-search"
                   >Search by name, style, or goal
@@ -276,9 +300,13 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
                   />
                   <span>Curated picks only</span>
                 </label>
-                <label class="curated-filter" for="direction-2026">
-                  <input id="direction-2026" class="checkbox" type="checkbox" />
-                  <span>2026 starters only</span>
+                <label class="curated-filter" for="direction-current-edition">
+                  <input
+                    id="direction-current-edition"
+                    class="checkbox"
+                    type="checkbox"
+                  />
+                  <span>{CURRENT_TREND_EDITION.label} only</span>
                 </label>
               </div>
               <div id="direction-active-filters"></div>
@@ -839,6 +867,14 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
           </figcaption>
         </figure>
 
+        <div
+          id="readability-hint"
+          class="alert alert-soft readability-hint"
+          role="note"
+          hidden
+        >
+        </div>
+
         <div class="target-block">
           <div class="field-heading">
             <span class="mini-label" id="target-label">Send to</span>
@@ -934,6 +970,13 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
             <button type="button" class="btn" id="btn-copy-neg" hidden
               >Copy negative</button
             >
+            <a
+              class="btn"
+              id="btn-open-in"
+              target="_blank"
+              rel="noopener noreferrer"
+              hidden>Open in ChatGPT</a
+            >
           </div>
           <p class="baseline" id="baseline" hidden></p>
           <p class="status" id="status" role="status" aria-live="polite"></p>
@@ -954,7 +997,7 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
               class="input"
               type="text"
               maxlength="240"
-              placeholder="e.g. the background, to flat cobalt blue"
+              placeholder="the background to a deep navy gradient"
             />
           </div>
           <div class="field">
@@ -971,7 +1014,7 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
               class="input"
               type="text"
               maxlength="240"
-              placeholder="e.g. the vase, its position and all text"
+              placeholder="the band members, their instruments, and the headline text"
             />
           </div>
         </div>
@@ -995,7 +1038,7 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
               type="text"
               autocomplete="off"
               spellcheck="false"
-              placeholder="e.g. 2378124706"
+              placeholder="2378124706"
             />
           </div>
           <p class="field-error" id="sref-error" hidden></p>
@@ -1024,7 +1067,7 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
                 min="0"
                 max="1000"
                 step="50"
-                placeholder="default"
+                placeholder="250"
               />
             </StudioField>
           </div>
@@ -1136,6 +1179,25 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
           </button>
         </div>
       </div>
+      <div id="ref-active-filters"></div>
+      <div class="learning-tools" id="ref-learning-tools" hidden>
+        <div class="learning-paths">
+          <h3 id="ref-paths-h">Start with a principle</h3>
+          <div
+            id="ref-learning-paths"
+            role="group"
+            aria-labelledby="ref-paths-h"
+          >
+          </div>
+        </div>
+        <div
+          class="filters"
+          id="ref-topic-filters"
+          role="toolbar"
+          aria-label="Filter learning sources by topic"
+        >
+        </div>
+      </div>
       <p
         id="ref-filter-status"
         class="sr-only"
@@ -1168,6 +1230,37 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
       >Copy prompt</button
     >
   </div>
+
+  <dialog
+    class="modal direction-comparison-modal"
+    id="direction-comparison-dialog"
+    aria-labelledby="direction-comparison-title"
+  >
+    <div class="modal-box direction-comparison-box">
+      <header class="direction-comparison-header">
+        <div>
+          <h2 id="direction-comparison-title">Compare directions</h2>
+          <p>See how each direction changes the same current brief.</p>
+        </div>
+        <form method="dialog" class="direction-comparison-close-form">
+          <button
+            type="submit"
+            class="btn btn-ghost btn-sm btn-square"
+            aria-label="Close direction comparison"
+            autofocus
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="m6 6 12 12M18 6 6 18"></path>
+            </svg>
+          </button>
+        </form>
+      </header>
+      <div id="direction-comparison-content"></div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button aria-label="Close direction comparison">close</button>
+    </form>
+  </dialog>
 
   <dialog id="dlg-aspect" aria-labelledby="aspect-dialog-title">
     <form method="dialog" class="dlg aspect-dialog" id="aspect-form">

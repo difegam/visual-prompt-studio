@@ -10,6 +10,11 @@ let styles;
 let references;
 let recipe;
 let cards;
+let trends;
+let readability;
+let comparison;
+let openIn;
+let briefExamples;
 
 before(async () => {
   server = await createServer({
@@ -32,6 +37,21 @@ before(async () => {
     "/src/lib/prompt-studio/domain/recipe.ts",
   );
   cards = await server.ssrLoadModule("/src/lib/prompt-studio/ui/directions.ts");
+  trends = await server.ssrLoadModule(
+    "/src/lib/prompt-studio/domain/trends.ts",
+  );
+  readability = await server.ssrLoadModule(
+    "/src/lib/prompt-studio/domain/readability.ts",
+  );
+  comparison = await server.ssrLoadModule(
+    "/src/lib/prompt-studio/ui/direction-comparison.ts",
+  );
+  openIn = await server.ssrLoadModule(
+    "/src/lib/prompt-studio/domain/open-in.ts",
+  );
+  briefExamples = await server.ssrLoadModule(
+    "/src/lib/prompt-studio/domain/brief-examples.ts",
+  );
 });
 
 after(async () => {
@@ -43,7 +63,12 @@ test("suggested starters explain their layers and link to their first resolved s
   const source = references.getReference(starter.sourceIds[0]);
   const html = cards.renderDirectionCard(
     { ...starter, sourceIds: ["missing", ...starter.sourceIds] },
-    { variant: "suggested", goal: "attention", selected: true },
+    {
+      variant: "suggested",
+      goal: "attention",
+      selected: true,
+      compared: false,
+    },
   );
   const card = parse(html);
   assert.ok(card.textContent.includes("2026 starter"));
@@ -76,6 +101,7 @@ test("explorer starters use an info popover for learning and retain delegation",
       variant: "explorer",
       goal: "attention",
       selected: false,
+      compared: false,
     }),
   );
   const trigger = card.querySelector("button.info-trigger");
@@ -107,6 +133,7 @@ test("legacy directions omit educational markup in both variants", () => {
         variant,
         goal: "attention",
         selected: false,
+        compared: false,
       }),
     );
     assert.equal(
@@ -134,7 +161,7 @@ test("direction cards escape text and attributes and skip unresolved learning li
           tradeoff: "A & B",
           sourceIds: ["missing"],
         },
-        { variant, goal: "attention", selected: false },
+        { variant, goal: "attention", selected: false, compared: false },
       ),
     );
     assert.equal(card.querySelector("script, img, [data-injected]"), null);
@@ -145,6 +172,148 @@ test("direction cards escape text and attributes and skip unresolved learning li
       card.querySelector("button[data-preset]").getAttribute("data-preset"),
       'test" data-injected="yes',
     );
+  }
+});
+
+test("comparison selection toggles stable IDs and replaces the oldest", () => {
+  assert.deepEqual(comparison.toggleComparisonSelection([], "a"), {
+    ids: ["a"],
+  });
+  assert.deepEqual(comparison.toggleComparisonSelection(["a"], "b"), {
+    ids: ["a", "b"],
+  });
+  assert.deepEqual(comparison.toggleComparisonSelection(["a", "b"], "a"), {
+    ids: ["b"],
+  });
+  assert.deepEqual(comparison.toggleComparisonSelection(["a", "b"], "c"), {
+    ids: ["b", "c"],
+    replacedId: "a",
+  });
+  assert.deepEqual(comparison.toggleComparisonSelection(["a", "a", ""], "b"), {
+    ids: ["a", "b"],
+  });
+  assert.deepEqual(comparison.toggleComparisonSelection(["a"], "   "), {
+    ids: ["a"],
+  });
+});
+
+test("comparison bar reflects one or two selected directions", () => {
+  const selected = data.DIRECTIONS.slice(0, 2);
+  const one = parse(comparison.renderComparisonBar(selected.slice(0, 1)));
+  assert.ok(one.textContent.includes(selected[0].name));
+  assert.ok(one.textContent.includes("1 of 2 selected"));
+  assert.ok(one.querySelector("[data-clear-comparison]"));
+  assert.ok(
+    Object.hasOwn(
+      one.querySelector("[data-open-comparison]").attributes,
+      "disabled",
+    ),
+  );
+
+  const two = parse(comparison.renderComparisonBar(selected));
+  assert.ok(two.textContent.includes("2 of 2 selected"));
+  assert.ok(
+    !Object.hasOwn(
+      two.querySelector("[data-open-comparison]").attributes,
+      "disabled",
+    ),
+  );
+});
+
+test("both direction card variants expose comparison selection", () => {
+  const starter = data.DIRECTIONS[0];
+  for (const variant of ["suggested", "explorer"]) {
+    const unselected = parse(
+      cards.renderDirectionCard(starter, {
+        variant,
+        goal: "attention",
+        selected: false,
+        compared: false,
+      }),
+    ).querySelector("[data-compare-direction]");
+    assert.equal(unselected.getAttribute("data-compare-direction"), starter.id);
+    assert.equal(unselected.getAttribute("aria-pressed"), "false");
+    assert.equal(unselected.textContent, "Add to comparison");
+
+    const selected = parse(
+      cards.renderDirectionCard(starter, {
+        variant,
+        goal: "attention",
+        selected: false,
+        compared: true,
+      }),
+    ).querySelector("[data-compare-direction]");
+    assert.equal(selected.getAttribute("aria-pressed"), "true");
+    assert.equal(selected.textContent, "Selected for comparison");
+  }
+});
+
+test("comparison resolves inherited and starter type and palette values", () => {
+  const legacy = data.DIRECTIONS.find(({ id }) => id === "gallery");
+  const starter = data.DIRECTIONS.find(({ id }) => id === "one-loud-detail");
+  const html = comparison.renderDirectionComparison([legacy, starter], {
+    ...recipe.BLANK_RECIPE,
+    font: "fraunces",
+  });
+  const output = parse(html);
+  const columns = output.querySelectorAll(".direction-comparison-column");
+  assert.equal(columns.length, 2);
+  assert.ok(columns[0].textContent.includes("Fraunces"));
+  assert.ok(columns[1].textContent.includes("Archivo Black"));
+  for (const color of starter.patch.palette) {
+    assert.ok(columns[1].innerHTML.includes(color.hex));
+  }
+});
+
+test("comparison escapes content and previews only actual non-empty text", () => {
+  const first = data.DIRECTIONS[0];
+  const second = data.DIRECTIONS[1];
+  const html = comparison.renderDirectionComparison(
+    [
+      {
+        ...first,
+        name: '<img src=x onerror="bad">',
+        principle: "<script>bad</script>",
+      },
+      second,
+    ],
+    {
+      ...recipe.BLANK_RECIPE,
+      headline: "  <script>HEAD</script>  ",
+      extraText: ["   ", "  <b>REAL LINE</b>  ", ""],
+    },
+  );
+  const output = parse(html);
+  assert.equal(output.querySelector("script, img, b:not(dt b)"), null);
+  assert.ok(output.textContent.includes("<script>bad</script>"));
+  assert.ok(output.textContent.includes("<script>HEAD</script>"));
+  assert.ok(output.textContent.includes("<b>REAL LINE</b>"));
+  assert.ok(!output.textContent.includes("SUMMER NIGHTS"));
+});
+
+test("blank recipe carries no brief text", () => {
+  const { idea, headline, detail, extraText } = recipe.BLANK_RECIPE;
+  assert.deepEqual([idea, headline, detail, extraText], ["", "", "", []]);
+});
+
+test("comparison includes apply actions and available learning guidance", () => {
+  const directions = data.DIRECTIONS.slice(0, 2);
+  const output = parse(
+    comparison.renderDirectionComparison(directions, recipe.BLANK_RECIPE),
+  );
+  assert.equal(output.querySelectorAll("button[data-preset]").length, 2);
+  for (const direction of directions) {
+    const column = output.querySelector(
+      `[data-direction-id="${direction.id}"]`,
+    );
+    assert.equal(
+      column.querySelector("button[data-preset]").getAttribute("data-preset"),
+      direction.id,
+    );
+    assert.ok(column.textContent.includes(direction.principle));
+    assert.ok(column.textContent.includes(direction.tradeoff));
+    assert.ok(column.textContent.includes("Try this"));
+    assert.ok(column.textContent.includes(direction.practiceTip));
   }
 });
 
@@ -183,12 +352,270 @@ function validateStarter(direction) {
   assert.equal(direction.patch.fontItalic, false);
   assert.ok(
     recipe.RecipeSchema.safeParse({
-      ...recipe.DEFAULT_RECIPE,
+      ...recipe.BLANK_RECIPE,
+      idea: "A placeholder idea",
       ...direction.patch,
     }).success,
     `${direction.id} must contain valid recipe values`,
   );
 }
+
+function validateTrendCatalog(editions, directions) {
+  const years = editions.map(({ year }) => year);
+  assert.equal(
+    new Set(years).size,
+    years.length,
+    "Edition years must be unique",
+  );
+  const directionsById = new Map(
+    directions.map((direction) => [direction.id, direction]),
+  );
+  for (const edition of editions) {
+    assert.equal(
+      new Set(edition.directionIds).size,
+      edition.directionIds.length,
+      `${edition.year} direction IDs must be unique`,
+    );
+    for (const directionId of edition.directionIds) {
+      const direction = directionsById.get(directionId);
+      assert.ok(direction, `Unknown edition direction: ${directionId}`);
+      assert.equal(
+        direction.trendYear,
+        edition.year,
+        `${directionId} must belong to ${edition.year}`,
+      );
+    }
+  }
+  for (const direction of directions) {
+    if (direction.trendYear === undefined) continue;
+    const edition = editions.find(({ year }) => year === direction.trendYear);
+    assert.ok(edition, `Unknown direction edition: ${direction.trendYear}`);
+    assert.ok(
+      edition.directionIds.includes(direction.id),
+      `${direction.id} must be listed in ${direction.trendYear}`,
+    );
+  }
+}
+
+test("trend edition catalog matches the six 2026 starter IDs", () => {
+  const starterIds = data.DIRECTIONS.filter(
+    ({ trendYear }) => trendYear === 2026,
+  ).map(({ id }) => id);
+  assert.equal(trends.CURRENT_TREND_EDITION.year, 2026);
+  assert.equal(trends.CURRENT_TREND_EDITION.label, "2026 starters");
+  assert.deepEqual(trends.CURRENT_TREND_EDITION.directionIds, starterIds);
+  assert.equal(trends.getTrendEdition(2026), trends.CURRENT_TREND_EDITION);
+  assert.equal(trends.getTrendEdition(2025), undefined);
+  validateTrendCatalog(trends.TREND_EDITIONS, data.DIRECTIONS);
+});
+
+test("trend edition validation rejects unknown or mismatched direction IDs", () => {
+  const edition = trends.CURRENT_TREND_EDITION;
+  const first = data.DIRECTIONS.find(
+    ({ id }) => id === edition.directionIds[0],
+  );
+  assert.throws(
+    () => validateTrendCatalog([edition, { ...edition }], data.DIRECTIONS),
+    /Edition years must be unique/,
+  );
+  assert.throws(
+    () =>
+      validateTrendCatalog(
+        [
+          {
+            ...edition,
+            directionIds: [edition.directionIds[0], edition.directionIds[0]],
+          },
+        ],
+        data.DIRECTIONS,
+      ),
+    /direction IDs must be unique/,
+  );
+  assert.throws(
+    () =>
+      validateTrendCatalog(
+        [{ ...edition, directionIds: [...edition.directionIds, "missing"] }],
+        data.DIRECTIONS,
+      ),
+    /Unknown edition direction: missing/,
+  );
+  assert.throws(
+    () => validateTrendCatalog([{ ...edition, year: 2025 }], data.DIRECTIONS),
+    new RegExp(`${first.id} must belong to 2025`),
+  );
+  assert.throws(
+    () =>
+      validateTrendCatalog(trends.TREND_EDITIONS, [
+        ...data.DIRECTIONS,
+        { ...first, id: "future-starter", trendYear: 2027 },
+      ]),
+    /Unknown direction edition: 2027/,
+  );
+});
+
+test("numeric edition filtering supports fixture years and all", () => {
+  const legacy = data.DIRECTIONS.find(
+    ({ trendYear }) => trendYear === undefined,
+  );
+  const fixture = { ...legacy, id: "fixture-2025", trendYear: 2025 };
+  const directions = [...data.DIRECTIONS, fixture];
+  assert.deepEqual(
+    api.filterDirections(directions, { trendYear: 2025 }).map(({ id }) => id),
+    ["fixture-2025"],
+  );
+  assert.deepEqual(
+    api.filterDirections(directions, { trendYear: "all" }),
+    directions,
+  );
+});
+
+test("every 2026 starter has one practical next step", () => {
+  const starters = data.DIRECTIONS.filter(
+    ({ trendYear }) => trendYear === 2026,
+  );
+  assert.equal(starters.length, 6);
+  assert.ok(starters.every(({ practiceTip }) => practiceTip?.trim()));
+});
+
+test("direction cards derive their starter badge and tip from catalog metadata", () => {
+  const starter = data.DIRECTIONS.find(({ id }) => id === "chromatic-pulse");
+  const starterCard = parse(
+    cards.renderDirectionCard(starter, {
+      variant: "suggested",
+      goal: "attention",
+      selected: false,
+      compared: false,
+    }),
+  );
+  assert.equal(
+    starterCard.querySelector(".direction-trend-badge").textContent,
+    "2026 starter",
+  );
+  assert.ok(
+    starterCard
+      .querySelector(".direction-practice")
+      .textContent.includes(starter.practiceTip),
+  );
+
+  const legacy = data.DIRECTIONS.find(
+    ({ trendYear }) => trendYear === undefined,
+  );
+  const legacyCard = parse(
+    cards.renderDirectionCard(legacy, {
+      variant: "suggested",
+      goal: "attention",
+      selected: false,
+      compared: false,
+    }),
+  );
+  assert.equal(legacyCard.querySelector(".direction-trend-badge"), null);
+  assert.equal(legacyCard.querySelector(".direction-practice"), null);
+});
+
+test("edition and practice metadata never enter recipes or compiled prompts", async () => {
+  const compiler = await server.ssrLoadModule(
+    "/src/lib/prompt-studio/domain/compiler.ts",
+  );
+  const starter = data.DIRECTIONS.find(({ id }) => id === "chromatic-pulse");
+  const next = api.applyDirection(recipe.BLANK_RECIPE, starter);
+  const recipeJson = JSON.stringify(next);
+  const compiled = compiler.compile(next).text;
+  for (const catalogText of [
+    trends.CURRENT_TREND_EDITION.label,
+    starter.practiceTip,
+  ]) {
+    assert.ok(!recipeJson.includes(catalogText));
+    assert.ok(!compiled.includes(catalogText));
+  }
+});
+
+test("op-art exact text receives the highest-priority readability hint", () => {
+  const hints = readability.getReadabilityHints({
+    ...recipe.BLANK_RECIPE,
+    headline: "  READ THIS  ",
+    extraText: ["  Supporting line  "],
+    textMode: "render",
+    styles: { ...recipe.BLANK_RECIPE.styles, art: "op-art" },
+  });
+  assert.equal(hints[0].id, "op-art-exact-text");
+  assert.equal(hints[0].priority, 10);
+  assert.equal(hints[0].actionLabel, "Review headline");
+  assert.equal(hints[0].target, "headline");
+
+  const textOnly = readability.getReadabilityHints({
+    ...recipe.BLANK_RECIPE,
+    headline: "   ",
+    extraText: ["  Supporting line  "],
+    textMode: "render",
+    styles: { ...recipe.BLANK_RECIPE.styles, art: "op-art" },
+  });
+  assert.equal(textOnly[0].actionLabel, "Review text");
+  assert.equal(textOnly[0].target, "text");
+});
+
+test("three supporting lines receive the dense-copy hint", () => {
+  const dense = readability.getReadabilityHints({
+    ...recipe.BLANK_RECIPE,
+    extraText: ["  One  ", "Two", "   ", "Three"],
+  });
+  assert.deepEqual(
+    dense.map(({ id }) => id),
+    ["dense-supporting-text"],
+  );
+  assert.equal(dense[0].priority, 20);
+  assert.equal(dense[0].actionLabel, "Review text");
+  assert.equal(dense[0].target, "text");
+
+  assert.deepEqual(
+    readability.getReadabilityHints({
+      ...recipe.BLANK_RECIPE,
+      extraText: ["One", "Two"],
+    }),
+    [],
+  );
+});
+
+test("blank actual text and space-reservation mode receive no hints", () => {
+  const opArt = {
+    ...recipe.BLANK_RECIPE,
+    styles: { ...recipe.BLANK_RECIPE.styles, art: "op-art" },
+  };
+  assert.deepEqual(
+    readability.getReadabilityHints({
+      ...opArt,
+      headline: "   ",
+      extraText: ["  ", "\t"],
+    }),
+    [],
+  );
+  assert.deepEqual(
+    readability.getReadabilityHints({
+      ...opArt,
+      textMode: "space",
+      extraText: ["One", "Two", "Three"],
+    }),
+    [],
+  );
+});
+
+test("readability rules do not mutate or enter the recipe", () => {
+  const input = {
+    ...recipe.BLANK_RECIPE,
+    headline: "  READ THIS  ",
+    extraText: ["  One  ", "Two", "Three"],
+    styles: { ...recipe.BLANK_RECIPE.styles, art: "op-art" },
+  };
+  const before = JSON.stringify(input);
+  const hints = readability.getReadabilityHints(input);
+  assert.equal(JSON.stringify(input), before);
+  assert.deepEqual(
+    hints.map(({ priority }) => priority),
+    [10, 20],
+  );
+  for (const hint of hints) {
+    assert.ok(!JSON.stringify(input).includes(hint.message));
+  }
+});
 
 test("2026 starters have complete valid educational metadata", () => {
   const starters = data.DIRECTIONS.filter(
@@ -223,6 +650,69 @@ test("reference lookup resolves catalog entries and leaves unknown IDs unresolve
     assert.equal(references.getReference(reference.id), reference);
   }
   assert.equal(references.getReference("missing"), undefined);
+});
+
+test("every learning topic has at least one tagged reference", () => {
+  assert.deepEqual(
+    references.LEARNING_TOPICS.map(({ id }) => id),
+    ["hierarchy", "typography", "color-rhythm", "material", "story-place"],
+  );
+  for (const { id } of references.LEARNING_TOPICS) {
+    assert.ok(
+      references.REFERENCES.some((ref) => ref.topics?.includes(id)),
+      `${id} needs a tagged reference`,
+    );
+  }
+  for (const ref of references.REFERENCES) {
+    if (ref.topics) assert.equal(ref.kind, "learning", ref.id);
+  }
+});
+
+test("topic tags point at the expected learning sources", () => {
+  const ids = (topic) =>
+    references
+      .filterReferences(references.REFERENCES, "learning", topic)
+      .map(({ id }) => id);
+  assert.ok(ids("story-place").includes("adobe-design-trends-2026"));
+  assert.ok(ids("story-place").includes("adobe-creative-trends-2026"));
+  assert.ok(ids("typography").includes("figma-typography"));
+  assert.ok(ids("hierarchy").includes("cooper-how-posters-work"));
+});
+
+test("reference kind and learning topic filters share an intersection", () => {
+  const learning = references.filterReferences(
+    references.REFERENCES,
+    "learning",
+    "all",
+  );
+  const typography = references.filterReferences(
+    references.REFERENCES,
+    "learning",
+    "typography",
+  );
+  assert.ok(typography.length > 0 && typography.length < learning.length);
+  assert.ok(typography.every((ref) => ref.kind === "learning"));
+});
+
+test("all topic clears only the topic restriction", () => {
+  const all = references.filterReferences(references.REFERENCES, "all", "all");
+  assert.equal(all.length, references.REFERENCES.length);
+  const learning = references.filterReferences(
+    references.REFERENCES,
+    "learning",
+    "all",
+  );
+  assert.ok(learning.every((ref) => ref.kind === "learning"));
+});
+
+test("non-learning kinds cannot be constrained by a hidden learning topic", () => {
+  const styles = references.REFERENCES.filter((ref) => ref.kind === "styles");
+  assert.ok(styles.length > 0);
+  assert.equal(
+    references.filterReferences(references.REFERENCES, "styles", "typography")
+      .length,
+    styles.length,
+  );
 });
 
 test("recommendations prefer exact format and goal matches", () => {
@@ -404,11 +894,11 @@ test("style search and curated filtering combine", () => {
 });
 
 test("applying a direction changes its visual layers and preserves the user's brief", async () => {
-  const { DEFAULT_RECIPE } = await server.ssrLoadModule(
+  const { BLANK_RECIPE } = await server.ssrLoadModule(
     "/src/lib/prompt-studio/domain/recipe.ts",
   );
   const current = {
-    ...DEFAULT_RECIPE,
+    ...BLANK_RECIPE,
     idea: "An exhibition about tidal wetlands",
     headline: "TIDELINE",
     purpose: "album-cover",
@@ -443,7 +933,7 @@ test("applying a direction changes its visual layers and preserves the user's br
 
 test("applying a starter changes only the safe bundle and clones mutable values", () => {
   const current = {
-    ...recipe.DEFAULT_RECIPE,
+    ...recipe.BLANK_RECIPE,
     idea: "  An exhibition about tidal wetlands  ",
     purpose: "album-cover",
     aspect: "1:1",
@@ -520,7 +1010,7 @@ test("applying a starter changes only the safe bundle and clones mutable values"
   const unsafePatch = {
     ...starter.patch,
     ...Object.fromEntries(
-      protectedKeys.map((key) => [key, recipe.DEFAULT_RECIPE[key]]),
+      protectedKeys.map((key) => [key, recipe.BLANK_RECIPE[key]]),
     ),
   };
   assert.deepEqual(
@@ -557,7 +1047,7 @@ test("Gemini is a target that accepts every pattern and compiles in plain langua
     recipe.PATTERNS.map(({ id }) => id).sort(),
   );
   const base = {
-    ...recipe.DEFAULT_RECIPE,
+    ...recipe.BLANK_RECIPE,
     idea: "An exhibition about tidal wetlands",
     target: "gemini",
   };
@@ -572,4 +1062,81 @@ test("Gemini is a target that accepts every pattern and compiles in plain langua
     assert.equal(out.negative, null, "no separate negative prompt");
     assert.ok(!out.text.includes("--ar"), "no Midjourney parameters");
   }
+});
+
+test("open-in links carry the prompt for ChatGPT and fall back to copying", () => {
+  const prompt = "A poster & more: 100% tidal?";
+  const chatgpt = openIn.openInFor("gpt-image", prompt);
+  assert.equal(
+    chatgpt.url,
+    `https://chatgpt.com/?q=${encodeURIComponent(prompt)}`,
+  );
+  assert.equal(chatgpt.needsCopy, false);
+  const long = openIn.openInFor("gpt-image", "x".repeat(3000));
+  assert.deepEqual(long, {
+    label: "Open in ChatGPT",
+    url: "https://chatgpt.com/",
+    needsCopy: true,
+  });
+  const gemini = openIn.openInFor("gemini", prompt);
+  assert.equal(gemini.label, "Copy & open Gemini");
+  assert.equal(gemini.url, "https://gemini.google.com/app");
+  assert.equal(gemini.needsCopy, true);
+  assert.deepEqual(openIn.openInFor("midjourney", prompt), {
+    label: "Copy & open Midjourney",
+    url: "https://www.midjourney.com/imagine",
+    needsCopy: true,
+  });
+  assert.deepEqual(openIn.openInFor("flux", prompt), {
+    label: "Copy & open FLUX",
+    url: "https://playground.bfl.ai",
+    needsCopy: true,
+  });
+  for (const id of ["sdxl", "generic"])
+    assert.equal(openIn.openInFor(id, prompt), null);
+});
+
+test("every format has a brief example that passes the recipe schema", () => {
+  assert.deepEqual(
+    Object.keys(briefExamples.BRIEF_EXAMPLES).sort(),
+    recipe.PURPOSES.map(({ id }) => id).sort(),
+  );
+  for (const { id } of recipe.PURPOSES) {
+    const applied = briefExamples.applyBriefExample(recipe.BLANK_RECIPE, id);
+    const result = recipe.parseRecipe(applied);
+    assert.ok(result.ok, `${id}: ${result.ok ? "" : result.issues.join("; ")}`);
+    assert.ok(briefExamples.BRIEF_EXAMPLES[id].pill.length > 0);
+  }
+});
+
+test("applying a brief example changes only the brief and keeps the look", () => {
+  const base = {
+    ...recipe.BLANK_RECIPE,
+    target: "midjourney",
+    pattern: "concise",
+    font: "bebas",
+    avoids: ["gradients"],
+    customAspects: ["7:5"],
+  };
+  const applied = briefExamples.applyBriefExample(base, "story");
+  const story = recipe.PURPOSES.find(({ id }) => id === "story");
+  assert.equal(applied.purpose, "story");
+  assert.equal(applied.aspect, story.aspect);
+  assert.equal(applied.textMode, "render");
+  assert.equal(applied.idea, briefExamples.BRIEF_EXAMPLES.story.idea);
+  assert.equal(applied.headline, briefExamples.BRIEF_EXAMPLES.story.headline);
+  const briefKeys = [
+    "purpose",
+    "aspect",
+    "textMode",
+    "idea",
+    "headline",
+    "extraText",
+    "detail",
+  ];
+  const look = (value) =>
+    Object.fromEntries(
+      Object.entries(value).filter(([key]) => !briefKeys.includes(key)),
+    );
+  assert.deepEqual(look(applied), look(base));
 });

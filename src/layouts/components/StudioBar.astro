@@ -4,12 +4,22 @@ import ThemeSwitcher from "@/layouts/components/ThemeSwitcher.astro";
 export interface Props {
   /** `app` carries the recipe actions; `page` is the plain bar for secondary pages. */
   variant?: "app" | "page";
-  current?: "guide";
+  current?: "studio" | "compare" | "guide";
 }
 
-const { variant = "app", current } = Astro.props;
+const { variant = "app", current = variant === "app" ? "studio" : undefined } =
+  Astro.props;
 const repo = "https://github.com/difegam/visual-prompt-studio";
 const home = variant === "app" ? "" : "/";
+const primary = [
+  { id: "studio", label: "Studio", href: `${home}#compose` },
+  { id: "compare", label: "Compare", href: "/compare" },
+  { id: "guide", label: "Guide", href: "/guide" },
+];
+const secondary = [
+  { label: "Blog", href: "/blog" },
+  { label: "About", href: "/about" },
+];
 ---
 
 <header class="bar">
@@ -30,14 +40,20 @@ const home = variant === "app" ? "" : "/";
       <span>Menu</span>
     </summary>
     <div class="bar-panel">
-      <nav class="bar-nav" aria-label="Sections">
-        <a href={`${home}#compose`}>Compose</a>
-        <a href="/guide" aria-current={current === "guide" ? "page" : undefined}
-          >Guide</a
-        >
-        <a href={`${home}#inspiration`}>Inspiration</a>
-        <a href="/blog">Blog</a>
-        <a href="/about">About</a>
+      <nav class="bar-nav" aria-label="Main">
+        {
+          primary.map((l) => (
+            <a
+              href={l.href}
+              aria-current={current === l.id ? "page" : undefined}
+            >
+              {l.label}
+            </a>
+          ))
+        }
+      </nav>
+      <nav class="bar-nav bar-nav-more" aria-label="More">
+        {secondary.map((l) => <a href={l.href}>{l.label}</a>)}
       </nav>
       {
         variant === "app" && (

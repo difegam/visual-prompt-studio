@@ -1,9 +1,11 @@
 import { GOALS, type GoalId } from "../domain/discovery";
 import type { Direction } from "../domain/presets";
-import { DEFAULT_RECIPE } from "../domain/recipe";
+import { BLANK_RECIPE } from "../domain/recipe";
 import { getReference } from "../domain/references";
 import { getStyle } from "../domain/styles";
+import { getTrendEdition } from "../domain/trends";
 import { renderInfoPopover } from "./info-popover";
+import { esc } from "./escape";
 import { inksFrom, proofSvg } from "./sketch";
 
 export type DirectionCardVariant = "suggested" | "explorer";
@@ -12,16 +14,8 @@ export interface RenderDirectionCardOptions {
   variant: DirectionCardVariant;
   goal: GoalId;
   selected: boolean;
+  readonly compared: boolean;
 }
-
-const esc = (value: string): string =>
-  value.replace(
-    /[&<>"']/g,
-    (character) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
-        character
-      ]!,
-  );
 
 /** Render catalog content without accessing browser state or attaching handlers. */
 export function renderDirectionCard(
@@ -32,6 +26,10 @@ export function renderDirectionCard(
   const art = getStyle(direction.patch.styles.art);
   const technique = getStyle(direction.patch.styles.technique);
   const source = direction.sourceIds?.map(getReference).find(Boolean);
+  const edition =
+    direction.trendYear === undefined
+      ? undefined
+      : getTrendEdition(direction.trendYear);
   const learning = [
     direction.principle?.trim()
       ? `<p class="direction-principle"><b>Principle:</b> ${esc(direction.principle)}</p>`
@@ -39,22 +37,25 @@ export function renderDirectionCard(
     direction.tradeoff?.trim()
       ? `<p class="direction-tradeoff"><b>Tradeoff:</b> ${esc(direction.tradeoff)}</p>`
       : "",
+    direction.practiceTip?.trim()
+      ? `<p class="direction-practice"><b>Try this:</b> ${esc(direction.practiceTip)}</p>`
+      : "",
     source
       ? `<a class="link" href="${esc(source.url)}" target="_blank" rel="noopener noreferrer">Learn with ${esc(source.name)}</a>`
       : "",
   ].join("");
   const badges = [
-    direction.trendYear === 2026
-      ? '<span class="badge badge-outline direction-trend-badge">2026 starter</span>'
+    edition
+      ? `<span class="badge badge-outline direction-trend-badge">${edition.year} starter</span>`
       : "",
     direction.curatedRank !== undefined
       ? '<span class="badge badge-outline curated-badge">Curated pick</span>'
       : "",
   ].join("");
-  const label =
-    direction.trendYear === 2026 ? "Use this starter" : "Use this direction";
+  const label = edition ? "Use this starter" : "Use this direction";
   const button = (classes: string): string =>
     `<button type="button" class="${classes}" data-preset="${esc(direction.id)}" aria-pressed="${options.selected}">${label}</button>`;
+  const compareButton = `<button type="button" class="btn btn-outline direction-compare" data-compare-direction="${esc(direction.id)}" aria-pressed="${options.compared === true}">${options.compared ? "Selected for comparison" : "Add to comparison"}</button>`;
 
   if (options.variant === "explorer") {
     return `<article class="direction-result card bg-base-100" role="listitem">
@@ -64,12 +65,12 @@ export function renderDirectionCard(
         <small>Layout: ${esc(design.name)} · Imagery: ${esc(art.name)} · Finish: ${esc(technique.name)}</small>
         ${learning ? renderInfoPopover({ id: `info-result-${esc(direction.id)}`, label: "Why this starter works", content: `<div class="direction-learning">${learning}</div>` }) : ""}
       </div>
-      <div class="card-actions">${button("btn btn-outline direction-result-apply")}</div>
+      <div class="card-actions">${button("btn btn-outline direction-result-apply")}${compareButton}</div>
     </article>`;
   }
 
   const palette =
-    direction.patch.palette ?? design.palette ?? DEFAULT_RECIPE.palette;
+    direction.patch.palette ?? design.palette ?? BLANK_RECIPE.palette;
   const inks = inksFrom([palette[0].hex, palette[1].hex, palette[2].hex]);
   const thumb = proofSvg({
     ...direction.patch.styles,
@@ -97,7 +98,7 @@ export function renderDirectionCard(
         <li><b>Finish</b><span>${esc(technique.name)}</span></li>
       </ul>
       ${renderInfoPopover({ id: `info-${esc(direction.id)}`, label: "Why this works", content: `<p class="direction-rationale">${esc(rationale)}</p>${learning ? `<div class="direction-learning">${learning}</div>` : ""}` })}
-      <div class="card-actions">${button("btn btn-primary direction-apply")}</div>
+      <div class="card-actions">${button("btn btn-primary direction-apply")}${compareButton}</div>
     </div>
   </article>`;
 }
