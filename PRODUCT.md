@@ -18,6 +18,7 @@ Visual Prompt Studio is a local-first, copy-first composer for art-directed imag
 
 - **Layered art direction.** Layout (design), imagery (art), and print finish (technique) are chosen independently, so a user combines them instead of picking one flat style name.
 - **Model-aware output.** The prompt structure changes with the target image model (five targets), instead of one generic prompt for all.
+- **Source-grounded starters.** Six contemporary 2026 directions combine existing visual layers with a palette, typography, and creative intent. Each explains a design principle and tradeoff and links to supporting reading.
 
 ## Operating Context
 
@@ -29,6 +30,8 @@ Visual Prompt Studio is a local-first, copy-first composer for art-directed imag
 
 - Nine aspect ratios, eight formats, five model targets, and target-appropriate prompt structures.
 - Independent layout, imagery, and finish styles; palettes; type specimens; optional authorial intent.
+- Format-and-goal recommendations include contemporary starters alongside existing directions. The explorer's "2026 starters only" filter combines with its other filters.
+- Applying a starter changes only layout, imagery, finish, palette, typeface, type weight and italics, and creative-intent selections. It preserves the user's brief, exact poster text, concept, format, aspect ratio, text-rendering mode, exclusions, and output settings, including target model, prompt structure, language, and model-specific parameters. The action can be undone, and each visual control remains editable.
 - Exact poster copy preserved, or a clean area reserved for later typesetting.
 - Selectable exclusions; style-dependent exclusions are called out and skipped automatically.
 - The app makes no API calls and sends no recipe data to a server.
@@ -43,6 +46,7 @@ Name: Visual Prompt Studio. No other brand commitments confirmed.
 
 - Source guide and original v2 reference in `visual-prompt-studio 2/`, including the beailabs style guide PDF.
 - Original editorial illustrations for the homepage and sample articles (see `docs/visual-assets.md`).
+- The 2026 starter directions draw on editorial forecasts and practitioner examples, not controlled evidence of effectiveness or measured popularity. Sources and limits are recorded in [Visual prompt recommendation principles](docs/research/visual-prompt-recommendation-principles.md).
 - No testimonials, customer counts, or usage data exist. Do not invent them.
 
 ## Product Principles

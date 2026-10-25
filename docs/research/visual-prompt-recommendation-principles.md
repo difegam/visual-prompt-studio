@@ -12,6 +12,26 @@ Recommendations should make the studio feel like a design expert: start from wha
 - The active project already models direction in three independent layers—design (layout, hierarchy, typography), art (how imagery is drawn), and technique (print finish)—and carries a short rationale in each preset. Existing presets span tasks such as gallery openings, music events, coffee, educational posters, book covers, races, invitations, and zines. This structure can support composable recommendations instead of one monolithic style taxonomy. [Style catalog](../../src/lib/prompt-studio/domain/styles.ts) · [Presets and mixes](../../src/lib/prompt-studio/domain/presets.ts)
 - The guide's catalog names and categories derive from John Hartnup's "Poster Prompts", while its descriptions are original. Keep source names and original descriptions distinct in catalog provenance. [Original catalog](https://john.hartnup.uk/poster-prompts); [extracted guide](../guia-de-estilos-y-generación-de-carteles-beailabs.md); [source PDF](../guia-de-estilos-y-generación-de-carteles-beailabs.pdf)
 
+## 2026 starter sources and limits
+
+The six contemporary starters translate the following sources into combinations of existing catalog layers. They are editorial choices, not new design movements or a ranking of current popularity.
+
+- [Figma's web design trends for 2026](https://www.figma.com/resource-library/web-design-trends/) discusses expressive type, saturated color, collage, retrofuturism, maximalism, and white space. Use its composition guidance; web interaction patterns do not belong in a static image prompt.
+- [Adobe Express's design trends for 2026](https://www.adobe.com/express/learn/blog/design-trends-2026) offers a forecast covering sensory materials, organic imperfection, collage, surreal imagery, and local storytelling.
+- [Adobe's 2026 Creative Trends Forecast](https://business.adobe.com/resources/creative-trends-report.html) supplies themes of sensory imagery, authentic connection, surreal play, and local culture. Local details must come from the user's brief or concept, rather than generic cultural decoration.
+- [Behance's Design Trends 2026](https://www.behance.net/gallery/239027109/Design-Trends-2026) is a practitioner synthesis with examples of raw aesthetics, imperfect lettering, micro-maximalism, and chromatic expression. It is not a measured ranking of design effectiveness.
+- [Dribbble's Design Trends gallery](https://dribbble.com/tags/design-trends) is a visual index for comparing typography, grids, color, and optical imagery. Likes, views, and other engagement counts are not research evidence or a basis for popularity claims.
+
+These editorial forecasts and practitioner examples support directions to explore. They do not establish that a starter improves campaign performance or produces better image-model results. The source registry records URLs, source types, and checked dates. [Reference catalog](../../src/lib/prompt-studio/domain/references.ts)
+
+## Shipped starter behavior
+
+The catalog includes Raw human voice, One loud detail, Chromatic pulse, Soft surreal tactility, Local cut-paper story, and Retro-future grid. Each has a principle, tradeoff, and supporting reading. Format-and-goal recommendations can show them alongside existing directions. The explorer's "2026 starters only" filter combines with its other filters. [Direction catalog](../../src/lib/prompt-studio/domain/presets.ts)
+
+Applying a starter changes only layout, imagery, finish, palette, typeface, type weight and italics, and creative-intent selections. It preserves the user's brief, exact poster text, concept, format, aspect ratio, text-rendering mode, exclusions and cliché choice, target model, prompt structure, language, edit instructions, and model-specific settings. The user can undo the action or refine any visual control. The app compiles a prompt to copy into an external image tool; it does not generate an image. [Application contract](../../src/lib/prompt-studio/domain/discovery.ts)
+
+The year, source names, principle, and tradeoff do not enter the compiled prompt. Only the applied recipe values affect it. Existing saved recipes remain compatible because starter metadata belongs to the catalog, not the recipe schema.
+
 ## Practical taxonomy for discovery
 
 1. **Start with the job:** project format/type (event poster, cover, product campaign, educational/informational graphic, social asset, invitation, etc.) and communication goal (announce, attract, explain, persuade, celebrate, establish a mood/identity). Keep these as separate facets: a format describes the artifact; a goal describes its intended effect.
