@@ -64,6 +64,7 @@ import {
   type TechniqueId,
 } from "../domain/styles";
 import { finishSvg, inksFrom, motifSvg, proofSvg } from "./sketch";
+import { renderDirectionCard } from "./directions";
 
 /* ── tiny utilities ──────────────────────────────────────────────────── */
 
@@ -455,6 +456,7 @@ export function startApp(): void {
   const directionStyle = $<HTMLSelectElement>("direction-style");
   const directionGroup = $<HTMLSelectElement>("direction-group");
   const curatedOnly = $<HTMLInputElement>("direction-curated");
+  const trendOnly = $<HTMLInputElement>("direction-2026");
   const directionActiveFilters = $("direction-active-filters");
   const directionPagination = $("direction-pagination");
   let directionPage = 1;
@@ -465,51 +467,13 @@ export function startApp(): void {
     $("direction-count").textContent =
       `${directions.length} suggested directions`;
     presetsEl.innerHTML = directions
-      .map((direction) => {
-        const design = getStyle(direction.patch.styles.design);
-        const art = getStyle(direction.patch.styles.art);
-        const technique = getStyle(direction.patch.styles.technique);
-        const palette = design.palette;
-        const inks = inksFrom(
-          palette
-            ? [palette[0].hex, palette[1].hex, palette[2].hex]
-            : ["#eee", "#333", "#999"],
-        );
-        const thumb = proofSvg({
-          design: direction.patch.styles.design,
-          art: direction.patch.styles.art,
-          technique: direction.patch.styles.technique,
-          inks,
-          ratio: 1.25,
-          headline: "",
-          foot: [],
-          fontCss: "sans-serif",
-          condensed: false,
-          uid: `direction-${direction.id}`,
-          label: `${direction.name}: ${design.name}, ${art.name}, ${technique.name}`,
-        });
-        const rationale =
-          direction.rationale[view.goal] ??
-          `${goal.description} ${design.name} brings ${design.summary.toLowerCase()} while ${art.name} shapes the imagery and ${technique.name} defines the finish.`;
-        const curated =
-          direction.curatedRank !== undefined
-            ? '<span class="badge badge-outline curated-badge">Curated pick</span>'
-            : "";
-        return `<article class="card direction-card bg-base-100" role="listitem">
-          <div class="direction-thumb">${thumb}</div>
-          <div class="card-body direction-body">
-            <div class="direction-title-row"><h3>${esc(direction.name)}</h3>${curated}</div>
-            <p class="direction-blurb">${esc(direction.blurb)}</p>
-            <p class="direction-rationale">${esc(rationale)}</p>
-            <ul class="direction-layers" aria-label="Visual layers">
-              <li><b>Layout</b><span>${esc(design.name)}</span></li>
-              <li><b>Imagery</b><span>${esc(art.name)}</span></li>
-              <li><b>Finish</b><span>${esc(technique.name)}</span></li>
-            </ul>
-            <button type="button" class="btn btn-primary direction-apply" data-preset="${direction.id}" aria-pressed="${view.presetId === direction.id}">Use this direction</button>
-          </div>
-        </article>`;
-      })
+      .map((direction) =>
+        renderDirectionCard(direction, {
+          variant: "suggested",
+          goal: view.goal,
+          selected: view.presetId === direction.id,
+        }),
+      )
       .join("");
   }
   renderDirections(store.get());
@@ -552,7 +516,9 @@ export function startApp(): void {
       replacement?.focus();
     });
     say(
-      `Applied “${direction.name}”. Your brief and output settings are unchanged.`,
+      direction.trendYear === 2026
+        ? `Applied “${direction.name}” visual starter. Your content and output settings are unchanged.`
+        : `Applied “${direction.name}”. Your brief and output settings are unchanged.`,
       () => store.set(before),
     );
   }
@@ -570,6 +536,7 @@ export function startApp(): void {
       goal: directionGoal.value as DirectionFilters["goal"],
       styleId: directionStyle.value,
       curatedOnly: curatedOnly.checked,
+      trendYear: trendOnly.checked ? 2026 : "all",
     };
     directionActiveFilters.innerHTML = renderFilterSummary("directions", [
       ...(directionSearch.value.trim()
@@ -613,6 +580,9 @@ export function startApp(): void {
       ...(curatedOnly.checked
         ? [{ key: "curatedOnly", label: "Curated picks", value: "Only" }]
         : []),
+      ...(trendOnly.checked
+        ? [{ key: "trendYear", label: "Edition", value: "2026 starters" }]
+        : []),
     ]);
     const filtered = filterDirections(PRESETS, filters).toSorted(
       (a, b) =>
@@ -651,23 +621,16 @@ export function startApp(): void {
         ]) => `<section class="direction-result-group" aria-label="${esc(group)} directions">
         <h3>${esc(group)}</h3>
         ${items
-          .map((direction) => {
-            const design = getStyle(direction.patch.styles.design);
-            const art = getStyle(direction.patch.styles.art);
-            const technique = getStyle(direction.patch.styles.technique);
-            const curated =
-              direction.curatedRank !== undefined
-                ? '<span class="badge badge-outline curated-badge">Curated pick</span>'
-                : "";
-            return `<article class="direction-result card bg-base-100" role="listitem">
-            <div class="direction-result-copy">
-              <div class="direction-title-row"><h4>${esc(direction.name)}</h4>${curated}</div>
-              <p>${esc(direction.blurb)}</p>
-              <small>Layout: ${esc(design.name)} · Imagery: ${esc(art.name)} · Finish: ${esc(technique.name)}</small>
-            </div>
-            <button type="button" class="btn btn-outline direction-result-apply" data-preset="${direction.id}" aria-pressed="${view.presetId === direction.id}">Use direction</button>
-          </article>`;
-          })
+          .map((direction) =>
+            renderDirectionCard(direction, {
+              variant: "explorer",
+              goal:
+                directionGoal.value === "all"
+                  ? direction.goals[0]!
+                  : (directionGoal.value as GoalId),
+              selected: view.presetId === direction.id,
+            }),
+          )
           .join("")}
       </section>`,
       )
@@ -675,9 +638,8 @@ export function startApp(): void {
     directionResults.innerHTML = page.total
       ? groupsMarkup
       : `<div class="empty-directions"><p>No directions match these filters.</p><button type="button" class="btn btn-ghost btn-sm" data-clear-direction-search>Clear search and filters</button></div>`;
-    $("explorer-status").textContent = page.total
-      ? `${page.total} ${page.total === 1 ? "direction" : "directions"}${curatedOnly.checked ? " · studio-curated picks" : ""}`
-      : "0 directions";
+    $("explorer-status").textContent =
+      `${page.total} ${page.total === 1 ? "direction" : "directions"}${curatedOnly.checked ? " · studio-curated picks" : ""}${trendOnly.checked ? " · 2026 starters" : ""}`;
     directionPagination.innerHTML =
       page.pageCount > 1
         ? `<div class="join"><button class="btn btn-sm join-item" type="button" data-page="${page.page - 1}" ${page.page === 1 ? "disabled" : ""} aria-label="Previous page">Previous</button><span class="btn btn-sm join-item pagination-current" aria-current="page">Page ${page.page} of ${page.pageCount}</span><button class="btn btn-sm join-item" type="button" data-page="${page.page + 1}" ${page.page === page.pageCount ? "disabled" : ""} aria-label="Next page">Next</button></div>`
@@ -694,6 +656,7 @@ export function startApp(): void {
     directionStyle,
     directionGroup,
     curatedOnly,
+    trendOnly,
   ].forEach((input) =>
     input.addEventListener("change", () => {
       directionPage = 1;
@@ -708,6 +671,7 @@ export function startApp(): void {
       directionGoal.value = "all";
       directionStyle.value = "all";
       curatedOnly.checked = false;
+      trendOnly.checked = false;
       directionPage = 1;
       renderDirectionExplorer();
       directionSearch.focus();
@@ -727,6 +691,7 @@ export function startApp(): void {
       goal: "direction-goal",
       styleId: "direction-style",
       curatedOnly: "direction-curated",
+      trendYear: "direction-2026",
     };
     if (remove) {
       const focusId = focusIds[remove.dataset.removeFilter ?? ""];
@@ -736,6 +701,7 @@ export function startApp(): void {
       if (focusId === "direction-goal") directionGoal.value = "all";
       if (focusId === "direction-style") directionStyle.value = "all";
       if (focusId === "direction-curated") curatedOnly.checked = false;
+      if (focusId === "direction-2026") trendOnly.checked = false;
       directionPage = 1;
       renderDirectionExplorer();
       requestAnimationFrame(() => $(focusId).focus());
@@ -746,6 +712,7 @@ export function startApp(): void {
     directionGoal.value = "all";
     directionStyle.value = "all";
     curatedOnly.checked = false;
+    trendOnly.checked = false;
     directionPage = 1;
     renderDirectionExplorer();
     requestAnimationFrame(() => directionSearch.focus());

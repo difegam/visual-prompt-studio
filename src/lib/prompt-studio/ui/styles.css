@@ -684,6 +684,12 @@ textarea:hover {
   gap: 8px;
   padding: 14px;
 }
+.direction-body > .card-actions {
+  margin-top: auto;
+}
+.direction-body > .card-actions .direction-apply {
+  flex: 1;
+}
 .direction-title-row {
   display: flex;
   flex-wrap: wrap;
@@ -700,6 +706,47 @@ textarea:hover {
   color: var(--muted);
   font-size: 10px;
   font-weight: 500;
+}
+.direction-trend-badge {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 600;
+}
+.direction-learning {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+.direction-learning p {
+  margin: 0;
+}
+.direction-learning b {
+  color: var(--ink);
+  font-weight: 600;
+}
+.direction-learning .link {
+  width: fit-content;
+  color: var(--accent);
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+details.direction-learning {
+  display: block;
+  margin-top: 5px;
+}
+.direction-learning > summary {
+  width: fit-content;
+  min-height: 32px;
+  padding-block: 6px;
+  color: var(--ink);
+  font-weight: 600;
+  cursor: pointer;
+}
+details.direction-learning[open] > :not(summary) {
+  margin-top: 7px;
 }
 .direction-blurb {
   color: var(--ink);
@@ -839,6 +886,11 @@ textarea:hover {
   display: grid;
   gap: 3px;
   min-width: 0;
+  padding: 0;
+}
+.direction-result > .card-actions {
+  flex: 0 0 auto;
+  align-self: flex-end;
 }
 .direction-result-copy > p {
   color: var(--muted);
@@ -2759,6 +2811,19 @@ dialog::backdrop {
   }
   .direction-grid {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .explorer-filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .direction-result {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .direction-result > .card-actions {
+    align-self: stretch;
+  }
+  .direction-result-apply {
+    width: 100%;
   }
   .style-browser-controls {
     grid-template-columns: minmax(0, 1fr);
