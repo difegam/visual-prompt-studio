@@ -79,98 +79,115 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
           >
             <select id="f-goal" class="select select-bordered"></select>
           </StudioField>
-          <div class="field">
-            <div class="field-heading">
-              <span id="aspect-label">Aspect ratio</span>
-              <FieldInfo
-                label="Aspect ratio"
-                id="aspect"
-                info="Width to height of the image. Pick the shape of the place it will appear, such as Feed for a 4:5 social post or Story for 9:16. It changes how the prompt frames the subject."
-              />
-            </div>
-            <div
-              class="aspect-seg"
-              id="f-aspect"
-              role="group"
-              aria-labelledby="aspect-label"
-            >
-            </div>
-          </div>
-          <StudioField
-            label="Headline"
-            controlId="f-headline"
-            info="Enter the main words that should appear in the image. Keep it short for stronger placement and legibility."
-          >
-            <input
-              id="f-headline"
-              class="input"
-              type="text"
-              maxlength="80"
-              autocomplete="off"
-            />
-          </StudioField>
-          <StudioField
-            label="Other text"
-            controlId="f-extra"
-            hint="one line each, up to 4"
-            info="Add supporting words such as a date, venue, or credit. Put each separate text element on its own line."
-          >
-            <textarea id="f-extra" class="textarea" rows="2" maxlength="323"
-            ></textarea>
-          </StudioField>
-          <div class="field span2">
-            <div class="field-heading">
-              <span id="textmode-label">Text in the image</span>
-              <FieldInfo
-                label="Text in the image"
-                id="textmode"
-                info="Choose whether the image model should render the supplied wording or leave a clear area for you to add type later."
-              />
-            </div>
-            <div class="seg" role="radiogroup" aria-labelledby="textmode-label">
-              <label class="seg-option">
-                <input
-                  class="radio"
-                  type="radio"
-                  name="textmode"
-                  value="render"
-                  data-textmode="render"
-                />
-                <span>Render the exact text</span>
-              </label>
-              <label class="seg-option">
-                <input
-                  class="radio"
-                  type="radio"
-                  name="textmode"
-                  value="space"
-                  data-textmode="space"
-                />
-                <span>Leave clean space, I'll set it later</span>
-              </label>
-            </div>
-          </div>
-          <StudioField
-            label="Your concept"
-            controlId="f-detail"
-            hint="one specific image idea beats ten adjectives"
-            className="span2"
-            info="Describe one memorable visual metaphor or scene. A concrete image idea is easier for a model to follow than a list of style adjectives."
-          >
-            <input
-              id="f-detail"
-              class="input"
-              type="text"
-              maxlength="240"
-              autocomplete="off"
-            />
-          </StudioField>
         </div>
+
+        <StudioDisclosure
+          title="Add text and size"
+          description="Aspect ratio, headline, supporting text, concept"
+          className="brief-details"
+        >
+          <div class="grid-fields">
+            <div class="field">
+              <div class="field-heading">
+                <span id="aspect-label">Aspect ratio</span>
+                <FieldInfo
+                  label="Aspect ratio"
+                  id="aspect"
+                  info="Width to height of the image. Pick the shape of the place it will appear, such as Feed for a 4:5 social post or Story for 9:16. It changes how the prompt frames the subject."
+                />
+              </div>
+              <div
+                class="aspect-seg"
+                id="f-aspect"
+                role="group"
+                aria-labelledby="aspect-label"
+              >
+              </div>
+            </div>
+            <StudioField
+              label="Headline"
+              controlId="f-headline"
+              info="Enter the main words that should appear in the image. Keep it short for stronger placement and legibility."
+            >
+              <input
+                id="f-headline"
+                class="input"
+                type="text"
+                maxlength="80"
+                autocomplete="off"
+              />
+            </StudioField>
+            <StudioField
+              label="Other text"
+              controlId="f-extra"
+              hint="one line each, up to 4"
+              info="Add supporting words such as a date, venue, or credit. Put each separate text element on its own line."
+            >
+              <textarea id="f-extra" class="textarea" rows="2" maxlength="323"
+              ></textarea>
+            </StudioField>
+            <div class="field span2">
+              <div class="field-heading">
+                <span id="textmode-label">Text in the image</span>
+                <FieldInfo
+                  label="Text in the image"
+                  id="textmode"
+                  info="Choose whether the image model should render the supplied wording or leave a clear area for you to add type later."
+                />
+              </div>
+              <div
+                class="seg"
+                role="radiogroup"
+                aria-labelledby="textmode-label"
+              >
+                <label class="seg-option">
+                  <input
+                    class="radio"
+                    type="radio"
+                    name="textmode"
+                    value="render"
+                    data-textmode="render"
+                  />
+                  <span>Render the exact text</span>
+                </label>
+                <label class="seg-option">
+                  <input
+                    class="radio"
+                    type="radio"
+                    name="textmode"
+                    value="space"
+                    data-textmode="space"
+                  />
+                  <span>Leave clean space, I'll set it later</span>
+                </label>
+              </div>
+            </div>
+            <StudioField
+              label="Your concept"
+              controlId="f-detail"
+              hint="one specific image idea beats ten adjectives"
+              className="span2"
+              info="Describe one memorable visual metaphor or scene. A concrete image idea is easier for a model to follow than a list of style adjectives."
+            >
+              <input
+                id="f-detail"
+                class="input"
+                type="text"
+                maxlength="240"
+                autocomplete="off"
+              />
+            </StudioField>
+          </div>
+        </StudioDisclosure>
 
         <section class="directions" aria-labelledby="directions-h">
           <div class="directions-heading">
             <div>
-              <h2 id="directions-h">Choose a visual direction</h2>
+              <h2 id="directions-h">Start from a direction</h2>
+              <p class="goal-guidance">
+                A direction fills in Layout, Imagery and Finish below. Change
+                any layer afterward.
+              </p>
               <p id="goal-guidance" class="goal-guidance"></p>
             </div>
             <span
@@ -247,7 +264,8 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
               <div
                 id="direction-results"
                 class="direction-results"
-                role="list"
+                role="region"
+                aria-label="Direction results"
                 tabindex="-1"
               >
               </div>
@@ -675,7 +693,6 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
                         class="font-preview-sample"
                         id="font-preview-sample"
                         data-preview-sample
-                        aria-live="polite"
                       >
                       </p>
                       <span
@@ -781,7 +798,7 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
       </StudioDisclosure>
     </div>
 
-    <aside class="proof" aria-labelledby="proof-h">
+    <aside class="proof" id="proof-panel" aria-labelledby="proof-h">
       <div class="proof-inner">
         <h2 id="proof-h" class="sr-only">Proof and prompt</h2>
         <figure class="sheet card card-border">
@@ -793,23 +810,6 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
             </p>
           </figcaption>
         </figure>
-
-        <div class="actions">
-          <button type="button" class="btn primary" id="btn-copy"
-            >Copy prompt</button
-          >
-          <button type="button" class="btn" id="btn-copy-neg" hidden
-            >Copy negative</button
-          >
-          <button
-            type="button"
-            class="btn ghost"
-            id="btn-baseline"
-            aria-pressed="false">Compare with an undirected prompt</button
-          >
-        </div>
-        <p class="baseline" id="baseline" hidden></p>
-        <p class="status" id="status" role="status" aria-live="polite"></p>
 
         <div class="target-block">
           <div class="field-heading">
@@ -872,6 +872,25 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
           </div>
         </div>
         <p class="pattern-hint" id="pattern-hint"></p>
+
+        <div class="copy-dock">
+          <div class="actions">
+            <button type="button" class="btn primary" id="btn-copy"
+              >Copy prompt</button
+            >
+            <button type="button" class="btn" id="btn-copy-neg" hidden
+              >Copy negative</button
+            >
+            <button
+              type="button"
+              class="btn ghost"
+              id="btn-baseline"
+              aria-pressed="false">Compare with an undirected prompt</button
+            >
+          </div>
+          <p class="baseline" id="baseline" hidden></p>
+          <p class="status" id="status" role="status" aria-live="polite"></p>
+        </div>
 
         <div class="ctx" id="edit-fields" hidden>
           <div class="field">
@@ -964,7 +983,7 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
           </div>
         </div>
 
-        <details class="prompt-disclosure">
+        <details class="prompt-disclosure" open>
           <summary>
             <span class="mini-label" id="prompt-label">Generated prompt</span>
             <span class="count" id="prompt-count"></span>
@@ -1044,7 +1063,13 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
   <SiteFooter variant="studio" />
 
   <div class="mobile-bar" id="mobile-bar">
-    <a class="btn" href="#proof-h">See prompt</a>
+    <button
+      type="button"
+      class="btn"
+      id="btn-proof"
+      aria-expanded="false"
+      aria-controls="proof-panel">See prompt</button
+    >
     <button type="button" class="btn primary" id="btn-copy-mobile"
       >Copy prompt</button
     >

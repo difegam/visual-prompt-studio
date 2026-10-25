@@ -123,12 +123,18 @@ function aspectOrientation(aspect: Aspect): string {
 
 const STORAGE_KEY = "visual-prompt-studio.recipe.v2";
 
+let savedRecipeUnreadable = false;
+
 function loadSaved(): Recipe | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const res = parseRecipeJson(raw);
-    return res.ok ? res.recipe : null;
+    if (res.ok) return res.recipe;
+    // Keep the unreadable copy: the next save overwrites STORAGE_KEY.
+    localStorage.setItem(`${STORAGE_KEY}.unreadable`, raw);
+    savedRecipeUnreadable = true;
+    return null;
   } catch {
     return null;
   }
@@ -215,6 +221,14 @@ export function startApp(): void {
 
   const status = $("status");
   let statusTimer = 0;
+  let statusUndoable = false;
+  function startStatusTimer(): void {
+    window.clearTimeout(statusTimer);
+    statusTimer = window.setTimeout(
+      () => (status.textContent = ""),
+      statusUndoable ? 12000 : 3500,
+    );
+  }
   function say(message: string, undo?: () => void): void {
     window.clearTimeout(statusTimer);
     status.innerHTML = esc(message);
@@ -230,9 +244,24 @@ export function startApp(): void {
       });
       status.append(b);
     }
-    statusTimer = window.setTimeout(
-      () => (status.textContent = ""),
-      undo ? 9000 : 3500,
+    statusUndoable = Boolean(undo);
+    startStatusTimer();
+  }
+  // Keep Undo reachable while the pointer or keyboard focus is on it.
+  for (const type of ["mouseenter", "focusin"]) {
+    status.addEventListener(type, () => {
+      if (statusUndoable) window.clearTimeout(statusTimer);
+    });
+  }
+  for (const type of ["mouseleave", "focusout"]) {
+    status.addEventListener(type, () => {
+      if (statusUndoable) startStatusTimer();
+    });
+  }
+
+  if (savedRecipeUnreadable) {
+    say(
+      "Your saved recipe couldn't be read, so the example brief is loaded. The old data is kept in this browser.",
     );
   }
 
@@ -615,11 +644,9 @@ export function startApp(): void {
     const groups = Map.groupBy(page.items, groupFor);
     const groupsMarkup = [...groups]
       .map(
-        ([
-          group,
-          items,
-        ]) => `<section class="direction-result-group" aria-label="${esc(group)} directions">
+        ([group, items]) => `<section class="direction-result-group">
         <h3>${esc(group)}</h3>
+        <div class="direction-result-list" role="list">
         ${items
           .map((direction) =>
             renderDirectionCard(direction, {
@@ -632,6 +659,7 @@ export function startApp(): void {
             }),
           )
           .join("")}
+        </div>
       </section>`,
       )
       .join("");
@@ -1401,6 +1429,7 @@ export function startApp(): void {
   const negEl = $("neg");
   const copyIcon = $("btn-copy-icon");
   const copyIconHtml = copyIcon.innerHTML;
+  const copyButtons = [$("btn-copy"), $("btn-copy-mobile")];
   let copyIconTimer = 0;
   async function copyPrompt(): Promise<void> {
     const ok = await copyText(compiled.text, promptEl);
@@ -1408,9 +1437,11 @@ export function startApp(): void {
     if (ok) {
       copyIcon.innerHTML =
         '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m5 12 5 5 9-10"></path></svg>';
+      for (const b of copyButtons) b.textContent = "Copied ✓";
       window.clearTimeout(copyIconTimer);
       copyIconTimer = window.setTimeout(() => {
         copyIcon.innerHTML = copyIconHtml;
+        for (const b of copyButtons) b.textContent = "Copy prompt";
       }, 1500);
     }
     say(
@@ -1421,6 +1452,24 @@ export function startApp(): void {
   }
   $("btn-copy").addEventListener("click", () => void copyPrompt());
   $("btn-copy-mobile").addEventListener("click", () => void copyPrompt());
+
+  /* ── proof sheet (narrow screens) ── */
+  const proofPanel = $("proof-panel");
+  const proofToggle = $("btn-proof");
+  function setProofOpen(open: boolean): void {
+    proofPanel.toggleAttribute("data-open", open);
+    proofToggle.setAttribute("aria-expanded", String(open));
+    proofToggle.textContent = open ? "Hide prompt" : "See prompt";
+  }
+  proofToggle.addEventListener("click", () =>
+    setProofOpen(!proofPanel.hasAttribute("data-open")),
+  );
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && proofPanel.hasAttribute("data-open")) {
+      setProofOpen(false);
+      proofToggle.focus();
+    }
+  });
   copyIcon.addEventListener("click", () => void copyPrompt());
   $("btn-copy").title = "Ctrl+Enter or ⌘+Enter";
   $("btn-copy-neg").addEventListener("click", async () => {
@@ -1495,10 +1544,12 @@ export function startApp(): void {
     const res = parseRecipeJson(impJson.value);
     if (!res.ok) {
       impIssues.hidden = false;
-      impIssues.innerHTML = res.issues
-        .slice(0, 8)
-        .map((i) => `<li>${esc(i)}</li>`)
-        .join("");
+      const hidden = res.issues.length - 8;
+      impIssues.innerHTML =
+        res.issues
+          .slice(0, 8)
+          .map((i) => `<li>${esc(i)}</li>`)
+          .join("") + (hidden > 0 ? `<li>…and ${hidden} more.</li>` : "");
       return;
     }
     const before = store.get();
@@ -1644,6 +1695,8 @@ export function startApp(): void {
       .join("");
   }
 
+  let briefTextSeen = false;
+
   function render(): void {
     frame = 0;
     const r = store.get();
@@ -1659,6 +1712,13 @@ export function startApp(): void {
     renderDirectionExplorer();
     if (document.activeElement !== extra) sync(extra, r.extraText.join("\n"));
     renderAspectOptions(r);
+    const hasBriefText = Boolean(r.headline || r.detail || r.extraText.length);
+    if (hasBriefText && !briefTextSeen) {
+      document
+        .querySelector<HTMLDetailsElement>(".brief-details")
+        ?.setAttribute("open", "");
+    }
+    briefTextSeen = hasBriefText;
     const ideaIsInvalid = r.idea.trim().length < 3;
     $("idea-error").hidden = !ideaIsInvalid;
     idea.setAttribute("aria-invalid", String(ideaIsInvalid));
