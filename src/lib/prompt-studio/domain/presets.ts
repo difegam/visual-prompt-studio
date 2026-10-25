@@ -1,4 +1,4 @@
-import { DEFAULT_RECIPE, type Recipe } from "./recipe";
+import { BLANK_RECIPE, type Recipe } from "./recipe";
 import {
   getStyle,
   type ArtId,
@@ -565,7 +565,7 @@ export function applyPreset(base: Recipe, preset: Preset): Recipe {
   const { styles, ...rest } = preset.patch;
   const design = getStyle(styles.design);
   return {
-    ...DEFAULT_RECIPE,
+    ...BLANK_RECIPE,
     target: base.target,
     pattern: base.pattern,
     language: base.language,

@@ -34,7 +34,7 @@ import {
 import {
   ASPECT_LABELS,
   DEFAULT_ASPECTS,
-  DEFAULT_RECIPE,
+  BLANK_RECIPE,
   PATTERNS,
   PATTERNS_BY_TARGET,
   PURPOSES,
@@ -216,9 +216,7 @@ interface View {
 export function startApp(): void {
   bindInfoPopovers();
   const savedRecipe = loadSaved();
-  const initialRecipe = savedRecipe
-    ? savedRecipe
-    : { ...DEFAULT_RECIPE, idea: "", headline: "", detail: "", extraText: [] };
+  const initialRecipe = savedRecipe ?? { ...BLANK_RECIPE };
   const store = new Store(initialRecipe);
   const view: View = {
     layer: "design",
@@ -275,7 +273,7 @@ export function startApp(): void {
 
   if (savedRecipeUnreadable) {
     say(
-      "Your saved recipe couldn't be read, so the example brief is loaded. The old data is kept in this browser.",
+      "Your saved recipe couldn't be read, so a blank brief is loaded. The old data is kept in this browser.",
     );
   }
 
@@ -1818,8 +1816,8 @@ export function startApp(): void {
   $("btn-reset").addEventListener("click", () => {
     const before = store.get();
     view.presetId = null;
-    store.set(DEFAULT_RECIPE);
-    say("Reset to the example brief.", () => store.set(before));
+    store.set(BLANK_RECIPE);
+    say("Reset to a blank brief.", () => store.set(before));
   });
 
   /* ── inspiration ── */

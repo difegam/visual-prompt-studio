@@ -1,6 +1,6 @@
 import { GOALS, type GoalId } from "../domain/discovery";
 import type { Direction } from "../domain/presets";
-import { DEFAULT_RECIPE } from "../domain/recipe";
+import { BLANK_RECIPE } from "../domain/recipe";
 import { getReference } from "../domain/references";
 import { getStyle } from "../domain/styles";
 import { getTrendEdition } from "../domain/trends";
@@ -70,7 +70,7 @@ export function renderDirectionCard(
   }
 
   const palette =
-    direction.patch.palette ?? design.palette ?? DEFAULT_RECIPE.palette;
+    direction.patch.palette ?? design.palette ?? BLANK_RECIPE.palette;
   const inks = inksFrom([palette[0].hex, palette[1].hex, palette[2].hex]);
   const thumb = proofSvg({
     ...direction.patch.styles,

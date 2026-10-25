@@ -349,17 +349,16 @@ export const RecipeSchema = z.object({
 export type Recipe = z.infer<typeof RecipeSchema>;
 export type PaletteColorValue = z.infer<typeof PaletteColorSchema>;
 
-export const DEFAULT_RECIPE: Recipe = {
+export const BLANK_RECIPE: Recipe = {
   version: 2,
-  idea: "A conceptual exhibition poster for a contemporary ceramics opening",
+  idea: "",
   purpose: "poster",
   aspect: "4:5",
   customAspects: [],
-  headline: "OBJECTS IN MOTION",
-  extraText: ["14 NOV · 18:00", "GALERIE VRIJTHOF"],
+  headline: "",
+  extraText: [],
   textMode: "render",
-  detail:
-    "one oversized porcelain handle becomes an archway people walk through",
+  detail: "",
   styles: { design: "swiss", art: "surrealism", technique: "risograph" },
   palette: [
     { hex: "#F1F1EC", name: "off-white" },

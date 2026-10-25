@@ -248,7 +248,7 @@ test("comparison resolves inherited and starter type and palette values", () => 
   const legacy = data.DIRECTIONS.find(({ id }) => id === "gallery");
   const starter = data.DIRECTIONS.find(({ id }) => id === "one-loud-detail");
   const html = comparison.renderDirectionComparison([legacy, starter], {
-    ...recipe.DEFAULT_RECIPE,
+    ...recipe.BLANK_RECIPE,
     font: "fraunces",
   });
   const output = parse(html);
@@ -274,7 +274,7 @@ test("comparison escapes content and previews only actual non-empty text", () =>
       second,
     ],
     {
-      ...recipe.DEFAULT_RECIPE,
+      ...recipe.BLANK_RECIPE,
       headline: "  <script>HEAD</script>  ",
       extraText: ["   ", "  <b>REAL LINE</b>  ", ""],
     },
@@ -284,13 +284,18 @@ test("comparison escapes content and previews only actual non-empty text", () =>
   assert.ok(output.textContent.includes("<script>bad</script>"));
   assert.ok(output.textContent.includes("<script>HEAD</script>"));
   assert.ok(output.textContent.includes("<b>REAL LINE</b>"));
-  assert.ok(!output.textContent.includes(recipe.DEFAULT_RECIPE.headline));
+  assert.ok(!output.textContent.includes("SUMMER NIGHTS"));
+});
+
+test("blank recipe carries no brief text", () => {
+  const { idea, headline, detail, extraText } = recipe.BLANK_RECIPE;
+  assert.deepEqual([idea, headline, detail, extraText], ["", "", "", []]);
 });
 
 test("comparison includes apply actions and available learning guidance", () => {
   const directions = data.DIRECTIONS.slice(0, 2);
   const output = parse(
-    comparison.renderDirectionComparison(directions, recipe.DEFAULT_RECIPE),
+    comparison.renderDirectionComparison(directions, recipe.BLANK_RECIPE),
   );
   assert.equal(output.querySelectorAll("button[data-preset]").length, 2);
   for (const direction of directions) {
@@ -343,7 +348,8 @@ function validateStarter(direction) {
   assert.equal(direction.patch.fontItalic, false);
   assert.ok(
     recipe.RecipeSchema.safeParse({
-      ...recipe.DEFAULT_RECIPE,
+      ...recipe.BLANK_RECIPE,
+      idea: "A placeholder idea",
       ...direction.patch,
     }).success,
     `${direction.id} must contain valid recipe values`,
@@ -507,7 +513,7 @@ test("edition and practice metadata never enter recipes or compiled prompts", as
     "/src/lib/prompt-studio/domain/compiler.ts",
   );
   const starter = data.DIRECTIONS.find(({ id }) => id === "chromatic-pulse");
-  const next = api.applyDirection(recipe.DEFAULT_RECIPE, starter);
+  const next = api.applyDirection(recipe.BLANK_RECIPE, starter);
   const recipeJson = JSON.stringify(next);
   const compiled = compiler.compile(next).text;
   for (const catalogText of [
@@ -521,11 +527,11 @@ test("edition and practice metadata never enter recipes or compiled prompts", as
 
 test("op-art exact text receives the highest-priority readability hint", () => {
   const hints = readability.getReadabilityHints({
-    ...recipe.DEFAULT_RECIPE,
+    ...recipe.BLANK_RECIPE,
     headline: "  READ THIS  ",
     extraText: ["  Supporting line  "],
     textMode: "render",
-    styles: { ...recipe.DEFAULT_RECIPE.styles, art: "op-art" },
+    styles: { ...recipe.BLANK_RECIPE.styles, art: "op-art" },
   });
   assert.equal(hints[0].id, "op-art-exact-text");
   assert.equal(hints[0].priority, 10);
@@ -533,11 +539,11 @@ test("op-art exact text receives the highest-priority readability hint", () => {
   assert.equal(hints[0].target, "headline");
 
   const textOnly = readability.getReadabilityHints({
-    ...recipe.DEFAULT_RECIPE,
+    ...recipe.BLANK_RECIPE,
     headline: "   ",
     extraText: ["  Supporting line  "],
     textMode: "render",
-    styles: { ...recipe.DEFAULT_RECIPE.styles, art: "op-art" },
+    styles: { ...recipe.BLANK_RECIPE.styles, art: "op-art" },
   });
   assert.equal(textOnly[0].actionLabel, "Review text");
   assert.equal(textOnly[0].target, "text");
@@ -545,7 +551,7 @@ test("op-art exact text receives the highest-priority readability hint", () => {
 
 test("three supporting lines receive the dense-copy hint", () => {
   const dense = readability.getReadabilityHints({
-    ...recipe.DEFAULT_RECIPE,
+    ...recipe.BLANK_RECIPE,
     extraText: ["  One  ", "Two", "   ", "Three"],
   });
   assert.deepEqual(
@@ -558,7 +564,7 @@ test("three supporting lines receive the dense-copy hint", () => {
 
   assert.deepEqual(
     readability.getReadabilityHints({
-      ...recipe.DEFAULT_RECIPE,
+      ...recipe.BLANK_RECIPE,
       extraText: ["One", "Two"],
     }),
     [],
@@ -567,8 +573,8 @@ test("three supporting lines receive the dense-copy hint", () => {
 
 test("blank actual text and space-reservation mode receive no hints", () => {
   const opArt = {
-    ...recipe.DEFAULT_RECIPE,
-    styles: { ...recipe.DEFAULT_RECIPE.styles, art: "op-art" },
+    ...recipe.BLANK_RECIPE,
+    styles: { ...recipe.BLANK_RECIPE.styles, art: "op-art" },
   };
   assert.deepEqual(
     readability.getReadabilityHints({
@@ -590,10 +596,10 @@ test("blank actual text and space-reservation mode receive no hints", () => {
 
 test("readability rules do not mutate or enter the recipe", () => {
   const input = {
-    ...recipe.DEFAULT_RECIPE,
+    ...recipe.BLANK_RECIPE,
     headline: "  READ THIS  ",
     extraText: ["  One  ", "Two", "Three"],
-    styles: { ...recipe.DEFAULT_RECIPE.styles, art: "op-art" },
+    styles: { ...recipe.BLANK_RECIPE.styles, art: "op-art" },
   };
   const before = JSON.stringify(input);
   const hints = readability.getReadabilityHints(input);
@@ -884,11 +890,11 @@ test("style search and curated filtering combine", () => {
 });
 
 test("applying a direction changes its visual layers and preserves the user's brief", async () => {
-  const { DEFAULT_RECIPE } = await server.ssrLoadModule(
+  const { BLANK_RECIPE } = await server.ssrLoadModule(
     "/src/lib/prompt-studio/domain/recipe.ts",
   );
   const current = {
-    ...DEFAULT_RECIPE,
+    ...BLANK_RECIPE,
     idea: "An exhibition about tidal wetlands",
     headline: "TIDELINE",
     purpose: "album-cover",
@@ -923,7 +929,7 @@ test("applying a direction changes its visual layers and preserves the user's br
 
 test("applying a starter changes only the safe bundle and clones mutable values", () => {
   const current = {
-    ...recipe.DEFAULT_RECIPE,
+    ...recipe.BLANK_RECIPE,
     idea: "  An exhibition about tidal wetlands  ",
     purpose: "album-cover",
     aspect: "1:1",
@@ -1000,7 +1006,7 @@ test("applying a starter changes only the safe bundle and clones mutable values"
   const unsafePatch = {
     ...starter.patch,
     ...Object.fromEntries(
-      protectedKeys.map((key) => [key, recipe.DEFAULT_RECIPE[key]]),
+      protectedKeys.map((key) => [key, recipe.BLANK_RECIPE[key]]),
     ),
   };
   assert.deepEqual(
@@ -1037,7 +1043,7 @@ test("Gemini is a target that accepts every pattern and compiles in plain langua
     recipe.PATTERNS.map(({ id }) => id).sort(),
   );
   const base = {
-    ...recipe.DEFAULT_RECIPE,
+    ...recipe.BLANK_RECIPE,
     idea: "An exhibition about tidal wetlands",
     target: "gemini",
   };
