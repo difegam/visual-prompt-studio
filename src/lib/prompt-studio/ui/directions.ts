@@ -13,6 +13,7 @@ export interface RenderDirectionCardOptions {
   variant: DirectionCardVariant;
   goal: GoalId;
   selected: boolean;
+  readonly compared?: boolean;
 }
 
 const esc = (value: string): string =>
@@ -62,6 +63,7 @@ export function renderDirectionCard(
   const label = edition ? "Use this starter" : "Use this direction";
   const button = (classes: string): string =>
     `<button type="button" class="${classes}" data-preset="${esc(direction.id)}" aria-pressed="${options.selected}">${label}</button>`;
+  const compareButton = `<button type="button" class="btn btn-outline direction-compare" data-compare-direction="${esc(direction.id)}" aria-pressed="${options.compared === true}">${options.compared ? "Selected for comparison" : "Add to comparison"}</button>`;
 
   if (options.variant === "explorer") {
     return `<article class="direction-result card bg-base-100" role="listitem">
@@ -71,7 +73,7 @@ export function renderDirectionCard(
         <small>Layout: ${esc(design.name)} · Imagery: ${esc(art.name)} · Finish: ${esc(technique.name)}</small>
         ${learning ? renderInfoPopover({ id: `info-result-${esc(direction.id)}`, label: "Why this starter works", content: `<div class="direction-learning">${learning}</div>` }) : ""}
       </div>
-      <div class="card-actions">${button("btn btn-outline direction-result-apply")}</div>
+      <div class="card-actions">${button("btn btn-outline direction-result-apply")}${compareButton}</div>
     </article>`;
   }
 
@@ -104,7 +106,7 @@ export function renderDirectionCard(
         <li><b>Finish</b><span>${esc(technique.name)}</span></li>
       </ul>
       ${renderInfoPopover({ id: `info-${esc(direction.id)}`, label: "Why this works", content: `<p class="direction-rationale">${esc(rationale)}</p>${learning ? `<div class="direction-learning">${learning}</div>` : ""}` })}
-      <div class="card-actions">${button("btn btn-primary direction-apply")}</div>
+      <div class="card-actions">${button("btn btn-primary direction-apply")}${compareButton}</div>
     </div>
   </article>`;
 }

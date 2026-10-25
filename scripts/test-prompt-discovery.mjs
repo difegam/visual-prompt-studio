@@ -12,6 +12,7 @@ let recipe;
 let cards;
 let trends;
 let readability;
+let comparison;
 
 before(async () => {
   server = await createServer({
@@ -40,6 +41,9 @@ before(async () => {
   readability = await server.ssrLoadModule(
     "/src/lib/prompt-studio/domain/readability.ts",
   );
+  comparison = await server.ssrLoadModule(
+    "/src/lib/prompt-studio/ui/direction-comparison.ts",
+  );
 });
 
 after(async () => {
@@ -51,7 +55,12 @@ test("suggested starters explain their layers and link to their first resolved s
   const source = references.getReference(starter.sourceIds[0]);
   const html = cards.renderDirectionCard(
     { ...starter, sourceIds: ["missing", ...starter.sourceIds] },
-    { variant: "suggested", goal: "attention", selected: true },
+    {
+      variant: "suggested",
+      goal: "attention",
+      selected: true,
+      compared: false,
+    },
   );
   const card = parse(html);
   assert.ok(card.textContent.includes("2026 starter"));
@@ -84,6 +93,7 @@ test("explorer starters use an info popover for learning and retain delegation",
       variant: "explorer",
       goal: "attention",
       selected: false,
+      compared: false,
     }),
   );
   const trigger = card.querySelector("button.info-trigger");
@@ -115,6 +125,7 @@ test("legacy directions omit educational markup in both variants", () => {
         variant,
         goal: "attention",
         selected: false,
+        compared: false,
       }),
     );
     assert.equal(
@@ -142,7 +153,7 @@ test("direction cards escape text and attributes and skip unresolved learning li
           tradeoff: "A & B",
           sourceIds: ["missing"],
         },
-        { variant, goal: "attention", selected: false },
+        { variant, goal: "attention", selected: false, compared: false },
       ),
     );
     assert.equal(card.querySelector("script, img, [data-injected]"), null);
@@ -153,6 +164,143 @@ test("direction cards escape text and attributes and skip unresolved learning li
       card.querySelector("button[data-preset]").getAttribute("data-preset"),
       'test" data-injected="yes',
     );
+  }
+});
+
+test("comparison selection toggles stable IDs and replaces the oldest", () => {
+  assert.deepEqual(comparison.toggleComparisonSelection([], "a"), {
+    ids: ["a"],
+  });
+  assert.deepEqual(comparison.toggleComparisonSelection(["a"], "b"), {
+    ids: ["a", "b"],
+  });
+  assert.deepEqual(comparison.toggleComparisonSelection(["a", "b"], "a"), {
+    ids: ["b"],
+  });
+  assert.deepEqual(comparison.toggleComparisonSelection(["a", "b"], "c"), {
+    ids: ["b", "c"],
+    replacedId: "a",
+  });
+  assert.deepEqual(comparison.toggleComparisonSelection(["a", "a", ""], "b"), {
+    ids: ["a", "b"],
+  });
+  assert.deepEqual(comparison.toggleComparisonSelection(["a"], "   "), {
+    ids: ["a"],
+  });
+});
+
+test("comparison bar reflects one or two selected directions", () => {
+  const selected = data.DIRECTIONS.slice(0, 2);
+  const one = parse(comparison.renderComparisonBar(selected.slice(0, 1)));
+  assert.ok(one.textContent.includes(selected[0].name));
+  assert.ok(one.textContent.includes("1 of 2 selected"));
+  assert.ok(one.querySelector("[data-clear-comparison]"));
+  assert.ok(
+    Object.hasOwn(
+      one.querySelector("[data-open-comparison]").attributes,
+      "disabled",
+    ),
+  );
+
+  const two = parse(comparison.renderComparisonBar(selected));
+  assert.ok(two.textContent.includes("2 of 2 selected"));
+  assert.ok(
+    !Object.hasOwn(
+      two.querySelector("[data-open-comparison]").attributes,
+      "disabled",
+    ),
+  );
+});
+
+test("both direction card variants expose comparison selection", () => {
+  const starter = data.DIRECTIONS[0];
+  for (const variant of ["suggested", "explorer"]) {
+    const unselected = parse(
+      cards.renderDirectionCard(starter, {
+        variant,
+        goal: "attention",
+        selected: false,
+        compared: false,
+      }),
+    ).querySelector("[data-compare-direction]");
+    assert.equal(unselected.getAttribute("data-compare-direction"), starter.id);
+    assert.equal(unselected.getAttribute("aria-pressed"), "false");
+    assert.equal(unselected.textContent, "Add to comparison");
+
+    const selected = parse(
+      cards.renderDirectionCard(starter, {
+        variant,
+        goal: "attention",
+        selected: false,
+        compared: true,
+      }),
+    ).querySelector("[data-compare-direction]");
+    assert.equal(selected.getAttribute("aria-pressed"), "true");
+    assert.equal(selected.textContent, "Selected for comparison");
+  }
+});
+
+test("comparison resolves inherited and starter type and palette values", () => {
+  const legacy = data.DIRECTIONS.find(({ id }) => id === "gallery");
+  const starter = data.DIRECTIONS.find(({ id }) => id === "one-loud-detail");
+  const html = comparison.renderDirectionComparison([legacy, starter], {
+    ...recipe.DEFAULT_RECIPE,
+    font: "fraunces",
+  });
+  const output = parse(html);
+  const columns = output.querySelectorAll(".direction-comparison-column");
+  assert.equal(columns.length, 2);
+  assert.ok(columns[0].textContent.includes("Fraunces"));
+  assert.ok(columns[1].textContent.includes("Archivo Black"));
+  for (const color of starter.patch.palette) {
+    assert.ok(columns[1].innerHTML.includes(color.hex));
+  }
+});
+
+test("comparison escapes content and previews only actual non-empty text", () => {
+  const first = data.DIRECTIONS[0];
+  const second = data.DIRECTIONS[1];
+  const html = comparison.renderDirectionComparison(
+    [
+      {
+        ...first,
+        name: '<img src=x onerror="bad">',
+        principle: "<script>bad</script>",
+      },
+      second,
+    ],
+    {
+      ...recipe.DEFAULT_RECIPE,
+      headline: "  <script>HEAD</script>  ",
+      extraText: ["   ", "  <b>REAL LINE</b>  ", ""],
+    },
+  );
+  const output = parse(html);
+  assert.equal(output.querySelector("script, img, b:not(dt b)"), null);
+  assert.ok(output.textContent.includes("<script>bad</script>"));
+  assert.ok(output.textContent.includes("<script>HEAD</script>"));
+  assert.ok(output.textContent.includes("<b>REAL LINE</b>"));
+  assert.ok(!output.textContent.includes(recipe.DEFAULT_RECIPE.headline));
+});
+
+test("comparison includes apply actions and available learning guidance", () => {
+  const directions = data.DIRECTIONS.slice(0, 2);
+  const output = parse(
+    comparison.renderDirectionComparison(directions, recipe.DEFAULT_RECIPE),
+  );
+  assert.equal(output.querySelectorAll("button[data-preset]").length, 2);
+  for (const direction of directions) {
+    const column = output.querySelector(
+      `[data-direction-id="${direction.id}"]`,
+    );
+    assert.equal(
+      column.querySelector("button[data-preset]").getAttribute("data-preset"),
+      direction.id,
+    );
+    assert.ok(column.textContent.includes(direction.principle));
+    assert.ok(column.textContent.includes(direction.tradeoff));
+    assert.ok(column.textContent.includes("Try this"));
+    assert.ok(column.textContent.includes(direction.practiceTip));
   }
 });
 
@@ -322,6 +470,7 @@ test("direction cards derive their starter badge and tip from catalog metadata",
       variant: "suggested",
       goal: "attention",
       selected: false,
+      compared: false,
     }),
   );
   assert.equal(
@@ -342,6 +491,7 @@ test("direction cards derive their starter badge and tip from catalog metadata",
       variant: "suggested",
       goal: "attention",
       selected: false,
+      compared: false,
     }),
   );
   assert.equal(legacyCard.querySelector(".direction-trend-badge"), null);
