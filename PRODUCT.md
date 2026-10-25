@@ -18,7 +18,7 @@ Visual Prompt Studio is a local-first, copy-first composer for art-directed imag
 
 - **Layered art direction.** Layout (design), imagery (art), and print finish (technique) are chosen independently, so a user combines them instead of picking one flat style name.
 - **Model-aware output.** The prompt structure changes with the target image model (six targets), instead of one generic prompt for all.
-- **Source-grounded starters.** Six contemporary 2026 directions combine existing visual layers with a palette, typography, and creative intent. Each explains a design principle and tradeoff and links to supporting reading.
+- **Source-grounded starters.** Contemporary starter directions (six in the current 2026 edition) combine existing visual layers with a palette, typography, and creative intent. Each explains a design principle and tradeoff and links to supporting reading.
 
 ## Operating Context
 
@@ -34,7 +34,7 @@ Visual Prompt Studio is a local-first, copy-first composer for art-directed imag
 - Applying a starter changes only layout, imagery, finish, palette, typeface, type weight and italics, and creative-intent selections. It preserves the user's brief, exact poster text, concept, format, aspect ratio, text-rendering mode, exclusions, and output settings, including target model, prompt structure, language, and model-specific parameters. The action can be undone, and each visual control remains editable.
 - Exact poster copy preserved, or a clean area reserved for later typesetting.
 - Selectable exclusions; style-dependent exclusions are called out and skipped automatically.
-- The app makes no API calls and sends no recipe data to a server.
+- The app makes no API calls and sends no recipe data to a server. The one exception is user-initiated: the "Open in ChatGPT" link puts the prompt in the opened URL.
 - Built on the Astro template (Astro 7, React 19, Tailwind CSS 4, daisyUI 5, strict TypeScript). Astro owns routing, layouts, and metadata; the composer is a typed browser-side module. This stack stays.
 - Style names and the three-layer split follow the beailabs guide (Spanish source); some catalog entries carry Spanish terms. Whether Spanish is a supported UI language is undecided.
 

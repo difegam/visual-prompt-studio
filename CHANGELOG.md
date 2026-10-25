@@ -8,6 +8,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - Compare page (`/compare`) with before and after sliders for a generic prompt against a studio prompt.
 - Direction comparison and prompt readability advice in the studio.
+- Principle-led design learning: topic filters and "Start with a principle" paths for learning sources.
 - "Open in" links for ChatGPT, Gemini, Midjourney and FLUX.
 - Copy button animation and feedback.
 - Apache-2.0 license with a `NOTICE` that keeps the Astroplate MIT notice.
@@ -16,7 +17,8 @@ All notable changes to this project are documented here. The format follows [Kee
 ### Changed
 
 - Menu reorganized into main pages (Studio, Compare, Guide) and quieter site links (Blog, About), with an active state on the current page. GitHub and the theme switcher align to the right.
-- Starter editions generalized.
+- Starter editions generalized; the explorer filter, pill and status now read the current edition from the catalog.
+- Applying any direction clears the comparison selection. The shared `esc` helper and `getDirection` replace duplicated code.
 - Documentation now lists six model targets, including Gemini.
 
 ## [1.0.0]
