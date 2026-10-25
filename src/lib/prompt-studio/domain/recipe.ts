@@ -71,9 +71,29 @@ export const ASPECTS = [
   "3:4",
   "2:3",
 ] as const;
-export type Aspect = (typeof ASPECTS)[number];
+export type AspectPreset = (typeof ASPECTS)[number];
+export const DEFAULT_ASPECTS = [
+  "16:9",
+  "4:3",
+  "9:16",
+  "3:4",
+  "1:1",
+] as const satisfies readonly AspectPreset[];
 
-export const ASPECT_LABELS: Record<Aspect, string> = {
+const gcd = (a: number, b: number): number => (b ? gcd(b, a % b) : a);
+const CustomAspectSchema = z
+  .string()
+  .regex(/^[1-9]\d{0,2}:[1-9]\d{0,2}$/, "Use two positive whole numbers")
+  .refine((value) => {
+    const [w, h] = value.split(":").map(Number);
+    return w <= 100 && h <= 100 && gcd(w, h) === 1;
+  }, "Use reduced dimensions from 1 to 100")
+  .brand<"CustomAspect">();
+export const AspectSchema = z.union([z.enum(ASPECTS), CustomAspectSchema]);
+export type CustomAspect = z.infer<typeof CustomAspectSchema>;
+export type Aspect = z.infer<typeof AspectSchema>;
+
+export const ASPECT_LABELS: Record<AspectPreset, string> = {
   "16:9": "Widescreen",
   "9:16": "Story",
   "1:1": "Square",
@@ -84,6 +104,32 @@ export const ASPECT_LABELS: Record<Aspect, string> = {
   "3:4": "Portrait",
   "2:3": "Tall print",
 };
+
+export function isAspectPreset(value: Aspect): value is AspectPreset {
+  return ASPECTS.includes(value as AspectPreset);
+}
+
+export function customAspectFromDimensions(
+  width: number,
+  height: number,
+): CustomAspect | null {
+  if (
+    !Number.isInteger(width) ||
+    !Number.isInteger(height) ||
+    width < 1 ||
+    width > 100 ||
+    height < 1 ||
+    height > 100
+  ) {
+    return null;
+  }
+
+  const divisor = gcd(width, height);
+  const parsed = CustomAspectSchema.safeParse(
+    `${width / divisor}:${height / divisor}`,
+  );
+  return parsed.success ? parsed.data : null;
+}
 
 export function aspectRatio(a: Aspect): { w: number; h: number } {
   const [w, h] = a.split(":").map(Number) as [number, number];
@@ -234,7 +280,12 @@ export const RecipeSchema = z.object({
     .min(3, "Describe what you are making in a few words")
     .max(400),
   purpose: z.enum(PURPOSE_IDS),
-  aspect: z.enum(ASPECTS),
+  aspect: AspectSchema,
+  customAspects: z
+    .array(CustomAspectSchema)
+    .max(12)
+    .refine((ratios) => new Set(ratios).size === ratios.length)
+    .default([]),
   headline: z.string().max(80),
   extraText: z.array(z.string().trim().min(1).max(80)).max(4),
   textMode: z.enum(["render", "space"]),
@@ -250,6 +301,8 @@ export const RecipeSchema = z.object({
     PaletteColorSchema,
   ]),
   font: z.union([z.literal("style"), z.enum(FONT_IDS)]),
+  fontWeight: z.enum(["regular", "bold"]).default("regular"),
+  fontItalic: z.boolean().default(false),
   signatures: z.array(z.enum(SIGNATURE_IDS)).max(4),
   avoids: z.array(z.enum(AVOID_IDS)),
   cliche: z.enum(CLICHE_IDS),
@@ -275,6 +328,7 @@ export const DEFAULT_RECIPE: Recipe = {
   idea: "A conceptual exhibition poster for a contemporary ceramics opening",
   purpose: "poster",
   aspect: "4:5",
+  customAspects: [],
   headline: "OBJECTS IN MOTION",
   extraText: ["14 NOV · 18:00", "GALERIE VRIJTHOF"],
   textMode: "render",
@@ -287,6 +341,8 @@ export const DEFAULT_RECIPE: Recipe = {
     { hex: "#16181B", name: "black" },
   ],
   font: "style",
+  fontWeight: "regular",
+  fontItalic: false,
   signatures: ["concept"],
   avoids: [...DEFAULT_AVOIDS],
   cliche: "exhibition",

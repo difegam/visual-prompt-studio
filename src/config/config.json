@@ -29,25 +29,18 @@
   },
 
   "params": {
-    "contact_form_action": "",
-    "copyright": "© [Your Organization](https://example.com). Replace this credit before launch."
+    "copyright": "Visual Prompt Studio. Built on [Astroplate](https://github.com/zeon-studio/astroplate) (MIT)."
   },
 
   "navigation_button": {
     "enable": false,
-    "label": "Contact us",
-    "link": "/contact"
+    "label": "Open the Studio",
+    "link": "/"
   },
 
   "google_tag_manager": {
     "enable": false,
     "gtm_id": "GTM-XXXXXX"
-  },
-
-  "disqus": {
-    "enable": false,
-    "shortname": "your-disqus-shortname",
-    "settings": {}
   },
 
   "metadata": {

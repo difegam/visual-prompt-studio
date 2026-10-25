@@ -1,7 +1,7 @@
 ---
 title: "Authors"
 meta_title: ""
-description: "Contributors to this site. Replace these example records before launch."
+description: "The people behind Visual Prompt Studio."
 image: ""
 draft: false
 ---

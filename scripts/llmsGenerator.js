@@ -68,9 +68,9 @@ async function getAstroI18nConfig() {
 `,
   );
 
-  // Remove named imports from astro/config (we polyfill them below)
+  // Remove the named import from astro/config (we polyfill it below)
   content = content.replace(
-    /import\s+\{\s*defineConfig\s*,\s*fontProviders\s*\}\s+from\s+['"]astro\/config['"];?\s*\n/,
+    /import\s+\{\s*defineConfig(?:\s*,\s*fontProviders)?\s*\}\s+from\s+['"]astro\/config['"];?\s*\n/,
     "\n",
   );
 
@@ -114,7 +114,6 @@ async function getAstroI18nConfig() {
   // Prepend fs import and polyfills
   const tempContent = `import fs from "node:fs";
 const defineConfig = (x) => x;
-const fontProviders = { bunny: () => ({}) };
 ${content}`;
 
   const tempName = `astro.config.llms-temp-${Date.now()}.mjs`;

@@ -9,8 +9,11 @@ import {
   PATTERNS_BY_TARGET,
   PURPOSES,
   SIGNATURES,
+  aspectRatio,
+  isAspectPreset,
   orientation,
   type Aspect,
+  type AspectPreset,
   type PatternId,
   type Recipe,
 } from "./recipe";
@@ -167,6 +170,19 @@ function resolve(r: Recipe): Context {
     typeEn = design.typeHint ?? "the style's own typography";
     typeEs = "la propia del estilo";
   }
+
+  const supportsBold = !font || font.weights.some((weight) => weight >= 700);
+  const supportsItalic = !font || font.italic;
+  const emphasisEn = [
+    r.fontWeight === "bold" && supportsBold ? "a bold weight" : "",
+    r.fontItalic && supportsItalic ? "italic letterforms" : "",
+  ].filter(Boolean);
+  const emphasisEs = [
+    r.fontWeight === "bold" && supportsBold ? "un peso negrita" : "",
+    r.fontItalic && supportsItalic ? "letras cursivas" : "",
+  ].filter(Boolean);
+  if (emphasisEn.length) typeEn += `, ${emphasisEn.join(" and ")}`;
+  if (emphasisEs.length) typeEs += `, ${emphasisEs.join(" y ")}`;
 
   // Exclusions: drop the ones a chosen style depends on.
   const skipped: SkippedAvoid[] = [];
@@ -589,7 +605,7 @@ function midjourney(ctx: Context, o: Out): void {
   }
 }
 
-const SDXL_SIZE: Record<Aspect, string> = {
+const SDXL_SIZE: Record<AspectPreset, string> = {
   "1:1": "1024 × 1024",
   "4:5": "896 × 1152",
   "3:4": "896 × 1152",
@@ -600,6 +616,25 @@ const SDXL_SIZE: Record<Aspect, string> = {
   "4:3": "1216 × 912",
   "21:9": "1536 × 640",
 };
+
+function closestSdxlSize(aspect: Aspect): string {
+  if (isAspectPreset(aspect)) return SDXL_SIZE[aspect];
+
+  const { w, h } = aspectRatio(aspect);
+  const target = w / h;
+  const closest = Object.keys(SDXL_SIZE).reduce((best, candidate) => {
+    const { w: candidateW, h: candidateH } = aspectRatio(
+      candidate as AspectPreset,
+    );
+    const { w: bestW, h: bestH } = aspectRatio(best as AspectPreset);
+    return Math.abs(Math.log(target / (candidateW / candidateH))) <
+      Math.abs(Math.log(target / (bestW / bestH)))
+      ? candidate
+      : best;
+  });
+
+  return SDXL_SIZE[closest as AspectPreset];
+}
 
 function sdxl(ctx: Context, o: Out, neg: Out): void {
   const { r } = ctx;
@@ -624,7 +659,7 @@ function sdxl(ctx: Context, o: Out, neg: Out): void {
   neg.add("avoid", negativeTokens(ctx).join(", "));
   ctx.notices.push({
     level: "info",
-    message: `Set the canvas to ${SDXL_SIZE[r.aspect]} (closest SDXL bucket to ${r.aspect}).`,
+    message: `Set the canvas to ${closestSdxlSize(r.aspect)} (closest SDXL bucket to ${r.aspect}).`,
   });
 }
 

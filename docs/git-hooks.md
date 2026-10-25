@@ -21,7 +21,7 @@ pnpm run check
 pnpm run build:preview
 ```
 
-The lint configuration uses Astro's recommended rules and TypeScript's recommended rules, with `no-explicit-any` disabled for TypeScript and Astro files because several retained Astroplate helpers use it today. `astro check` still runs over the whole project, and the new portfolio component uses an explicit project type. A derived project can re-enable that rule after tightening the inherited helpers.
+The lint configuration uses Astro's recommended rules and TypeScript's recommended rules, with `no-explicit-any` disabled for TypeScript and Astro files because several retained Astroplate helpers use it today. `astro check` still runs over the whole project. A derived project can re-enable that rule after tightening the inherited helpers.
 
 ## Add checks when a project needs them
 

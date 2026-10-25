@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 (function () {
-  const rootDirs = ["src/pages", "src/hooks", "src/layouts", "src/styles"];
+  const rootDirs = ["src/pages", "src/layouts", "src/styles"];
 
   const deleteAssetList = ["src/layouts/components/ThemeSwitcher.astro"];
 

@@ -1,7 +1,6 @@
 ---
 import TwSizeIndicator from "@/components/TwSizeIndicator.astro";
 import config from "@/config/config.json";
-import theme from "@/config/theme.json";
 import { plainify } from "@/lib/utils/textConverter";
 import { getCanonicalUrl, getSiteMode } from "@/lib/seo";
 import Footer from "@/partials/Footer.astro";
@@ -11,15 +10,9 @@ import {
   GoogleTagmanager,
   GoogleTagmanagerNoscript,
 } from "@digi4care/astro-google-tagmanager";
-import { Font } from "astro:assets";
 import { ClientRouter } from "astro:transitions";
 import Announcement from "./helpers/Announcement";
 import SearchModal from "./helpers/SearchModal";
-
-// Font families configured in theme.json (filter out fallback type entries).
-const fontEntries = Object.entries(theme.fonts.font_family).filter(
-  ([key]) => !key.includes("_type"),
-);
 
 // types for frontmatters
 export interface Props {
@@ -80,15 +73,6 @@ const shouldNoindex = siteMode === "preview" || noindex;
     />
     <meta name="generator" content={Astro.generator} />
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-
-    <!-- Astro bundles theme fonts retrieved from Bunny Fonts -->
-    {
-      !hideChrome &&
-        fontEntries.map(([key]) => {
-          const cssVar = `--font-${key}` as any;
-          return <Font cssVariable={cssVar} preload />;
-        })
-    }
 
     <!-- responsive meta -->
     <meta

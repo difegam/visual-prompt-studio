@@ -19,6 +19,8 @@ import FieldInfo from "@/layouts/components/FieldInfo.astro";
     <nav class="bar-nav" aria-label="Sections">
       <a href="#compose">Compose</a>
       <a href="#inspiration">Inspiration</a>
+      <a href="/blog">Blog</a>
+      <a href="/about">About</a>
     </nav>
     <div class="bar-actions">
       <button
@@ -92,9 +94,9 @@ import FieldInfo from "@/layouts/components/FieldInfo.astro";
               />
             </div>
             <div
-              class="seg aspect-seg"
+              class="aspect-seg"
               id="f-aspect"
-              role="radiogroup"
+              role="group"
               aria-labelledby="aspect-label"
             >
             </div>
@@ -193,7 +195,8 @@ import FieldInfo from "@/layouts/components/FieldInfo.astro";
             id="tab-design"
             aria-controls="panel-design"
             data-layer="design"
-            ><i class="sep c"></i>Layout<small id="cur-design"></small></button
+            ><i class="sep c" aria-hidden="true"></i>Layout<small
+              id="cur-design"></small></button
           >
           <button
             type="button"
@@ -201,7 +204,8 @@ import FieldInfo from "@/layouts/components/FieldInfo.astro";
             id="tab-art"
             aria-controls="panel-art"
             data-layer="art"
-            ><i class="sep m"></i>Imagery<small id="cur-art"></small></button
+            ><i class="sep m" aria-hidden="true"></i>Imagery<small id="cur-art"
+            ></small></button
           >
           <button
             type="button"
@@ -209,8 +213,8 @@ import FieldInfo from "@/layouts/components/FieldInfo.astro";
             id="tab-technique"
             aria-controls="panel-technique"
             data-layer="technique"
-            ><i class="sep y"></i>Finish<small id="cur-technique"
-            ></small></button
+            ><i class="sep y" aria-hidden="true"></i>Finish<small
+              id="cur-technique"></small></button
           >
         </div>
         <div
@@ -275,15 +279,163 @@ import FieldInfo from "@/layouts/components/FieldInfo.astro";
               <FieldInfo
                 label="Typography"
                 id="typography"
-                info="These specimens set a broad type character for the image model. Add an exact brand font afterward if needed."
+                info="The image model gets a type description, not this font file. Add exact lettering in your image editor after generation."
               />
             </div>
             <p>
-              Choose a type character. Add the final brand font in your image
-              editor when exact lettering matters.
+              Preview a typeface, then describe its character in your prompt.
             </p>
           </div>
-          <div class="specimens" id="specimens"></div>
+          <div class="type-browser" id="specimens">
+            <div class="type-controls">
+              <details class="dropdown font-dropdown" id="font-dropdown">
+                <summary class="btn btn-outline font-trigger">
+                  <span class="font-trigger-copy">
+                    <small>Typeface</small>
+                    <b id="selected-font-label">Let the style decide</b>
+                  </span>
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="m7 10 5 5 5-5"></path>
+                  </svg>
+                </summary>
+                <div
+                  class="dropdown-content font-browser"
+                  role="group"
+                  aria-label="Browse typefaces"
+                >
+                  <label class="font-search-label" for="font-search"
+                    >Search fonts</label
+                  >
+                  <input
+                    class="input input-sm font-search"
+                    id="font-search"
+                    type="search"
+                    placeholder="Try ‘serif’ or ‘Oswald’"
+                    autocomplete="off"
+                    data-font-search
+                  />
+                  <div
+                    class="font-categories"
+                    role="group"
+                    aria-label="Filter fonts by category"
+                  >
+                    <button
+                      type="button"
+                      class="btn btn-sm"
+                      data-font-category="all"
+                      aria-pressed="true">All</button
+                    >
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-ghost"
+                      data-font-category="popular"
+                      aria-pressed="false">Popular</button
+                    >
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-ghost"
+                      data-font-category="sans"
+                      aria-pressed="false">Sans</button
+                    >
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-ghost"
+                      data-font-category="serif"
+                      aria-pressed="false">Serif</button
+                    >
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-ghost"
+                      data-font-category="display"
+                      aria-pressed="false">Display</button
+                    >
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-ghost"
+                      data-font-category="mono"
+                      aria-pressed="false">Mono</button
+                    >
+                  </div>
+                  <p class="font-popularity-note">
+                    Popular marks families with high general web usage; it is
+                    not an image-model ranking.
+                  </p>
+                  <button
+                    type="button"
+                    class="spec auto"
+                    data-font="style"
+                    aria-pressed="false"
+                  >
+                    <span class="sample">Let the style decide</span>
+                    <span class="foot"
+                      ><b>Recommended</b><span id="spec-auto-note"></span></span
+                    >
+                  </button>
+                  <p
+                    class="font-result-count"
+                    id="font-result-count"
+                    aria-live="polite"
+                  >
+                  </p>
+                  <div class="font-options" id="font-options"></div>
+                  <p class="font-empty" id="font-empty" hidden>
+                    No fonts match those filters.
+                    <button
+                      type="button"
+                      class="btn btn-link btn-sm"
+                      data-font-clear>Clear search</button
+                    >
+                  </p>
+                </div>
+              </details>
+              <div
+                class="font-modifiers"
+                role="group"
+                aria-label="Preview font style"
+              >
+                <div class="join" aria-label="Font weight">
+                  <button
+                    type="button"
+                    class="btn btn-sm join-item"
+                    data-font-weight="regular"
+                    aria-pressed="true">Regular</button
+                  >
+                  <button
+                    type="button"
+                    class="btn btn-sm join-item"
+                    data-font-weight="bold"
+                    aria-pressed="false">Bold</button
+                  >
+                </div>
+                <button
+                  type="button"
+                  class="btn btn-sm font-italic"
+                  data-font-italic
+                  aria-pressed="false"
+                  aria-label="Toggle italic preview"><i>Italic</i></button
+                >
+              </div>
+            </div>
+            <p class="font-modifier-note">
+              Bold and italic availability depends on the bundled font files.
+            </p>
+            <div
+              class="font-preview"
+              role="group"
+              aria-label="Typeface specimen preview"
+            >
+              <span class="font-preview-label">Poster specimen</span>
+              <p
+                class="font-preview-sample"
+                id="font-preview-sample"
+                data-preview-sample
+                aria-live="polite"
+              >
+              </p>
+              <span class="font-preview-caption" id="font-preview-caption"
+              ></span>
+            </div>
+          </div>
         </section>
 
         <section aria-labelledby="avoid-h">
@@ -515,15 +667,23 @@ import FieldInfo from "@/layouts/components/FieldInfo.astro";
           <div
             class="prompt"
             id="prompt"
+            role="group"
             tabindex="0"
             aria-labelledby="prompt-label"
           >
           </div>
           <div id="neg-wrap" hidden>
             <div class="prompt-head">
-              <span class="mini-label">Negative prompt</span>
+              <span class="mini-label" id="neg-label">Negative prompt</span>
             </div>
-            <div class="prompt neg" id="neg" tabindex="0"></div>
+            <div
+              class="prompt neg"
+              id="neg"
+              role="group"
+              tabindex="0"
+              aria-labelledby="neg-label"
+            >
+            </div>
           </div>
           <ul class="notices" id="notices"></ul>
         </div>
@@ -587,11 +747,76 @@ import FieldInfo from "@/layouts/components/FieldInfo.astro";
     >
   </div>
 
+  <dialog id="dlg-aspect" aria-labelledby="aspect-dialog-title">
+    <form method="dialog" class="dlg aspect-dialog" id="aspect-form">
+      <div class="aspect-dialog-head">
+        <h2 id="aspect-dialog-title">Add a custom ratio</h2>
+        <p>Enter a width and height. The frame updates as you edit.</p>
+      </div>
+      <div class="aspect-dimensions">
+        <label class="aspect-number" for="aspect-width">
+          <span>Width</span>
+          <input
+            class="input"
+            id="aspect-width"
+            type="number"
+            min="1"
+            max="100"
+            step="1"
+            inputmode="numeric"
+            value="5"
+            required
+          />
+        </label>
+        <span class="aspect-divider" aria-hidden="true">:</span>
+        <label class="aspect-number" for="aspect-height">
+          <span>Height</span>
+          <input
+            class="input"
+            id="aspect-height"
+            type="number"
+            min="1"
+            max="100"
+            step="1"
+            inputmode="numeric"
+            value="7"
+            required
+          />
+        </label>
+      </div>
+      <div class="aspect-live-preview" aria-live="polite" aria-atomic="true">
+        <div
+          class="aspect-live-frame"
+          id="aspect-live-frame"
+          role="img"
+          aria-label="Portrait ratio preview"
+        >
+        </div>
+        <div>
+          <b id="aspect-live-label">5:7</b>
+          <span id="aspect-live-orientation">Portrait</span>
+        </div>
+      </div>
+      <p class="field-error" id="aspect-error" role="alert" hidden></p>
+      <div class="dlg-actions">
+        <button type="submit" class="btn primary">Add ratio</button>
+        <button type="button" class="btn ghost" id="aspect-cancel"
+          >Cancel</button
+        >
+      </div>
+    </form>
+  </dialog>
+
   <dialog id="dlg-export" aria-labelledby="exp-h">
     <form method="dialog" class="dlg">
       <h2 id="exp-h">Export recipe</h2>
       <p>The full recipe as JSON. Import it later to restore every choice.</p>
-      <textarea id="exp-json" rows="14" readonly spellcheck="false"></textarea>
+      <textarea
+        id="exp-json"
+        rows="14"
+        readonly
+        spellcheck="false"
+        aria-labelledby="exp-h"></textarea>
       <div class="dlg-actions">
         <button type="button" class="btn primary" id="exp-copy"
           >Copy JSON</button
@@ -611,7 +836,11 @@ import FieldInfo from "@/layouts/components/FieldInfo.astro";
         Paste a recipe JSON or choose a .json file. It is validated before
         anything changes.
       </p>
-      <textarea id="imp-json" rows="12" spellcheck="false"></textarea>
+      <textarea
+        id="imp-json"
+        rows="12"
+        spellcheck="false"
+        aria-labelledby="imp-h"></textarea>
       <label class="file"
         ><input id="imp-file" type="file" accept="application/json,.json" />
         <span>Choose a file</span></label

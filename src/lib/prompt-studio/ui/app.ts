@@ -17,8 +17,8 @@ import { FONTS, getFont, type FontId } from "../domain/fonts";
 import { PALETTE_VARIATIONS, nameForHex } from "../domain/palettes";
 import { MIXES, PRESETS, applyPreset, clonePalette } from "../domain/presets";
 import {
-  ASPECTS,
   ASPECT_LABELS,
+  DEFAULT_ASPECTS,
   DEFAULT_RECIPE,
   PATTERNS,
   PATTERNS_BY_TARGET,
@@ -26,6 +26,8 @@ import {
   SIGNATURES,
   TARGETS,
   aspectRatio,
+  customAspectFromDimensions,
+  isAspectPreset,
   parseRecipe,
   parseRecipeJson,
   type Aspect,
@@ -65,6 +67,26 @@ const esc = (s: string): string =>
         c
       ]!,
   );
+
+function aspectShapeSvg(aspect: Aspect, boxWidth = 28, boxHeight = 28): string {
+  const { w, h } = aspectRatio(aspect);
+  const padding = 3;
+  const scale = Math.min(
+    (boxWidth - padding * 2) / w,
+    (boxHeight - padding * 2) / h,
+  );
+  const width = w * scale;
+  const height = h * scale;
+  const x = (boxWidth - width) / 2;
+  const y = (boxHeight - height) / 2;
+
+  return `<svg viewBox="0 0 ${boxWidth} ${boxHeight}" aria-hidden="true" focusable="false"><rect x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${width.toFixed(2)}" height="${height.toFixed(2)}" rx="2" /></svg>`;
+}
+
+function aspectOrientation(aspect: Aspect): string {
+  const { w, h } = aspectRatio(aspect);
+  return w === h ? "Square" : w > h ? "Landscape" : "Portrait";
+}
 
 const STORAGE_KEY = "visual-prompt-studio.recipe.v2";
 
@@ -188,14 +210,51 @@ export function startApp(): void {
   const extra = $<HTMLTextAreaElement>("f-extra");
   const detail = $<HTMLInputElement>("f-detail");
   const purpose = $<HTMLSelectElement>("f-purpose");
+  const aspectPicker = $("f-aspect");
 
   purpose.innerHTML = PURPOSES.map(
     (p) => `<option value="${p.id}">${esc(p.label)}</option>`,
   ).join("");
-  $("f-aspect").innerHTML = ASPECTS.map(
-    (a) =>
-      `<label class="seg-option"><input class="radio" type="radio" name="aspect" value="${a}" data-aspect="${a}" /><span><b>${a}</b><small>${ASPECT_LABELS[a]}</small></span></label>`,
-  ).join("");
+  function renderAspectOptions(r: Recipe): void {
+    const options: { aspect: Aspect; custom: boolean }[] = DEFAULT_ASPECTS.map(
+      (aspect) => ({ aspect, custom: false }),
+    );
+
+    for (const aspect of r.customAspects) {
+      const existing = options.find((option) => option.aspect === aspect);
+      if (existing) {
+        existing.custom = true;
+      } else {
+        options.push({ aspect, custom: true });
+      }
+    }
+    if (!options.some((option) => option.aspect === r.aspect)) {
+      options.push({ aspect: r.aspect, custom: !isAspectPreset(r.aspect) });
+    }
+
+    const key = `${options.map(({ aspect, custom }) => `${aspect}:${custom}`).join("|")}:${r.customAspects.length}`;
+    if (key === aspectOptionsKey) return;
+    aspectOptionsKey = key;
+
+    const choiceMarkup = options
+      .map(({ aspect, custom }) => {
+        const label = isAspectPreset(aspect) ? ASPECT_LABELS[aspect] : "Custom";
+        const option = `<label class="seg-option aspect-option"><input class="radio" type="radio" name="aspect" value="${esc(aspect)}" data-aspect="${esc(aspect)}" /><span class="aspect-shape">${aspectShapeSvg(aspect)}</span><span class="aspect-copy"><b>${esc(aspect)}</b><small>${esc(label)}</small></span></label>`;
+
+        if (!custom) return option;
+        return `<div class="aspect-custom-option">${option}<button type="button" class="btn btn-ghost btn-square btn-xs aspect-remove" data-remove-aspect="${esc(aspect)}" aria-label="Remove custom ratio ${esc(aspect)}" title="Remove ${esc(aspect)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg></button></div>`;
+      })
+      .join("");
+
+    aspectPicker.innerHTML = `${choiceMarkup}<button type="button" class="btn btn-ghost aspect-add" id="btn-add-aspect" aria-label="Add a custom aspect ratio" title="Add a custom aspect ratio"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg><span>Add</span></button>`;
+    $("btn-add-aspect").toggleAttribute(
+      "disabled",
+      r.customAspects.length >= 12,
+    );
+  }
+
+  let aspectOptionsKey = "";
+  renderAspectOptions(store.get());
 
   idea.addEventListener("input", () =>
     patch({ idea: idea.value.slice(0, 400) }),
@@ -219,17 +278,117 @@ export function startApp(): void {
     "blur",
     () => (extra.value = store.get().extraText.join("\n")),
   );
+  const aspectDialog = $<HTMLDialogElement>("dlg-aspect");
+  const aspectForm = $<HTMLFormElement>("aspect-form");
+  const aspectWidth = $<HTMLInputElement>("aspect-width");
+  const aspectHeight = $<HTMLInputElement>("aspect-height");
+  const aspectFrame = $("aspect-live-frame");
+  const aspectLiveLabel = $("aspect-live-label");
+  const aspectLiveOrientation = $("aspect-live-orientation");
+  const aspectError = $("aspect-error");
+
   purpose.addEventListener("change", () => {
     const p = PURPOSES.find((x) => x.id === purpose.value);
     if (p) patch({ purpose: p.id, aspect: p.aspect });
   });
-  $("f-aspect").addEventListener("change", (e) => {
+  aspectPicker.addEventListener("change", (e) => {
     const input = (e.target as HTMLElement).closest<HTMLInputElement>(
       "[data-aspect]",
     );
-    if (input && ASPECTS.includes(input.value as Aspect)) {
-      patch({ aspect: input.value as Aspect });
+    if (!input) return;
+    const r = store.get();
+    const selected =
+      DEFAULT_ASPECTS.find((aspect) => aspect === input.value) ??
+      r.customAspects.find((aspect) => aspect === input.value);
+    if (selected) patch({ aspect: selected });
+  });
+  aspectPicker.addEventListener("click", (event) => {
+    const target = (event.target as HTMLElement).closest<HTMLButtonElement>(
+      "button",
+    );
+    if (!target) return;
+
+    if (target.id === "btn-add-aspect") {
+      const { w, h } = aspectRatio(store.get().aspect);
+      aspectWidth.value = String(w);
+      aspectHeight.value = String(h);
+      updateAspectPreview();
+      aspectDialog.showModal();
+      return;
     }
+
+    const value = target.dataset.removeAspect;
+    if (!value) return;
+    const r = store.get();
+    const isSaved = r.customAspects.some((aspect) => aspect === value);
+    const isCurrent = r.aspect === value;
+    if (!isSaved && !isCurrent) return;
+
+    store.set({
+      ...r,
+      aspect: isCurrent ? DEFAULT_ASPECTS[0] : r.aspect,
+      customAspects: r.customAspects.filter((aspect) => aspect !== value),
+    });
+    say(`Removed ${value}.`);
+  });
+
+  function updateAspectPreview(): void {
+    const ratio = customAspectFromDimensions(
+      Number(aspectWidth.value),
+      Number(aspectHeight.value),
+    );
+    if (!ratio) {
+      aspectFrame.innerHTML = "";
+      aspectLiveLabel.textContent = "—";
+      aspectLiveOrientation.textContent = "Use whole numbers from 1 to 100";
+      aspectError.hidden = true;
+      return;
+    }
+
+    aspectFrame.innerHTML = aspectShapeSvg(ratio, 88, 64);
+    aspectFrame.setAttribute(
+      "aria-label",
+      `${ratio} ${aspectOrientation(ratio).toLowerCase()} frame preview`,
+    );
+    aspectLiveLabel.textContent = ratio;
+    aspectLiveOrientation.textContent = aspectOrientation(ratio);
+    aspectError.hidden = true;
+  }
+
+  aspectWidth.addEventListener("input", updateAspectPreview);
+  aspectHeight.addEventListener("input", updateAspectPreview);
+  $("aspect-cancel").addEventListener("click", () => aspectDialog.close());
+  aspectForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const aspect = customAspectFromDimensions(
+      Number(aspectWidth.value),
+      Number(aspectHeight.value),
+    );
+    if (!aspect) {
+      aspectError.textContent =
+        "Use whole numbers from 1 to 100 for both sides.";
+      aspectError.hidden = false;
+      return;
+    }
+
+    const r = store.get();
+    const isPreset = isAspectPreset(aspect);
+    const isSaved = r.customAspects.some((ratio) => ratio === aspect);
+    if (!isPreset && !isSaved && r.customAspects.length >= 12) {
+      aspectError.textContent =
+        "Remove a saved custom ratio before adding another.";
+      aspectError.hidden = false;
+      return;
+    }
+
+    store.set({
+      ...r,
+      aspect,
+      customAspects:
+        isPreset || isSaved ? r.customAspects : [...r.customAspects, aspect],
+    });
+    aspectDialog.close();
+    say(`Using ${aspect}.`);
   });
   document
     .querySelectorAll<HTMLInputElement>("[data-textmode]")
@@ -449,17 +608,108 @@ export function startApp(): void {
 
   /* ── typography ── */
   const specimensEl = $("specimens");
-  specimensEl.innerHTML =
-    `<button type="button" class="spec auto" data-font="style" aria-pressed="false"><span class="sample">Let the style decide</span><span class="foot"><b>Recommended</b><span id="spec-auto-note"></span></span></button>` +
-    FONTS.map(
-      (f) =>
-        `<button type="button" class="spec" data-font="${f.id}" aria-pressed="false"><span class="sample" style="font-family:${esc(f.css)};font-weight:${f.weights.at(-1)}" data-sample></span><span class="foot"><b>${esc(f.family)}</b><span>${esc(f.classification)}</span></span></button>`,
-    ).join("");
+  const fontOptionsEl = $("font-options");
+  const fontSearchEl = $<HTMLInputElement>("font-search");
+  const fontDropdown = $<HTMLDetailsElement>("font-dropdown");
+  let fontCategoryFilter = "all";
+
+  const categoryName: Record<(typeof FONTS)[number]["category"], string> = {
+    sans: "Sans serif",
+    serif: "Serif",
+    display: "Display",
+    mono: "Monospaced",
+  };
+
+  function renderFontOptions(): void {
+    const query = fontSearchEl.value.trim().toLocaleLowerCase();
+    const fonts = FONTS.filter((font) => {
+      const matchesCategory =
+        fontCategoryFilter === "all" ||
+        (fontCategoryFilter === "popular"
+          ? font.popular
+          : font.category === fontCategoryFilter);
+      const matchesQuery =
+        `${font.family} ${font.classification} ${categoryName[font.category]}`
+          .toLocaleLowerCase()
+          .includes(query);
+      return matchesCategory && matchesQuery;
+    });
+
+    fontOptionsEl.innerHTML = fonts
+      .map(
+        (font) =>
+          `<button type="button" class="spec" data-font="${font.id}" aria-pressed="false"><span class="sample" style="font-family:${esc(font.css)};font-weight:${font.weights.at(-1)}" data-sample></span><span class="foot"><b>${esc(font.family)}${font.popular ? '<span class="font-popular">Popular</span>' : ""}</b><span>${esc(categoryName[font.category])} · ${esc(font.classification)}</span></span></button>`,
+      )
+      .join("");
+    $("font-result-count").textContent =
+      `${fonts.length} ${fonts.length === 1 ? "font" : "fonts"}`;
+    $("font-empty").hidden = fonts.length > 0;
+    $("font-options").hidden = fonts.length === 0;
+
+    specimensEl
+      .querySelectorAll<HTMLElement>("[data-sample]")
+      .forEach(
+        (el) =>
+          (el.textContent = store.get().headline.trim() || "Objects in motion"),
+      );
+  }
+
+  renderFontOptions();
+  fontSearchEl.addEventListener("input", renderFontOptions);
   specimensEl.addEventListener("click", (e) => {
-    const b = (e.target as HTMLElement).closest<HTMLButtonElement>(
-      "[data-font]",
-    );
-    if (b) patch({ font: b.dataset.font as "style" | FontId });
+    const target = e.target as HTMLElement;
+    const category = target.closest<HTMLButtonElement>("[data-font-category]");
+    if (category) {
+      fontCategoryFilter = category.dataset.fontCategory ?? "all";
+      specimensEl
+        .querySelectorAll<HTMLButtonElement>("[data-font-category]")
+        .forEach((button) => {
+          const selected = button === category;
+          button.setAttribute("aria-pressed", String(selected));
+          button.classList.toggle("btn-ghost", !selected);
+        });
+      renderFontOptions();
+      return;
+    }
+
+    if (target.closest("[data-font-clear]")) {
+      fontSearchEl.value = "";
+      renderFontOptions();
+      fontSearchEl.focus();
+      return;
+    }
+
+    const weight = target.closest<HTMLButtonElement>("[data-font-weight]");
+    if (weight) {
+      patch({ fontWeight: weight.dataset.fontWeight as Recipe["fontWeight"] });
+      return;
+    }
+
+    if (target.closest("[data-font-italic]")) {
+      const current = store.get();
+      const font = current.font === "style" ? undefined : getFont(current.font);
+      if (!font || font.italic) patch({ fontItalic: !current.fontItalic });
+      return;
+    }
+
+    const button = target.closest<HTMLButtonElement>("[data-font]");
+    if (button) {
+      const fontId = button.dataset.font as "style" | FontId;
+      const font = fontId === "style" ? undefined : getFont(fontId);
+      const current = store.get();
+      patch({
+        font: fontId,
+        fontWeight:
+          current.fontWeight === "bold" &&
+          font &&
+          !font.weights.some((weight) => weight >= 700)
+            ? "regular"
+            : current.fontWeight,
+        fontItalic: current.fontItalic && (font?.italic ?? true),
+      });
+      fontDropdown.open = false;
+      fontDropdown.querySelector<HTMLElement>("summary")?.focus();
+    }
   });
 
   /* ── exclusions ── */
@@ -842,6 +1092,7 @@ export function startApp(): void {
     sync(detail, r.detail);
     sync(purpose, r.purpose);
     if (document.activeElement !== extra) sync(extra, r.extraText.join("\n"));
+    renderAspectOptions(r);
     const ideaIsInvalid = r.idea.trim().length < 3;
     $("idea-error").hidden = !ideaIsInvalid;
     idea.setAttribute("aria-invalid", String(ideaIsInvalid));
@@ -895,18 +1146,77 @@ export function startApp(): void {
     specimensEl
       .querySelectorAll<HTMLElement>("[data-sample]")
       .forEach((el) => (el.textContent = sample));
+    $("font-preview-sample").textContent =
+      r.headline.trim() || "OBJECTS IN MOTION";
     press(
       specimensEl,
       "[data-font]",
       "aria-pressed",
       (el) => el.dataset.font === r.font,
     );
+    const selectedFont = r.font === "style" ? undefined : getFont(r.font);
+    $("selected-font-label").textContent =
+      selectedFont?.family ?? "Let the style decide";
     const lettering = [r.styles.design, r.styles.art]
       .map((id) => getStyle(id))
       .find((s) => s.traits.includes("ownLettering"));
     $("spec-auto-note").textContent = lettering
       ? `${lettering.name} lettering`
       : (getFont(getStyle(r.styles.design).fontId ?? "")?.classification ?? "");
+    const previewFont =
+      selectedFont ?? getFont(getStyle(r.styles.design).fontId ?? "inter");
+    const supportsBold =
+      !selectedFont || selectedFont.weights.some((weight) => weight >= 700);
+    const supportsItalic = !selectedFont || selectedFont.italic;
+    const appliedBold = r.fontWeight === "bold" && supportsBold;
+    const appliedItalic = r.fontItalic && supportsItalic;
+    const preview = $("font-preview-sample");
+    preview.style.fontFamily = previewFont?.css ?? "sans-serif";
+    preview.style.fontWeight = String(
+      appliedBold
+        ? (previewFont?.weights.find((weight) => weight >= 700) ?? 700)
+        : (previewFont?.weights[0] ?? 400),
+    );
+    preview.style.fontStyle = appliedItalic ? "italic" : "normal";
+    const boldButton = specimensEl.querySelector<HTMLButtonElement>(
+      '[data-font-weight="bold"]',
+    );
+    if (boldButton) {
+      boldButton.disabled = !supportsBold;
+      boldButton.setAttribute("aria-pressed", String(appliedBold));
+      boldButton.title = supportsBold
+        ? "Preview bold weight"
+        : `${selectedFont!.family} has no bundled bold face`;
+    }
+    const regularButton = specimensEl.querySelector<HTMLButtonElement>(
+      '[data-font-weight="regular"]',
+    );
+    regularButton?.setAttribute(
+      "aria-pressed",
+      String(r.fontWeight === "regular" || !supportsBold),
+    );
+    const italicButton =
+      specimensEl.querySelector<HTMLButtonElement>("[data-font-italic]");
+    if (italicButton) {
+      italicButton.disabled = !supportsItalic;
+      italicButton.setAttribute("aria-pressed", String(appliedItalic));
+      italicButton.title = supportsItalic
+        ? "Preview italic lettering"
+        : `${selectedFont!.family} has no bundled italic face`;
+    }
+    const emphasis = [
+      appliedBold ? "Bold" : "Regular",
+      appliedItalic ? "Italic" : "",
+    ].filter(Boolean);
+    $("font-preview-caption").textContent =
+      `${previewFont?.family ?? "Style lettering"} · ${emphasis.join(" · ")}`;
+    specimensEl
+      .querySelectorAll<HTMLButtonElement>("[data-font-category]")
+      .forEach((button) => {
+        const selected = button.dataset.fontCategory === fontCategoryFilter;
+        button.setAttribute("aria-pressed", String(selected));
+        button.classList.toggle("btn-ghost", !selected);
+      });
 
     // exclusions
     sync(cliche, r.cliche);

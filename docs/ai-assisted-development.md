@@ -6,12 +6,10 @@ AI tools are optional contributors. Keep changes aligned with this repository's 
 
 Before asking an agent to change code, have it read the root `AGENTS.md` and the relevant project guide. The guides record decisions that a generic Astro or React prompt will miss:
 
-- [Technology decisions](technology-decisions.md) covers the selected stack and why React stays.
-- [Components and reuse](components.md) explains which components have real reuse contracts.
 - [Content authoring](content-authoring.md) covers content collections and authoring rules.
 - [Git hooks and quality checks](git-hooks.md) describes local and CI checks.
 
-The current baseline is Astro 7, React 19, Tailwind CSS 4, daisyUI 5, and strict TypeScript. Astro owns static pages and content; React remains for existing interactive UI and MDX shortcodes. Follow the existing patterns and inspect the relevant files before proposing a new abstraction.
+The current baseline is Astro 7, React 19, Tailwind CSS 4, daisyUI 5, and strict TypeScript. Astro owns static pages and content; React remains for the existing search and theme UI. Follow the existing patterns and inspect the relevant files before proposing a new abstraction.
 
 ## Documentation and skills
 
@@ -34,9 +32,9 @@ For package-specific questions, a docs lookup tool such as Context7 can help ret
 ## Project-specific implementation guidance
 
 - **Render with Astro first.** Keep content, layouts, and page structure as static Astro output. Add hydration only for browser behavior that needs state, and choose the narrowest suitable `client:*` directive.
-- **Keep React.** Use the existing React components for their current interactions and registered MDX shortcodes. Do not add Svelte or another UI framework for a static component or a one-off preference; see [technology decisions](technology-decisions.md) before proposing a framework change.
+- **Keep React.** Use the existing React components for their current interactions. Do not add Svelte or another UI framework for a static component or a one-off preference.
 - **Use the existing styling system.** Tailwind CSS 4 is connected through `@tailwindcss/vite`; daisyUI 5 supplies classes and theme tokens. daisyUI classes do not supply interaction behavior. The theme is selected through `document.documentElement.dataset.theme`; `src/config/theme.json` is the source for generated theme CSS.
-- **Earn shared components.** Generalize a component when it represents a stable content contract, interaction, accessibility behavior, or repeated pattern. For a single use, keep markup near its call site. Check [component guidance](components.md) before extracting or reusing components from another project.
+- **Earn shared components.** Generalize a component when it represents a stable content contract, interaction, accessibility behavior, or repeated pattern. For a single use, keep markup near its call site.
 - **Preserve content and output contracts.** Use the collection schemas and existing config. Keep informative image alt text, canonical URLs, taxonomy links, preview noindex behavior, and robots output valid when changing related code.
 - **Use repository scripts.** Run project commands through `pnpm` scripts in `package.json`; these may prepare generated inputs before invoking Astro. Edit the source configuration or content rather than generated search/theme output.
 

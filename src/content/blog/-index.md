@@ -1,7 +1,7 @@
 ---
-title: "Blog Posts"
+title: "Blog"
 meta_title: ""
-description: "Guides and notes from the site authors. Replace this description for your project."
+description: "Notes on art-directing AI images and how Visual Prompt Studio came together."
 image: ""
 draft: false
 ---
