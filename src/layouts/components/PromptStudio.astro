@@ -238,13 +238,22 @@ Brooklyn, NY"></textarea>
             aria-labelledby="directions-h"
           >
           </div>
-          <p class="direction-summary" id="direction-summary" hidden></p>
+          <div id="direction-comparison-bar" tabindex="-1" hidden></div>
+          <p
+            class="direction-summary"
+            id="direction-summary"
+            tabindex="-1"
+            hidden
+          >
+          </p>
           <p class="curation-note">
             Curated picks are studio recommendations, not usage counts.
           </p>
           <details class="direction-explorer">
             <summary class="btn btn-ghost">Explore all directions</summary>
             <div class="explorer-body">
+              <div id="direction-explorer-comparison-bar" tabindex="-1" hidden>
+              </div>
               <div class="explorer-filters" aria-label="Filter all directions">
                 <label class="explorer-search" for="direction-search"
                   >Search by name, style, or goal
@@ -848,6 +857,14 @@ Brooklyn, NY"></textarea>
           </figcaption>
         </figure>
 
+        <div
+          id="readability-hint"
+          class="alert alert-soft readability-hint"
+          role="note"
+          hidden
+        >
+        </div>
+
         <div class="target-block">
           <div class="field-heading">
             <span class="mini-label" id="target-label">Send to</span>
@@ -1177,6 +1194,37 @@ Brooklyn, NY"></textarea>
       >Copy prompt</button
     >
   </div>
+
+  <dialog
+    class="modal direction-comparison-modal"
+    id="direction-comparison-dialog"
+    aria-labelledby="direction-comparison-title"
+  >
+    <div class="modal-box direction-comparison-box">
+      <header class="direction-comparison-header">
+        <div>
+          <h2 id="direction-comparison-title">Compare directions</h2>
+          <p>See how each direction changes the same current brief.</p>
+        </div>
+        <form method="dialog" class="direction-comparison-close-form">
+          <button
+            type="submit"
+            class="btn btn-ghost btn-sm btn-square"
+            aria-label="Close direction comparison"
+            autofocus
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="m6 6 12 12M18 6 6 18"></path>
+            </svg>
+          </button>
+        </form>
+      </header>
+      <div id="direction-comparison-content"></div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button aria-label="Close direction comparison">close</button>
+    </form>
+  </dialog>
 
   <dialog id="dlg-aspect" aria-labelledby="aspect-dialog-title">
     <form method="dialog" class="dlg aspect-dialog" id="aspect-form">

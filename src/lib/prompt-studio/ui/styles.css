@@ -685,6 +685,9 @@ textarea:hover {
   padding: 14px;
 }
 .direction-body > .card-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  width: 100%;
   margin-top: auto;
 }
 .direction-body > .card-actions .direction-apply {
@@ -817,6 +820,60 @@ textarea:hover {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+.direction-compare {
+  min-height: 38px;
+  border-radius: 8px;
+  border-color: var(--line);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+}
+.direction-compare[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--sheet));
+}
+.direction-comparison-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 5%, var(--sheet));
+}
+.direction-comparison-summary,
+.direction-comparison-actions,
+.direction-comparison-names {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.direction-comparison-summary {
+  min-width: 0;
+  gap: 8px 12px;
+}
+.direction-comparison-count {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.comparison-selection {
+  max-width: 24ch;
+  overflow: hidden;
+  border-color: var(--line);
+  color: var(--ink);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.direction-comparison-actions .btn {
+  min-height: 34px;
+  font-family: inherit;
+}
 .direction-summary {
   margin-top: 8px;
   color: var(--muted);
@@ -927,6 +984,9 @@ textarea:hover {
   padding: 0;
 }
 .direction-result > .card-actions {
+  display: grid;
+  gap: 6px;
+  min-width: 168px;
   flex: 0 0 auto;
   align-self: flex-end;
 }
@@ -1801,6 +1861,23 @@ textarea:hover {
 .caveat {
   font-size: 12px;
   color: var(--muted);
+}
+.readability-hint {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+  background: color-mix(in srgb, var(--accent) 7%, var(--sheet));
+  color: var(--ink);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+.readability-hint .btn {
+  flex: 0 0 auto;
+  min-height: 34px;
+  border-color: var(--line);
+  font-family: inherit;
 }
 .target-block {
   display: flex;
@@ -3156,6 +3233,9 @@ dialog::backdrop {
   .direction-result-apply {
     width: 100%;
   }
+  .direction-result > .card-actions {
+    min-width: 0;
+  }
   .style-browser-controls {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -3164,6 +3244,235 @@ dialog::backdrop {
   }
   .seps {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* direction comparison */
+.direction-comparison-modal {
+  inset: 0;
+  width: 100vw;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  color: var(--ink);
+  background: transparent;
+  box-shadow: none;
+}
+.direction-comparison-modal::backdrop {
+  background: rgb(12 16 14 / 58%);
+  backdrop-filter: blur(3px);
+}
+.direction-comparison-box {
+  display: flex;
+  flex-direction: column;
+  width: min(1040px, calc(100vw - 48px));
+  max-width: none;
+  max-height: min(820px, calc(100dvh - 48px));
+  padding: 22px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  color: var(--ink);
+  background: var(--paper);
+  box-shadow: 0 24px 64px rgb(17 24 20 / 28%);
+}
+.direction-comparison-header {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+.direction-comparison-header h2 {
+  color: var(--ink);
+  font-size: 20px;
+  line-height: 1.25;
+}
+.direction-comparison-header p {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.direction-comparison-close-form {
+  flex: 0 0 auto;
+}
+.direction-comparison-close-form .btn {
+  width: 38px;
+  height: 38px;
+  min-height: 38px;
+  color: var(--ink);
+}
+.direction-comparison-close-form svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.8;
+}
+#direction-comparison-content {
+  min-height: 0;
+  padding-top: 18px;
+  overflow: auto;
+  scrollbar-color: var(--muted) transparent;
+  scrollbar-width: thin;
+}
+.direction-comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: auto auto repeat(8, auto) auto;
+  gap: 0 14px;
+}
+.direction-comparison-column {
+  display: grid;
+  grid-row: 1 / span 11;
+  grid-template-rows: subgrid;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--sheet);
+}
+.direction-comparison-column > h3 {
+  padding-bottom: 12px;
+  font-size: 17px;
+}
+.direction-comparison-proof {
+  display: grid;
+  min-height: 220px;
+  place-items: center;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--paper);
+}
+.direction-comparison-proof svg {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: 250px;
+}
+.direction-comparison-details {
+  display: contents;
+}
+.comparison-detail {
+  display: grid;
+  grid-template-columns: minmax(76px, 0.35fr) minmax(0, 1fr);
+  gap: 10px;
+  border-top: 1px solid var(--line);
+}
+.comparison-detail dt,
+.comparison-detail dd {
+  min-width: 0;
+  margin: 0;
+  padding-block: 9px;
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+.comparison-detail dt {
+  padding-bottom: 2px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.comparison-detail dd {
+  padding-top: 0;
+  overflow-wrap: anywhere;
+}
+.comparison-palette {
+  display: flex;
+  gap: 5px;
+}
+.comparison-swatch {
+  width: 28px;
+  height: 20px;
+  border: 1px solid color-mix(in srgb, var(--ink) 25%, transparent);
+  border-radius: 5px;
+}
+.direction-comparison-column > .btn {
+  align-self: end;
+  width: 100%;
+  min-height: 42px;
+  margin-top: 12px;
+  border-radius: 8px;
+  font-family: inherit;
+}
+.direction-comparison-modal :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .direction-comparison-modal {
+    width: 100vw;
+    height: 100dvh;
+  }
+  .direction-comparison-box {
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    padding: max(14px, env(safe-area-inset-top, 0px)) 14px
+      max(14px, env(safe-area-inset-bottom, 0px));
+    border: 0;
+    border-radius: 0;
+  }
+  .direction-comparison-header {
+    padding-bottom: 12px;
+  }
+  .direction-comparison-header h2 {
+    font-size: 18px;
+  }
+  .direction-comparison-header p {
+    font-size: 12px;
+  }
+  #direction-comparison-content {
+    padding-top: 12px;
+  }
+  .direction-comparison-grid {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    gap: 12px;
+  }
+  .direction-comparison-column {
+    display: flex;
+    grid-row: auto;
+    flex-direction: column;
+    padding: 12px;
+  }
+  .direction-comparison-details {
+    display: grid;
+  }
+  .comparison-detail {
+    display: grid;
+  }
+  .comparison-detail dt,
+  .comparison-detail dd {
+    padding-block: 8px;
+    border: 0;
+  }
+  .comparison-detail dd {
+    padding-top: 8px;
+  }
+  .direction-comparison-proof {
+    min-height: 0;
+  }
+  .direction-comparison-proof svg {
+    max-height: 46dvh;
+  }
+  .readability-hint {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .readability-hint .btn {
+    width: 100%;
   }
 }
 

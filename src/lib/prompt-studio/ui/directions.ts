@@ -13,7 +13,7 @@ export interface RenderDirectionCardOptions {
   variant: DirectionCardVariant;
   goal: GoalId;
   selected: boolean;
-  readonly compared?: boolean;
+  readonly compared: boolean;
 }
 
 const esc = (value: string): string =>

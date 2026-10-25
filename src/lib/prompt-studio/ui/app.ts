@@ -17,6 +17,7 @@ import {
 import { FONTS, getFont, type FontId } from "../domain/fonts";
 import { PALETTE_VARIATIONS, nameForHex } from "../domain/palettes";
 import { MIXES, PRESETS, clonePalette } from "../domain/presets";
+import { getReadabilityHints } from "../domain/readability";
 import {
   GOALS,
   applyDirection,
@@ -66,6 +67,11 @@ import {
 } from "../domain/styles";
 import { finishSvg, inksFrom, motifSvg, proofSvg } from "./sketch";
 import { renderDirectionCard } from "./directions";
+import {
+  renderComparisonBar,
+  renderDirectionComparison,
+  toggleComparisonSelection,
+} from "./direction-comparison";
 import { bindInfoPopovers } from "./info-popover";
 
 /* ── tiny utilities ──────────────────────────────────────────────────── */
@@ -206,11 +212,16 @@ interface View {
   presetId: string | null;
   goal: GoalId;
   highlight: string | null;
+  comparisonIds: string[];
 }
 
 export function startApp(): void {
   bindInfoPopovers();
-  const store = new Store(loadSaved() ?? DEFAULT_RECIPE);
+  const savedRecipe = loadSaved();
+  const initialRecipe = savedRecipe
+    ? savedRecipe
+    : { ...DEFAULT_RECIPE, idea: "", headline: "", detail: "", extraText: [] };
+  const store = new Store(initialRecipe);
   const view: View = {
     layer: "design",
     baseline: false,
@@ -218,6 +229,7 @@ export function startApp(): void {
     presetId: null,
     goal: "attention",
     highlight: null,
+    comparisonIds: [],
   };
   let compiled: CompiledPrompt = compile(store.get());
   let frame = 0;
@@ -496,7 +508,33 @@ export function startApp(): void {
   const trendOnly = $<HTMLInputElement>("direction-2026");
   const directionActiveFilters = $("direction-active-filters");
   const directionPagination = $("direction-pagination");
+  const comparisonBars = [
+    $("direction-comparison-bar"),
+    $("direction-explorer-comparison-bar"),
+  ];
+  const comparisonDialog = $<HTMLDialogElement>("direction-comparison-dialog");
+  const comparisonContent = $("direction-comparison-content");
+  let comparisonOpener: HTMLElement | null = null;
+  let comparisonFallback = comparisonBars[0]!;
+  let applyingFromComparison = false;
   let directionPage = 1;
+
+  function selectedComparisonDirections() {
+    return view.comparisonIds.flatMap((id) => {
+      const direction = PRESETS.find((item) => item.id === id);
+      return direction ? [direction] : [];
+    });
+  }
+
+  function renderComparisonBars(): void {
+    const selected = selectedComparisonDirections();
+    const markup = renderComparisonBar(selected);
+    for (const bar of comparisonBars) {
+      bar.hidden = selected.length === 0;
+      bar.innerHTML = markup;
+    }
+  }
+
   function renderDirections(recipe: Recipe): void {
     const goal = GOALS.find((item) => item.id === view.goal)!;
     const directions = getRecommendations(recipe.purpose, view.goal, 4);
@@ -509,6 +547,7 @@ export function startApp(): void {
           variant: "suggested",
           goal: view.goal,
           selected: view.presetId === direction.id,
+          compared: view.comparisonIds.includes(direction.id),
         }),
       )
       .join("");
@@ -555,6 +594,43 @@ export function startApp(): void {
     .join("");
   directionStyle.innerHTML = `<option value="all">All styles</option>${styleOptions}`;
 
+  function refreshComparisonUi(): void {
+    const recipe = store.get();
+    renderDirections(recipe);
+    renderDirectionExplorer();
+    renderComparisonBars();
+  }
+
+  function toggleComparedDirection(
+    id: string | undefined,
+    origin: HTMLElement,
+  ): void {
+    if (!id || !PRESETS.some((direction) => direction.id === id)) return;
+    const result = toggleComparisonSelection(view.comparisonIds, id);
+    view.comparisonIds = [...result.ids];
+    refreshComparisonUi();
+
+    const direction = PRESETS.find((item) => item.id === id)!;
+    const replaced = result.replacedId
+      ? PRESETS.find((item) => item.id === result.replacedId)
+      : undefined;
+    say(
+      replaced
+        ? `Replaced “${replaced.name}” with “${direction.name}” in the comparison.`
+        : view.comparisonIds.includes(id)
+          ? `Added “${direction.name}” to the comparison.`
+          : `Removed “${direction.name}” from the comparison.`,
+    );
+    requestAnimationFrame(() => {
+      const replacement = [
+        ...origin.querySelectorAll<HTMLButtonElement>(
+          "[data-compare-direction]",
+        ),
+      ].find((button) => button.dataset.compareDirection === id);
+      replacement?.focus();
+    });
+  }
+
   function applyChosenDirection(
     id: string | undefined,
     origin?: HTMLElement,
@@ -578,11 +654,18 @@ export function startApp(): void {
         : `Applied “${direction.name}”. Your brief and output settings are unchanged.`,
       () => store.set(before),
     );
+    if (view.comparisonIds.includes(direction.id)) view.comparisonIds = [];
   }
   presetsEl.addEventListener("click", (event) => {
-    const button = (event.target as HTMLElement).closest<HTMLButtonElement>(
-      "[data-preset]",
+    const target = event.target as HTMLElement;
+    const compare = target.closest<HTMLButtonElement>(
+      "[data-compare-direction]",
     );
+    if (compare) {
+      toggleComparedDirection(compare.dataset.compareDirection, presetsEl);
+      return;
+    }
+    const button = target.closest<HTMLButtonElement>("[data-preset]");
     if (button) applyChosenDirection(button.dataset.preset, presetsEl);
   });
 
@@ -684,6 +767,7 @@ export function startApp(): void {
                   ? direction.goals[0]!
                   : (directionGoal.value as GoalId),
               selected: view.presetId === direction.id,
+              compared: view.comparisonIds.includes(direction.id),
             }),
           )
           .join("")}
@@ -702,6 +786,65 @@ export function startApp(): void {
         : "";
   }
   renderDirectionExplorer();
+  renderComparisonBars();
+
+  for (const bar of comparisonBars) {
+    bar.addEventListener("click", (event) => {
+      const target = event.target as HTMLElement;
+      if (target.closest("[data-clear-comparison]")) {
+        view.comparisonIds = [];
+        refreshComparisonUi();
+        say("Cleared the direction comparison.");
+        requestAnimationFrame(() =>
+          presetsEl
+            .querySelector<HTMLButtonElement>("[data-compare-direction]")
+            ?.focus(),
+        );
+        return;
+      }
+      const open = target.closest<HTMLButtonElement>("[data-open-comparison]");
+      if (!open || open.disabled) return;
+      const selected = selectedComparisonDirections();
+      if (selected.length !== 2) return;
+      comparisonContent.innerHTML = renderDirectionComparison(
+        [selected[0]!, selected[1]!],
+        store.get(),
+      );
+      comparisonOpener = open;
+      comparisonFallback = bar;
+      setProofOpen(false);
+      if (!comparisonDialog.open) comparisonDialog.showModal();
+    });
+  }
+
+  comparisonContent.addEventListener("click", (event) => {
+    const apply = (event.target as HTMLElement).closest<HTMLButtonElement>(
+      "[data-preset]",
+    );
+    if (!apply) return;
+    applyingFromComparison = true;
+    applyChosenDirection(apply.dataset.preset);
+    comparisonDialog.close();
+    requestAnimationFrame(() => $("direction-summary").focus());
+  });
+
+  comparisonDialog.addEventListener("close", () => {
+    if (applyingFromComparison) {
+      applyingFromComparison = false;
+      comparisonOpener = null;
+      return;
+    }
+    const focusTarget =
+      comparisonOpener?.isConnected && !comparisonOpener.hidden
+        ? comparisonOpener
+        : comparisonFallback;
+    comparisonOpener = null;
+    requestAnimationFrame(() => focusTarget.focus());
+  });
+  comparisonDialog.addEventListener("click", (event) => {
+    if (event.target === comparisonDialog) comparisonDialog.close();
+  });
+
   directionSearch.addEventListener("input", () => {
     directionPage = 1;
     renderDirectionExplorer();
@@ -731,6 +874,16 @@ export function startApp(): void {
       directionPage = 1;
       renderDirectionExplorer();
       directionSearch.focus();
+      return;
+    }
+    const compare = target.closest<HTMLButtonElement>(
+      "[data-compare-direction]",
+    );
+    if (compare) {
+      toggleComparedDirection(
+        compare.dataset.compareDirection,
+        directionResults,
+      );
       return;
     }
     const button = target.closest<HTMLButtonElement>("[data-preset]");
@@ -1515,6 +1668,28 @@ export function startApp(): void {
       proofToggle.focus();
     }
   });
+
+  const readabilityHint = $("readability-hint");
+  function renderReadabilityHint(recipe: Recipe): void {
+    const hint = getReadabilityHints(recipe)[0];
+    readabilityHint.hidden = !hint;
+    readabilityHint.innerHTML = hint
+      ? `<span>${esc(hint.message)}</span><button type="button" class="btn btn-sm" data-readability-target="${hint.target}">${esc(hint.actionLabel)}</button>`
+      : "";
+  }
+  readabilityHint.addEventListener("click", (event) => {
+    const action = (event.target as HTMLElement).closest<HTMLButtonElement>(
+      "[data-readability-target]",
+    );
+    if (!action) return;
+    const field =
+      action.dataset.readabilityTarget === "headline" ? headline : extra;
+    setProofOpen(false);
+    field.closest("details")?.setAttribute("open", "");
+    field.scrollIntoView({ block: "center" });
+    requestAnimationFrame(() => field.focus());
+  });
+
   copyIcon.addEventListener("click", () => void copyPrompt());
   $("btn-copy").title = "Ctrl+Enter or ⌘+Enter";
   $("btn-copy-neg").addEventListener("click", async () => {
@@ -1760,6 +1935,7 @@ export function startApp(): void {
     sync(goalPicker, view.goal);
     renderDirections(r);
     renderDirectionExplorer();
+    renderComparisonBars();
     if (document.activeElement !== extra) sync(extra, r.extraText.join("\n"));
     renderAspectOptions(r);
     const hasBriefText = Boolean(r.headline || r.detail || r.extraText.length);
@@ -1949,6 +2125,7 @@ export function startApp(): void {
       uid: "proof",
       label: `Sketch: ${design.name} layout, ${getStyle(r.styles.art).name}, ${getStyle(r.styles.technique).name} finish`,
     });
+    renderReadabilityHint(r);
     const typeName = lettering
       ? `${lettering.name} lettering`
       : r.font === "style"
