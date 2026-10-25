@@ -78,7 +78,7 @@ import FieldInfo from "@/layouts/components/FieldInfo.astro";
           <StudioField
             label="Format"
             controlId="f-purpose"
-            info="Choose the kind of image you are making. The selected format guides the prompt's composition and use."
+            info="Pick what the image is for, such as a poster or album cover. It shapes the composition and sets a matching aspect ratio, which you can change afterward."
           >
             <select id="f-purpose" class="select"></select>
           </StudioField>
@@ -88,7 +88,7 @@ import FieldInfo from "@/layouts/components/FieldInfo.astro";
               <FieldInfo
                 label="Aspect ratio"
                 id="aspect"
-                info="Choose the canvas shape that fits where you plan to use the image. This changes the prompt's framing."
+                info="Width to height of the image. Pick the shape of the place it will appear, such as Feed for a 4:5 social post or Story for 9:16. It changes how the prompt frames the subject."
               />
             </div>
             <div

@@ -74,15 +74,15 @@ export const ASPECTS = [
 export type Aspect = (typeof ASPECTS)[number];
 
 export const ASPECT_LABELS: Record<Aspect, string> = {
-  "16:9": "HD video",
-  "9:16": "Vertical",
+  "16:9": "Widescreen",
+  "9:16": "Story",
   "1:1": "Square",
-  "4:3": "Classic",
-  "3:2": "DSLR",
-  "21:9": "Ultrawide",
-  "4:5": "Social",
+  "4:3": "Standard",
+  "3:2": "Photo",
+  "21:9": "Cinematic",
+  "4:5": "Feed",
   "3:4": "Portrait",
-  "2:3": "Book",
+  "2:3": "Tall print",
 };
 
 export function aspectRatio(a: Aspect): { w: number; h: number } {
