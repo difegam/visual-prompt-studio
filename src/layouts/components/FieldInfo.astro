@@ -62,21 +62,18 @@ const popoverId = `field-info-${id}`;
     popover.style.top = `${top}px`;
   };
 
-  const bindFieldPopovers = (): void => {
-    document
-      .querySelectorAll<HTMLElement>("[data-info-popover]")
-      .forEach((popover) => {
-        if (popover.dataset.positioning === "true") return;
-        popover.dataset.positioning = "true";
-        popover.addEventListener("toggle", (event) => {
-          if ((event as ToggleEvent).newState !== "open") return;
-          requestAnimationFrame(() => positionPopover(popover));
-        });
-      });
-  };
-
-  bindFieldPopovers();
-  document.addEventListener("astro:page-load", bindFieldPopovers);
+  // Delegated (toggle does not bubble, so capture) so popovers rendered later
+  // by script, such as the source cards, position the same way.
+  document.addEventListener(
+    "toggle",
+    (event) => {
+      const popover = event.target as HTMLElement;
+      if (!popover.matches?.("[data-info-popover]")) return;
+      if ((event as ToggleEvent).newState !== "open") return;
+      requestAnimationFrame(() => positionPopover(popover));
+    },
+    true,
+  );
   document.addEventListener(
     "scroll",
     () => {

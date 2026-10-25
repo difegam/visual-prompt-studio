@@ -3,43 +3,66 @@ import "@/lib/prompt-studio/ui/fonts.css";
 import "@/lib/prompt-studio/ui/styles.css";
 import StudioField from "@/layouts/components/StudioField.astro";
 import StudioDisclosure from "@/layouts/components/StudioDisclosure.astro";
-import ThemeSwitcher from "@/layouts/components/ThemeSwitcher.astro";
+import StudioBar from "@/layouts/components/StudioBar.astro";
 import FieldInfo from "@/layouts/components/FieldInfo.astro";
 import SiteFooter from "@/layouts/components/SiteFooter.astro";
 ---
 
 <div id="studio-app">
-  <header class="bar">
-    <a class="brand" href="#compose" aria-label="Visual Prompt Studio">
-      <svg class="reg" viewBox="0 0 24 24" aria-hidden="true"
-        ><circle cx="12" cy="12" r="6.5"></circle><path d="M12 1v22M1 12h22"
-        ></path><circle cx="12" cy="12" r="2.4" class="reg-dot"></circle></svg
-      >
-      <span>Visual Prompt Studio</span>
-    </a>
-    <nav class="bar-nav" aria-label="Sections">
-      <a href="#compose">Compose</a>
-      <a href="#inspiration">Inspiration</a>
-      <a href="/blog">Blog</a>
-      <a href="/about">About</a>
-    </nav>
-    <div class="bar-actions">
-      <button
-        type="button"
-        class="btn ghost"
-        id="btn-import"
-        aria-label="Import recipe">Import</button
-      >
-      <button
-        type="button"
-        class="btn ghost"
-        id="btn-export"
-        aria-label="Export recipe">Export</button
-      >
-      <button type="button" class="btn ghost" id="btn-reset">Reset</button>
-      <ThemeSwitcher className="studio-theme-switcher" />
+  <StudioBar />
+
+  <section class="intro" id="intro" aria-labelledby="intro-h">
+    <div class="intro-inner">
+      <div class="intro-copy">
+        <p class="intro-kicker">A prompt composer, not an image generator</p>
+        <h2 id="intro-h">Direct the image, then copy the prompt.</h2>
+        <p>
+          Choose a layout, imagery and print finish separately. The studio
+          writes one prompt for ChatGPT Images, Midjourney, FLUX or Stable
+          Diffusion; you paste it there. It runs in your browser and sends
+          nothing anywhere.
+        </p>
+        <div class="intro-actions">
+          <a class="btn primary" href="/guide">Read the full guide</a>
+          <button type="button" class="btn ghost" id="intro-hide"
+            >Hide intro</button
+          >
+        </div>
+      </div>
+      <ol class="intro-steps" aria-label="How to use the studio">
+        <li class="c">
+          <span class="step-n" aria-hidden="true">1</span>
+          <div>
+            <h3>Describe it</h3>
+            <p>
+              Say what you are making, pick a format, and add exact text if the
+              image needs words.
+            </p>
+          </div>
+        </li>
+        <li class="m">
+          <span class="step-n" aria-hidden="true">2</span>
+          <div>
+            <h3>Shape the look</h3>
+            <p>
+              Start from a direction or set Layout, Imagery and Finish yourself.
+              Each layer is independent.
+            </p>
+          </div>
+        </li>
+        <li class="y">
+          <span class="step-n" aria-hidden="true">3</span>
+          <div>
+            <h3>Copy for your model</h3>
+            <p>
+              Choose where it is going under <strong>Send to</strong>, then
+              press Copy prompt.
+            </p>
+          </div>
+        </li>
+      </ol>
     </div>
-  </header>
+  </section>
 
   <main class="studio" id="compose">
     <div class="composer">
@@ -104,28 +127,32 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
               >
               </div>
             </div>
-            <StudioField
-              label="Headline"
-              controlId="f-headline"
-              info="Enter the main words that should appear in the image. Keep it short for stronger placement and legibility."
-            >
-              <input
-                id="f-headline"
-                class="input"
-                type="text"
-                maxlength="80"
-                autocomplete="off"
-              />
-            </StudioField>
-            <StudioField
-              label="Other text"
-              controlId="f-extra"
-              hint="one line each, up to 4"
-              info="Add supporting words such as a date, venue, or credit. Put each separate text element on its own line."
-            >
-              <textarea id="f-extra" class="textarea" rows="2" maxlength="323"
-              ></textarea>
-            </StudioField>
+            <div class="text-stack">
+              <StudioField
+                label="Headline"
+                className="text-field"
+                controlId="f-headline"
+                info="Enter the main words that should appear in the image. Keep it short for stronger placement and legibility."
+              >
+                <input
+                  id="f-headline"
+                  class="input"
+                  type="text"
+                  maxlength="80"
+                  autocomplete="off"
+                />
+              </StudioField>
+              <StudioField
+                label="Other text"
+                className="text-field"
+                controlId="f-extra"
+                hint="one line each, up to 4"
+                info="Add supporting words such as a date, venue, or credit. Put each separate text element on its own line."
+              >
+                <textarea id="f-extra" class="textarea" rows="2" maxlength="323"
+                ></textarea>
+              </StudioField>
+            </div>
             <div class="field span2">
               <div class="field-heading">
                 <span id="textmode-label">Text in the image</span>
@@ -202,6 +229,7 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
             aria-labelledby="directions-h"
           >
           </div>
+          <p class="direction-summary" id="direction-summary" hidden></p>
           <p class="curation-note">
             Curated picks are studio recommendations, not usage counts.
           </p>
@@ -1033,22 +1061,62 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
 
   <section class="inspiration" id="inspiration" aria-labelledby="insp-h">
     <div class="insp-inner">
-      <div class="section-head wide">
-        <h2 id="insp-h">Where to look next</h2>
-        <p>
-          Sources for styles, style codes and tested prompts. Links follow your
-          current selection. Each entry was visited and checked on the date
-          shown.
-        </p>
+      <div class="insp-toolbar">
+        <div class="insp-title">
+          <h2 id="insp-h">Where to look next</h2>
+          <p>
+            Sources for styles, style codes and tested prompts. Links follow
+            your current selection. Check dates are in each card's details.
+          </p>
+        </div>
+        <div
+          class="filters"
+          id="ref-filters"
+          role="toolbar"
+          aria-label="Filter sources"
+        >
+        </div>
+        <div class="insp-nav">
+          <button
+            type="button"
+            class="btn btn-circle btn-sm"
+            id="refs-prev"
+            aria-label="Previous sources"
+            aria-controls="refs"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="18"
+              height="18"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg
+            >
+          </button>
+          <button
+            type="button"
+            class="btn btn-circle btn-sm"
+            id="refs-next"
+            aria-label="Next sources"
+            aria-controls="refs"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="18"
+              height="18"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg
+            >
+          </button>
+        </div>
       </div>
-      <div
-        class="filters"
-        id="ref-filters"
-        role="toolbar"
-        aria-label="Filter sources"
-      >
-      </div>
-      <div id="ref-active-filters"></div>
       <p
         id="ref-filter-status"
         class="sr-only"
@@ -1056,7 +1124,14 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
         aria-live="polite"
       >
       </p>
-      <div class="refs" id="refs"></div>
+      <div
+        class="refs carousel"
+        id="refs"
+        role="region"
+        aria-label="Sources"
+        tabindex="0"
+      >
+      </div>
     </div>
   </section>
 
@@ -1181,6 +1256,33 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
     </form>
   </dialog>
 </div>
+
+<script is:inline>
+  (() => {
+    const apply = () => {
+      const intro = document.getElementById("intro");
+      if (!intro) return;
+      let hidden = false;
+      try {
+        hidden = localStorage.getItem("vps.intro.hidden") === "1";
+      } catch {}
+      intro.hidden = hidden;
+      const btn = document.getElementById("intro-hide");
+      if (btn && !btn.dataset.bound) {
+        btn.dataset.bound = "true";
+        btn.addEventListener("click", () => {
+          intro.hidden = true;
+          try {
+            localStorage.setItem("vps.intro.hidden", "1");
+          } catch {}
+          document.getElementById("f-idea")?.focus();
+        });
+      }
+    };
+    apply();
+    document.addEventListener("astro:page-load", apply);
+  })();
+</script>
 
 <script>
   import { startApp } from "@/lib/prompt-studio/ui/app";

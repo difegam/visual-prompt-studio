@@ -65,6 +65,7 @@ import {
 } from "../domain/styles";
 import { finishSvg, inksFrom, motifSvg, proofSvg } from "./sketch";
 import { renderDirectionCard } from "./directions";
+import { bindInfoPopovers } from "./info-popover";
 
 /* ── tiny utilities ──────────────────────────────────────────────────── */
 
@@ -207,6 +208,7 @@ interface View {
 }
 
 export function startApp(): void {
+  bindInfoPopovers();
   const store = new Store(loadSaved() ?? DEFAULT_RECIPE);
   const view: View = {
     layer: "design",
@@ -504,6 +506,26 @@ export function startApp(): void {
         }),
       )
       .join("");
+    renderDirectionSummary(recipe);
+  }
+  function renderDirectionSummary(recipe: Recipe): void {
+    const el = $("direction-summary");
+    const direction = PRESETS.find((item) => item.id === view.presetId);
+    el.hidden = !direction;
+    if (!direction) return;
+    const layers = [
+      ["design", "Layout"],
+      ["art", "Imagery"],
+      ["technique", "Finish"],
+    ] as const;
+    const parts = layers.map(([layer, label]) => {
+      const current = stylesOf(layer).find(
+        (style) => style.id === recipe.styles[layer],
+      );
+      const edited = recipe.styles[layer] !== direction.patch.styles[layer];
+      return `${label} <b>${esc(current?.name ?? "")}</b>${edited ? " (edited)" : ""}`;
+    });
+    el.innerHTML = `<b>${esc(direction.name)}</b> → ${parts.join(" · ")}`;
   }
   renderDirections(store.get());
   directionFormat.innerHTML = `<option value="all">All project types</option>${PURPOSES.map((item) => `<option value="${item.id}">${esc(item.label)}</option>`).join("")}`;
@@ -1464,6 +1486,17 @@ export function startApp(): void {
   proofToggle.addEventListener("click", () =>
     setProofOpen(!proofPanel.hasAttribute("data-open")),
   );
+  document.addEventListener("pointerdown", (e) => {
+    if (!proofPanel.hasAttribute("data-open")) return;
+    const target = e.target as Node;
+    if (
+      proofPanel.contains(target) ||
+      $("mobile-bar").contains(target) ||
+      (target as HTMLElement).closest?.("dialog, [role=dialog]")
+    )
+      return;
+    setProofOpen(false);
+  });
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && proofPanel.hasAttribute("data-open")) {
       setProofOpen(false);
@@ -1567,7 +1600,6 @@ export function startApp(): void {
   /* ── inspiration ── */
   const kinds = [...new Set(REFERENCES.map((r) => r.kind))];
   const filtersEl = $("ref-filters");
-  const refActiveFilters = $("ref-active-filters");
   filtersEl.innerHTML = [
     `<button type="button" class="chip" data-kind="all">All</button>`,
   ]
@@ -1586,18 +1618,27 @@ export function startApp(): void {
     view.refKind = b.dataset.kind as View["refKind"];
     renderRefs(store.get());
   });
-  refActiveFilters.addEventListener("click", (event) => {
-    const target = event.target as HTMLElement;
-    const remove = target.closest<HTMLButtonElement>("[data-remove-filter]");
-    const area = target.closest<HTMLButtonElement>("[data-clear-filter-area]");
-    if (!remove && area?.dataset.clearFilterArea !== "inspiration") return;
-    if (remove && remove.dataset.removeFilter !== "kind") return;
-    view.refKind = "all";
-    renderRefs(store.get());
-    requestAnimationFrame(() => {
-      filtersEl.querySelector<HTMLButtonElement>('[data-kind="all"]')?.focus();
+  const refsEl = $("refs");
+  const refsPrev = $<HTMLButtonElement>("refs-prev");
+  const refsNext = $<HTMLButtonElement>("refs-next");
+  const refsStep = (dir: 1 | -1) => {
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    refsEl.scrollBy({
+      left: dir * refsEl.clientWidth * 0.9,
+      behavior: reduce ? "auto" : "smooth",
     });
-  });
+  };
+  const syncRefsNav = () => {
+    const max = refsEl.scrollWidth - refsEl.clientWidth;
+    const scrolls = max > 4;
+    refsPrev.hidden = refsNext.hidden = !scrolls;
+    refsPrev.disabled = refsEl.scrollLeft <= 4;
+    refsNext.disabled = refsEl.scrollLeft >= max - 4;
+  };
+  refsPrev.addEventListener("click", () => refsStep(-1));
+  refsNext.addEventListener("click", () => refsStep(1));
+  refsEl.addEventListener("scroll", syncRefsNav, { passive: true });
+  addEventListener("resize", syncRefsNav);
   const fmtDate = (iso: string) =>
     new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-GB", {
       day: "numeric",
@@ -1620,18 +1661,6 @@ export function startApp(): void {
       .forEach((b) =>
         b.setAttribute("aria-pressed", String(b.dataset.kind === view.refKind)),
       );
-    refActiveFilters.innerHTML = renderFilterSummary(
-      "inspiration",
-      view.refKind === "all"
-        ? []
-        : [
-            {
-              key: "kind",
-              label: "Source type",
-              value: KIND_LABELS[view.refKind],
-            },
-          ],
-    );
     const names = [
       r.styles.art !== "none" ? getStyle(r.styles.art).name : null,
       getStyle(r.styles.design).name,
@@ -1642,23 +1671,32 @@ export function startApp(): void {
     );
     $("ref-filter-status").textContent =
       `${references.length} ${references.length === 1 ? "source" : "sources"}${view.refKind === "all" ? "" : ` · ${KIND_LABELS[view.refKind]}`}`;
-    $("refs").innerHTML = references
+    const infoIcon = `<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4M12 8h.01"></path></svg>`;
+    refsEl.innerHTML = references
       .map((x) => {
         const deep = x.deepLink?.({ styleNames: names, target: r.target });
-        return `<article class="ref">
+        const pid = `ref-info-${x.id}`;
+        return `<article class="ref carousel-item">
           <div class="ref-top"><h3><a href="${x.url}" target="_blank" rel="noopener noreferrer">${esc(x.name)}</a></h3><span class="kind">${KIND_LABELS[x.kind]}</span></div>
           <p class="best">${esc(x.bestFor)}</p>
-          <p class="models">${esc(x.models)}</p>
-          ${x.note ? `<p class="note">${esc(x.note)}</p>` : ""}
-          <div class="ref-tags"><span class="pill ${x.status}">${statusLabel[x.status]}</span><span class="pill">${costLabel[x.cost]}</span></div>
-          <div class="ref-foot"><span class="checked">Checked ${fmtDate(x.checked)}</span>${
-            deep
-              ? `<a class="deep" href="${esc(deep.href)}" target="_blank" rel="noopener noreferrer">${esc(deep.label)}</a>`
-              : ""
-          }</div>
+          <div class="ref-foot">
+            <div class="ref-tags"><span class="pill ${x.status}">${statusLabel[x.status]}</span><span class="pill">${costLabel[x.cost]}</span></div>
+            ${deep ? `<a class="deep" href="${esc(deep.href)}" target="_blank" rel="noopener noreferrer">${esc(deep.label)}</a>` : ""}
+            <span class="field-info">
+              <button type="button" class="btn btn-circle btn-ghost btn-xs field-info-trigger" aria-label="About ${esc(x.name)}" aria-controls="${pid}" popovertarget="${pid}" popovertargetaction="toggle">${infoIcon}</button>
+              <span class="field-info-popover card card-border" id="${pid}" popover="auto" role="note" data-info-popover>
+                <span class="field-info-popover-title">${esc(x.name)}</span>
+                <span class="ref-detail">${esc(x.models)}</span>
+                ${x.note ? `<span class="ref-detail">${esc(x.note)}</span>` : ""}
+                <span class="ref-detail ref-checked">Checked ${fmtDate(x.checked)}</span>
+              </span>
+            </span>
+          </div>
         </article>`;
       })
       .join("");
+    refsEl.scrollLeft = 0;
+    syncRefsNav();
   }
 
   /* ── render ── */
@@ -1728,6 +1766,10 @@ export function startApp(): void {
     document
       .querySelectorAll<HTMLInputElement>("[data-textmode]")
       .forEach((input) => (input.checked = input.value === r.textMode));
+    // In "space" mode the compiler ignores headline and other text, so hide them.
+    document
+      .querySelectorAll<HTMLElement>(".text-field")
+      .forEach((el) => (el.hidden = r.textMode === "space"));
     press(
       presetsEl,
       "[data-preset]",

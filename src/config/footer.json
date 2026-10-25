@@ -9,6 +9,10 @@
           "url": "/"
         },
         {
+          "name": "Guide",
+          "url": "/guide"
+        },
+        {
           "name": "Blog",
           "url": "/blog"
         },

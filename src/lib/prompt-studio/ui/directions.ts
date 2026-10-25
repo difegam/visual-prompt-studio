@@ -3,6 +3,7 @@ import type { Direction } from "../domain/presets";
 import { DEFAULT_RECIPE } from "../domain/recipe";
 import { getReference } from "../domain/references";
 import { getStyle } from "../domain/styles";
+import { renderInfoPopover } from "./info-popover";
 import { inksFrom, proofSvg } from "./sketch";
 
 export type DirectionCardVariant = "suggested" | "explorer";
@@ -61,7 +62,7 @@ export function renderDirectionCard(
         <div class="direction-title-row"><h4>${esc(direction.name)}</h4>${badges}</div>
         <p>${esc(direction.blurb)}</p>
         <small>Layout: ${esc(design.name)} · Imagery: ${esc(art.name)} · Finish: ${esc(technique.name)}</small>
-        ${learning ? `<details class="direction-learning"><summary>Why this starter works</summary>${learning}</details>` : ""}
+        ${learning ? renderInfoPopover({ id: `info-result-${esc(direction.id)}`, label: "Why this starter works", content: `<div class="direction-learning">${learning}</div>` }) : ""}
       </div>
       <div class="card-actions">${button("btn btn-outline direction-result-apply")}</div>
     </article>`;
@@ -90,13 +91,12 @@ export function renderDirectionCard(
     <div class="card-body direction-body">
       <div class="direction-title-row"><h3>${esc(direction.name)}</h3>${badges}</div>
       <p class="direction-blurb">${esc(direction.blurb)}</p>
-      <p class="direction-rationale">${esc(rationale)}</p>
       <ul class="direction-layers" aria-label="Visual layers">
         <li><b>Layout</b><span>${esc(design.name)}</span></li>
         <li><b>Imagery</b><span>${esc(art.name)}</span></li>
         <li><b>Finish</b><span>${esc(technique.name)}</span></li>
       </ul>
-      ${learning ? `<div class="direction-learning">${learning}</div>` : ""}
+      ${renderInfoPopover({ id: `info-${esc(direction.id)}`, label: "Why this works", content: `<p class="direction-rationale">${esc(rationale)}</p><div class="direction-learning">${learning}</div>` })}
       <div class="card-actions">${button("btn btn-primary direction-apply")}</div>
     </div>
   </article>`;

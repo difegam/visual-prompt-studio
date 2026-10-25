@@ -1,0 +1,382 @@
+---
+import Base from "@/layouts/Base.astro";
+import StudioBar from "@/layouts/components/StudioBar.astro";
+import SiteFooter from "@/layouts/components/SiteFooter.astro";
+import "@/lib/prompt-studio/ui/fonts.css";
+import "@/lib/prompt-studio/ui/styles.css";
+
+const sections = [
+  { id: "quick-start", label: "Quick start" },
+  { id: "brief", label: "1. The brief" },
+  { id: "directions", label: "2. Starting directions" },
+  { id: "layers", label: "3. Visual language" },
+  { id: "fine-tune", label: "4. Fine-tune" },
+  { id: "send", label: "5. Send to a model" },
+  { id: "copy", label: "6. Copy and compare" },
+  { id: "recipes", label: "Recipes and privacy" },
+  { id: "tips", label: "Tips" },
+];
+---
+
+<Base
+  title="Guide"
+  meta_title="Guide — Visual Prompt Studio"
+  description="How to use every part of Visual Prompt Studio: the brief, directions, visual layers, model targets, copying, and saving recipes."
+  hideChrome={true}
+  pageTheme="dark"
+>
+  <div id="studio-app">
+    <StudioBar variant="page" current="guide" />
+
+    <div class="guide">
+      <nav class="guide-toc" aria-label="On this page">
+        <h2>On this page</h2>
+        <ol>
+          {
+            sections.map((s) => (
+              <li>
+                <a href={`#${s.id}`}>{s.label}</a>
+              </li>
+            ))
+          }
+        </ol>
+      </nav>
+
+      <article class="guide-body">
+        <header class="guide-head">
+          <h1 class="lede">How to use the studio.</h1>
+          <p>
+            Visual Prompt Studio turns an art direction into a prompt for an
+            image model. It does not make the image. You compose a recipe, copy
+            the prompt, and paste it into ChatGPT Images, Midjourney, FLUX or
+            Stable Diffusion.
+          </p>
+        </header>
+
+        <section class="guide-section" id="quick-start" aria-labelledby="qs-h">
+          <h2 id="qs-h">Quick start</h2>
+          <ol class="guide-steps">
+            <li>
+              Type what you are making in <strong>What are you making?</strong>,
+              for example “poster for a night market in Lisbon”.
+            </li>
+            <li>
+              Pick a <strong>Format</strong> and what the design should do.
+            </li>
+            <li>
+              Choose a card under <strong>Start from a direction</strong>, or
+              set Layout, Imagery and Finish yourself.
+            </li>
+            <li>
+              Under <strong>Send to</strong>, pick the model you will use.
+            </li>
+            <li>
+              Press <strong>Copy prompt</strong> and paste it into that model.
+            </li>
+          </ol>
+          <p class="guide-note">
+            The prompt on the right updates as you change anything, so you can
+            experiment freely and watch what changes.
+          </p>
+        </section>
+
+        <section class="guide-section" id="brief" aria-labelledby="brief-h">
+          <h2 id="brief-h">1. The brief</h2>
+          <p>
+            The brief is the subject and purpose of the image. It is the only
+            thing the studio cannot guess.
+          </p>
+          <h3>What are you making?</h3>
+          <p>
+            One or two sentences naming the subject and where the image will be
+            used. A concrete subject gives every later choice something to work
+            on. An empty brief shows a gentle prompt to describe it.
+          </p>
+          <h3>Format and goal</h3>
+          <p>
+            <strong>Format</strong> is what the image is for: a poster, flyer, book
+            cover, album cover, social post and similar. It sets a matching aspect
+            ratio. <strong>What should the design do?</strong> is the communication
+            goal. Together they shape which directions the studio recommends first.
+          </p>
+          <h3>Add text and size</h3>
+          <p>This disclosure holds the optional details.</p>
+          <ul>
+            <li>
+              <strong>Aspect ratio</strong>: nine presets such as Feed 4:5 or
+              Story 9:16. You can add your own ratio.
+            </li>
+            <li>
+              <strong>Headline</strong> and <strong>Other text</strong>: the
+              exact words that should appear. Use one line each for up to four
+              extra lines such as a date, venue or credit.
+            </li>
+            <li>
+              <strong>Text in the image</strong>: choose
+              <em>Render the exact text</em> to have the model draw your words, or
+              <em>Leave clean space</em> to reserve an area and set type yourself
+              later.
+            </li>
+            <li>
+              <strong>Your concept</strong>: one memorable visual idea. A
+              specific scene beats a list of adjectives.
+            </li>
+          </ul>
+        </section>
+
+        <section
+          class="guide-section"
+          id="directions"
+          aria-labelledby="directions-h"
+        >
+          <h2 id="directions-h">2. Starting directions</h2>
+          <p>
+            A direction is a ready-made combination of layout, imagery, finish,
+            palette, typeface and intent. It saves you from starting with a
+            blank page. Pick one, then change anything.
+          </p>
+          <h3>Recommended cards</h3>
+          <p>
+            The cards under <strong>Start from a direction</strong> follow your format
+            and goal. Curated picks are studio recommendations, not usage counts.
+          </p>
+          <h3>2026 starters</h3>
+          <p>
+            Six contemporary directions are marked as 2026 starters. Each one
+            explains the design principle behind it, the tradeoff it makes, and
+            links to supporting reading. These draw on editorial forecasts and
+            practitioner examples. They are a starting point, not proof that a
+            style performs better.
+          </p>
+          <h3>What applying a direction changes</h3>
+          <p>
+            Applying a direction changes layout, imagery, finish, palette,
+            typeface, type weight and italics, and creative intent. It keeps
+            your brief, exact text, concept, format, aspect ratio, text mode,
+            exclusions, and every output setting. You can undo it, and each
+            control stays editable.
+          </p>
+          <h3>Explore all directions</h3>
+          <p>
+            Open <strong>Explore all directions</strong> to search by name, style
+            or goal, filter by project type, goal or style layer, group the results,
+            or limit them to curated picks or 2026 starters. The filters combine.
+          </p>
+        </section>
+
+        <section class="guide-section" id="layers" aria-labelledby="layers-h">
+          <h2 id="layers-h">3. Visual language</h2>
+          <p>
+            The look is split into three independent layers, so you combine them
+            instead of choosing one flat style name. Each is colour-coded like a
+            print separation wherever it appears.
+          </p>
+          <h3><i class="sep c" aria-hidden="true"></i>Layout</h3>
+          <p>
+            How the page is organised: grid, hierarchy, where the type sits.
+            Examples: Swiss International, Bauhaus, Art Deco.
+          </p>
+          <h3><i class="sep m" aria-hidden="true"></i>Imagery</h3>
+          <p>
+            The art movement or visual language of the picture itself. Examples:
+            Surrealism, Pop Art, Ukiyo-e.
+          </p>
+          <h3><i class="sep y" aria-hidden="true"></i>Finish</h3>
+          <p>
+            The print or material treatment. Examples: Risograph, Letterpress,
+            Cyanotype.
+          </p>
+          <p>
+            Switch between the three tabs, pick one style in each, and watch the
+            proof sheet on the right. The proof is a vector study of the
+            direction, not a generated image. Its swatch list shows what each
+            layer contributes.
+          </p>
+        </section>
+
+        <section class="guide-section" id="fine-tune" aria-labelledby="fine-h">
+          <h2 id="fine-h">4. Fine-tune the direction</h2>
+          <p>
+            Open <strong>Fine-tune the direction</strong> when the layers are right
+            but the result needs more control.
+          </p>
+          <h3>Typography</h3>
+          <p>
+            Preview typefaces and choose one. The model receives a description
+            of the type’s character, not the font file, so add exact lettering
+            in your image editor afterwards if you need it.
+          </p>
+          <h3>Remove the default look</h3>
+          <p>
+            Select the clichés you want to avoid. Some exclusions depend on the
+            style you chose; those are called out and skipped automatically. Use
+            the links to apply sensible defaults or clear the list.
+          </p>
+          <h3>Authorial intent</h3>
+          <p>
+            Optional. Describe the point of view you want the image to take,
+            such as the feeling or the argument behind it.
+          </p>
+        </section>
+
+        <section class="guide-section" id="send" aria-labelledby="send-h">
+          <h2 id="send-h">5. Send to a model</h2>
+          <p>
+            The prompt’s structure changes with the target model. Choose it
+            under <strong>Send to</strong>.
+          </p>
+          <div class="guide-table-wrap">
+            <table class="guide-table">
+              <thead>
+                <tr><th>Target</th><th>What to expect</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>ChatGPT Images</td>
+                  <td>
+                    Natural language. Strong text rendering; every word that
+                    must appear is quoted.
+                  </td>
+                </tr>
+                <tr>
+                  <td>Midjourney</td>
+                  <td>
+                    A descriptive phrase with parameters at the end: <code
+                      >--ar</code
+                    >, <code>--no</code>, <code>--sref</code>, <code>--raw</code
+                    >. Only the headline is sent.
+                  </td>
+                </tr>
+                <tr>
+                  <td>FLUX</td>
+                  <td>
+                    No negative prompts. Exclusions are rewritten as what you
+                    want instead.
+                  </td>
+                </tr>
+                <tr>
+                  <td>Stable Diffusion</td>
+                  <td>
+                    Separate positive and negative prompts. Weak at text, so
+                    prefer leaving clean space.
+                  </td>
+                </tr>
+                <tr>
+                  <td>Other model</td>
+                  <td>Plain language with constraints stated in words.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <h3>Prompt shape</h3>
+          <p>
+            <strong>Art direction</strong> is one dense paragraph that works everywhere.
+            <strong>Seven-line brief</strong> keeps the same seven lines every time
+            so you can swap only the style and compare.
+            <strong>Production spec</strong> is a sectioned brief for complex layouts
+            and handoff. <strong>Point-of-view brief</strong> explains what each section
+            controls. Which shapes are offered depends on the model.
+          </p>
+          <h3>Restyle and edit</h3>
+          <p>
+            For ChatGPT Images, <strong>Restyle in same chat</strong> forces a clean
+            restart so the previous image does not leak in.
+            <strong>Edit with reference</strong> changes one thing in an attached
+            image: fill in <strong>Change only</strong> and
+            <strong>Keep exactly</strong> to protect the rest.
+          </p>
+          <h3>Midjourney settings</h3>
+          <p>
+            With Midjourney selected you can add style reference codes (<code
+              >--sref</code
+            >), switch on <code>--raw</code> to reduce the model’s default beautification,
+            and set <code>--s</code> stylize. Leave stylize blank to use the default.
+          </p>
+          <h3>Language</h3>
+          <p>
+            <strong>EN</strong> or <strong>ES</strong> sets the language of the generated
+            prompt. It does not translate the text you want in the image.
+          </p>
+        </section>
+
+        <section class="guide-section" id="copy" aria-labelledby="copy-h">
+          <h2 id="copy-h">6. Copy and compare</h2>
+          <ul>
+            <li>
+              <strong>Copy prompt</strong> copies the full prompt. The small icon
+              in the prompt box does the same.
+            </li>
+            <li>
+              <strong>Copy negative</strong> appears for models that use a separate
+              negative prompt.
+            </li>
+            <li>
+              <strong>Compare with an undirected prompt</strong> shows what the model
+              would get from your brief alone, so you can see what the art direction
+              adds.
+            </li>
+            <li>
+              Notices under the prompt flag anything the target model handles
+              differently, such as skipped exclusions or text limits.
+            </li>
+          </ul>
+          <p class="guide-note">
+            The studio never generates the image. Paste the prompt into your
+            image tool and iterate from there.
+          </p>
+        </section>
+
+        <section class="guide-section" id="recipes" aria-labelledby="rec-h">
+          <h2 id="rec-h">Recipes and privacy</h2>
+          <p>
+            Everything you choose is your <strong>recipe</strong>. It saves in
+            your browser automatically, so it is still there when you return.
+          </p>
+          <ul>
+            <li>
+              <strong>Export</strong> shows the recipe as JSON to copy or download.
+            </li>
+            <li>
+              <strong>Import</strong> restores a recipe from pasted JSON or a file.
+              It is validated first, and problems are listed before anything changes.
+            </li>
+            <li>
+              <strong>Reset</strong> returns every choice to its default.
+            </li>
+          </ul>
+          <p>
+            The studio makes no API calls and sends no recipe data to a server.
+            Clearing your browser’s site data removes the saved recipe, so
+            export anything you want to keep.
+          </p>
+        </section>
+
+        <section class="guide-section" id="tips" aria-labelledby="tips-h">
+          <h2 id="tips-h">Tips</h2>
+          <ul>
+            <li>
+              Use the <strong>info</strong> buttons beside any field for a short explanation
+              of what it does.
+            </li>
+            <li>Change one layer at a time to see what each contributes.</li>
+            <li>
+              Use <em>Leave clean space</em> when the text must be perfect, and set
+              it in a layout tool.
+            </li>
+            <li>
+              The <a href="/#inspiration">Where to look next</a> section links to
+              sources for styles, style codes and tested prompts.
+            </li>
+          </ul>
+        </section>
+
+        <aside class="guide-cta" aria-label="Open the studio">
+          <p>Ready to compose?</p>
+          <a class="btn primary" href="/#compose">Open the studio</a>
+        </aside>
+      </article>
+    </div>
+
+    <SiteFooter variant="studio" />
+  </div>
+</Base>

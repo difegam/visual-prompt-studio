@@ -1,0 +1,59 @@
+---
+import ThemeSwitcher from "@/layouts/components/ThemeSwitcher.astro";
+
+export interface Props {
+  /** `app` carries the recipe actions; `page` is the plain bar for secondary pages. */
+  variant?: "app" | "page";
+  current?: "guide";
+}
+
+const { variant = "app", current } = Astro.props;
+const home = variant === "app" ? "" : "/";
+---
+
+<header class="bar">
+  <a class="brand" href={`${home}#compose`} aria-label="Visual Prompt Studio">
+    <svg class="reg" viewBox="0 0 24 24" aria-hidden="true"
+      ><circle cx="12" cy="12" r="6.5"></circle><path d="M12 1v22M1 12h22"
+      ></path><circle cx="12" cy="12" r="2.4" class="reg-dot"></circle></svg
+    >
+    <span>Visual Prompt Studio</span>
+  </a>
+  <nav class="bar-nav" aria-label="Sections">
+    <a href={`${home}#compose`}>Compose</a>
+    <a href="/guide" aria-current={current === "guide" ? "page" : undefined}
+      >Guide</a
+    >
+    <a href={`${home}#inspiration`}>Inspiration</a>
+    <a href="/blog">Blog</a>
+    <a href="/about">About</a>
+  </nav>
+  <div class="bar-actions">
+    {
+      variant === "app" && (
+        <>
+          <button
+            type="button"
+            class="btn ghost"
+            id="btn-import"
+            aria-label="Import recipe"
+          >
+            Import
+          </button>
+          <button
+            type="button"
+            class="btn ghost"
+            id="btn-export"
+            aria-label="Export recipe"
+          >
+            Export
+          </button>
+          <button type="button" class="btn ghost" id="btn-reset">
+            Reset
+          </button>
+        </>
+      )
+    }
+    <ThemeSwitcher className="studio-theme-switcher" />
+  </div>
+</header>
