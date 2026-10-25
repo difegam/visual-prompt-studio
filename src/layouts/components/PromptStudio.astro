@@ -5,6 +5,7 @@ import StudioField from "@/layouts/components/StudioField.astro";
 import StudioDisclosure from "@/layouts/components/StudioDisclosure.astro";
 import ThemeSwitcher from "@/layouts/components/ThemeSwitcher.astro";
 import FieldInfo from "@/layouts/components/FieldInfo.astro";
+import SiteFooter from "@/layouts/components/SiteFooter.astro";
 ---
 
 <div id="studio-app">
@@ -1040,16 +1041,7 @@ import FieldInfo from "@/layouts/components/FieldInfo.astro";
     </div>
   </section>
 
-  <footer class="foot">
-    <p>
-      Runs in your browser. No account, no API key, no generation. Previews are
-      original vector studies; style names are educational approximations.
-    </p>
-    <p>
-      Catalog structure after the beailabs guide and John Hartnup's Poster
-      Prompts. Fonts are OFL-1.1 via Fontsource.
-    </p>
-  </footer>
+  <SiteFooter variant="studio" />
 
   <div class="mobile-bar" id="mobile-bar">
     <a class="btn" href="#proof-h">See prompt</a>

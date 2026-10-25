@@ -1,0 +1,55 @@
+{
+  "tagline": "A local-first composer for art-directed image prompts. It runs in your browser; nothing you type is sent to a server.",
+  "groups": [
+    {
+      "title": "Project",
+      "links": [
+        {
+          "name": "Studio",
+          "url": "/"
+        },
+        {
+          "name": "Blog",
+          "url": "/blog"
+        },
+        {
+          "name": "About",
+          "url": "/about"
+        }
+      ]
+    },
+    {
+      "title": "Source",
+      "links": [
+        {
+          "name": "Repository",
+          "url": "https://github.com/difegam/visual-prompt-studio",
+          "external": true
+        },
+        {
+          "name": "Issues",
+          "url": "https://github.com/difegam/visual-prompt-studio/issues",
+          "external": true
+        }
+      ]
+    },
+    {
+      "title": "Developer",
+      "links": [
+        {
+          "name": "Diego Gamboa",
+          "url": "/authors/diego-gamboa"
+        },
+        {
+          "name": "Get in touch",
+          "url": "https://github.com/difegam/visual-prompt-studio/issues/new",
+          "external": true
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "No account, no API key, no generation. Previews are original vector studies; style names are educational approximations.",
+    "Catalog structure after the beailabs guide and John Hartnup's Poster Prompts. Fonts are OFL-1.1 via Fontsource."
+  ]
+}

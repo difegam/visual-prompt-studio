@@ -1,0 +1,342 @@
+---
+import config from "@/config/config.json";
+import footer from "@/config/footer.json";
+import social from "@/config/social.json";
+import DynamicIcon from "@/helpers/DynamicIcon";
+import { markdownify } from "@/lib/utils/textConverter";
+import { FaArrowUpRightFromSquare } from "react-icons/fa6";
+
+export interface Props {
+  /** `studio` inherits the composer's ink palette; `site` maps to the template theme tokens. */
+  variant?: "studio" | "site";
+}
+
+const { variant = "site" } = Astro.props;
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer" data-variant={variant}>
+  <div class="sf-bar" aria-hidden="true">
+    <i style="--sw: var(--sf-c)"></i><i style="--sw: var(--sf-m)"></i><i
+      style="--sw: var(--sf-y)"></i><i style="--sw: var(--sf-fg)"></i>
+  </div>
+
+  <div class="sf-wrap">
+    <div class="sf-inner">
+      <div class="sf-brand">
+        <a class="sf-name" href="/" aria-label={`${config.site.title}, home`}>
+          <svg class="sf-reg" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="6.5"></circle>
+            <path d="M12 1v22M1 12h22"></path>
+            <circle cx="12" cy="12" r="2.4" class="sf-reg-dot"></circle>
+          </svg>
+          <span>{config.site.title}</span>
+        </a>
+        <p class="sf-tagline">{footer.tagline}</p>
+        {
+          social.main.length > 0 && (
+            <ul class="sf-social" aria-label="Developer profiles">
+              {social.main.map((item) => (
+                <li>
+                  <a href={item.link} target="_blank" rel="noopener noreferrer">
+                    <DynamicIcon icon={item.icon} aria-hidden="true" />
+                    <span>{item.name}</span>
+                    <span class="sr-only"> (opens in a new tab)</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )
+        }
+      </div>
+
+      <nav class="sf-groups" aria-label="Footer">
+        {
+          footer.groups.map((group) => (
+            <section class="sf-group">
+              <h2>{group.title}</h2>
+              <ul>
+                {group.links.map((link) => (
+                  <li>
+                    <a
+                      href={link.url}
+                      {...(link.external
+                        ? { target: "_blank", rel: "noopener noreferrer" }
+                        : {})}
+                    >
+                      <span>{link.name}</span>
+                      {link.external && (
+                        <>
+                          <FaArrowUpRightFromSquare
+                            className="sf-ext"
+                            aria-hidden="true"
+                          />
+                          <span class="sr-only"> (opens in a new tab)</span>
+                        </>
+                      )}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))
+        }
+      </nav>
+    </div>
+
+    <div class="sf-fine">
+      <div class="sf-notes">
+        {footer.notes.map((note) => <p>{note}</p>)}
+      </div>
+      <p class="sf-copy">
+        &copy; {year}{" "}<Fragment
+          set:html={markdownify(config.params.copyright)}
+        />
+      </p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    --sf-bg: var(--paper);
+    --sf-fg: var(--ink);
+    --sf-muted: var(--muted);
+    --sf-line: var(--line);
+    --sf-accent: var(--accent);
+    --sf-c: var(--c);
+    --sf-m: var(--m);
+    --sf-y: var(--y);
+    --sf-gutter: 0px;
+    position: relative;
+    margin-top: 0;
+    border-top: 1px solid var(--sf-line);
+    background: var(--sf-bg);
+    color: var(--sf-muted);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .site-footer[data-variant="site"] {
+    --sf-bg: var(--color-light);
+    --sf-fg: var(--color-text-dark);
+    --sf-muted: #5f5f5f;
+    --sf-line: var(--color-border);
+    --sf-accent: var(--color-text-dark);
+    --sf-c: #0089bf;
+    --sf-m: #cf2477;
+    --sf-y: #b88a00;
+    --sf-gutter: 16px;
+    margin-top: 0;
+  }
+  :global(:root[data-theme="dark"]) .site-footer[data-variant="site"] {
+    --sf-bg: var(--color-darkmode-light);
+    --sf-muted: var(--color-darkmode-text-light);
+    --sf-line: var(--color-darkmode-border);
+    --sf-fg: var(--color-darkmode-text-dark);
+    --sf-accent: var(--color-darkmode-text-dark);
+    --sf-c: #3cb6e8;
+    --sf-m: #f0619f;
+    --sf-y: #e2b73c;
+  }
+
+  /* press color bar hanging from the top rule */
+  .sf-bar {
+    position: absolute;
+    top: -1px;
+    left: max(var(--sf-gutter), calc((100% - 1380px) / 2 + var(--sf-gutter)));
+    display: flex;
+  }
+  .sf-bar i {
+    width: 22px;
+    height: 6px;
+    background: var(--sw);
+  }
+
+  .sf-wrap {
+    max-width: 1380px;
+    margin-inline: auto;
+    padding-inline: var(--sf-gutter);
+  }
+  .sf-inner {
+    display: grid;
+    gap: 32px 56px;
+    padding-block: 40px 32px;
+  }
+  @media (min-width: 960px) {
+    .sf-inner {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      padding-block: 48px 40px;
+    }
+  }
+
+  .sf-name {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--sf-fg);
+    text-decoration: none;
+    font-weight: 700;
+    font-stretch: 85%;
+    font-size: 18px;
+    letter-spacing: -0.01em;
+  }
+  .sf-reg {
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: var(--sf-fg);
+    stroke-width: 1.4;
+    transition: transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .sf-reg-dot {
+    fill: var(--sf-m);
+    stroke: none;
+  }
+  .sf-name:hover .sf-reg,
+  .sf-name:focus-visible .sf-reg {
+    transform: rotate(90deg);
+  }
+  .sf-tagline {
+    max-width: 38ch;
+    margin-top: 14px;
+    text-wrap: pretty;
+  }
+  .sf-social {
+    display: flex;
+    gap: 8px;
+    margin: 18px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .sf-social a {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    padding-inline: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid var(--sf-line);
+    border-radius: 6px;
+    color: var(--sf-fg);
+    transition:
+      border-color 160ms,
+      background-color 160ms;
+  }
+  .sf-social a:hover {
+    border-color: var(--sf-fg);
+  }
+  .sf-social svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .sf-groups {
+    display: grid;
+    gap: 28px 32px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-content: start;
+  }
+  @media (max-width: 639px) {
+    .sf-groups {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+  }
+  .sf-group h2 {
+    margin: 0 0 6px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.4;
+    color: var(--sf-fg);
+  }
+  .sf-group ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .sf-group a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 36px;
+    color: var(--sf-muted);
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 4px;
+    transition:
+      color 160ms,
+      text-decoration-color 160ms;
+  }
+  @media (max-width: 639px) {
+    .sf-group a {
+      min-height: 44px;
+    }
+  }
+  .sf-group a:hover {
+    color: var(--sf-fg);
+    text-decoration-color: currentColor;
+  }
+  .sf-group a :global(.sf-ext) {
+    width: 10px;
+    height: 10px;
+    opacity: 0.7;
+    flex: none;
+  }
+
+  .sf-fine {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 16px 48px;
+    padding-block: 20px 24px;
+    border-top: 1px solid var(--sf-line);
+    font-size: 12.5px;
+  }
+  .sf-notes {
+    display: grid;
+    gap: 4px;
+    max-width: 68ch;
+  }
+  .sf-notes p,
+  .sf-copy {
+    margin: 0;
+  }
+  .sf-copy :global(a) {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .sf-copy :global(a:hover) {
+    color: var(--sf-fg);
+  }
+  /* the studio's fixed mobile action bar sits over the page end */
+  .site-footer[data-variant="studio"] .sf-fine {
+    padding-bottom: 24px;
+  }
+  @media (max-width: 899px) {
+    .site-footer[data-variant="studio"] {
+      padding-bottom: 72px;
+    }
+  }
+
+  .site-footer :global(a:focus-visible) {
+    outline: 2px solid var(--sf-accent);
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sf-reg {
+      transition: none;
+    }
+  }
+</style>
