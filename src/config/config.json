@@ -1,7 +1,7 @@
 {
   "site": {
     "title": "Visual Prompt Studio",
-    "base_url": "https://example.com",
+    "base_url": "https://vps.dgamboa.com",
     "base_path": "/",
     "trailing_slash": false,
     "favicon": "/favicon.svg",
@@ -44,7 +44,7 @@
   },
 
   "metadata": {
-    "meta_author": "Visual Prompt Studio",
+    "meta_author": "Diego Gamboa",
     "meta_image": "/social-card.svg",
     "meta_description": "Compose clear, art-directed image prompts with layered visual language, exact text, and model-aware controls."
   },

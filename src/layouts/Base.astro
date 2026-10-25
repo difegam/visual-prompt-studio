@@ -57,9 +57,12 @@ const shouldNoindex = siteMode === "preview" || noindex;
       )
     }
     <!-- favicon -->
-    <link rel="shortcut icon" href={config.site.favicon} />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href={config.site.favicon} type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <!-- theme meta -->
-    <meta name="theme-name" content="your-site" />
+    <meta name="theme-name" content="visual-prompt-studio" />
     <meta name="msapplication-TileColor" content="#000000" />
     <meta
       name="theme-color"

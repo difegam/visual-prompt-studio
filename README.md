@@ -27,9 +27,8 @@
   <a href="CONTRIBUTING.md">Contributing</a>
 </p>
 
-<!-- MEDIA: docs/media/demo.gif — 30 s walkthrough: pick a format, apply a 2026 starter, change one layer, copy the prompt. -->
 <p align="center">
-  <img src="docs/media/demo.gif" alt="Demo: choosing a direction and copying a compiled prompt" width="860">
+  <img src="docs/media/demo.gif" alt="30-second tour: a poster brief is directed layer by layer, resized, recoloured, compiled for six image models and copied" width="860">
 </p>
 
 ## Why Visual Prompt Studio
@@ -48,25 +47,22 @@ Most people ask an image model for "a poster for my event" and get something gen
 
 Tell the Studio what you are making (poster, flyer, book cover, album cover, social post, story cover, editorial illustration or event banner) and the goal. It recommends matching directions. Open the explorer to search and filter all 16 directions, including a "2026 starters only" filter. Applying a starter changes only the visual choices, keeps your brief and text, and can be undone.
 
-<!-- MEDIA: docs/media/directions.png — recommended directions and the explorer with filter pills. -->
 <p align="center">
-  <img src="docs/media/directions.png" alt="Recommended directions and the direction explorer" width="860">
+  <img src="docs/media/directions.png" alt="The direction explorer filtered to posters and 2026 starters, beside the live proof sheet" width="860">
 </p>
 
 ### Three independent style layers
 
 Pick **Layout** (grid, hierarchy, where the type sits), **Imagery** (the art movement or visual language) and **Finish** (the print or material treatment) from a 29-entry catalog. A vector proof sheet previews the combination. It is a study of the direction, not a generated image.
 
-<!-- MEDIA: docs/media/layers.gif — switching the three layer tabs and watching the proof sheet change. -->
 <p align="center">
-  <img src="docs/media/layers.gif" alt="Switching layout, imagery and finish layers" width="860">
+  <img src="docs/media/layers.gif" alt="Picking Bauhaus, Pop Art, Screen print and Art Deco across the three layer tabs while the proof sheet redraws" width="860">
 </p>
 
 ### Palettes, typography and the font picker
 
 Choose from six palettes and 14 bundled typefaces. The font picker has search, category filters, a live specimen, and weight and italic toggles. The model receives a description of the type's character, not the font file.
 
-<!-- MEDIA: docs/media/font-picker.png — font picker dialog with a live specimen. -->
 <p align="center">
   <img src="docs/media/font-picker.png" alt="Font picker dialog with search, categories and a live specimen" width="860">
 </p>
@@ -88,9 +84,8 @@ Enter a headline and up to four more lines. Choose whether the model should rend
 
 Each target offers the prompt shapes that suit it: Art direction (concise), Seven-line brief, Production spec, Point-of-view brief, Restyle in same chat, and Edit with reference. Prompts can be written in English or Spanish.
 
-<!-- MEDIA: docs/media/targets.gif — changing the target and watching the compiled prompt change. -->
 <p align="center">
-  <img src="docs/media/targets.gif" alt="Compiled prompt changing with the target model" width="860">
+  <img src="docs/media/targets.gif" alt="The compiled prompt rewriting itself for Midjourney, Stable Diffusion, FLUX, Gemini and ChatGPT Images" width="496">
 </p>
 
 ### Copy actions and comparison

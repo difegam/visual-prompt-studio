@@ -2,7 +2,7 @@
   // Cloudflare Workers — Static Assets deployment
   // Deploy only through an explicit environment: development or production.
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "astroplate-starter-development",
+  "name": "visual-prompt-studio-development",
   "compatibility_date": "2026-10-24",
   "assets": {
     "directory": "./dist",
@@ -15,11 +15,11 @@
   },
   "env": {
     "development": {
-      "name": "astroplate-starter-development",
+      "name": "visual-prompt-studio-development",
       "routes": [{ "pattern": "vps-dev.dgamboa.com", "custom_domain": true }],
     },
     "production": {
-      "name": "astroplate-starter-production",
+      "name": "visual-prompt-studio-production",
       "routes": [{ "pattern": "vps.dgamboa.com", "custom_domain": true }],
     },
   },

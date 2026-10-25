@@ -1,4 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-  <rect width="48" height="48" rx="12" fill="#121212" />
-  <path d="M12 34 24 10l12 24h-7l-5-11-5 11z" fill="#fff" />
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><title>Visual Prompt Studio</title><rect width="32" height="32" rx="7" fill="#202329"/><circle cx="16" cy="16" r="8.2" fill="none" stroke="#F2F3F0" stroke-width="2.2"/><path d="M16 4v24M4 16h24" stroke="#F2F3F0" stroke-width="2.2"/><circle cx="16" cy="16" r="3.4" fill="#CF2477"/></svg>
