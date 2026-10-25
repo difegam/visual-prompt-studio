@@ -3,6 +3,7 @@ import type { Direction } from "../domain/presets";
 import { DEFAULT_RECIPE } from "../domain/recipe";
 import { getReference } from "../domain/references";
 import { getStyle } from "../domain/styles";
+import { getTrendEdition } from "../domain/trends";
 import { renderInfoPopover } from "./info-popover";
 import { inksFrom, proofSvg } from "./sketch";
 
@@ -32,6 +33,10 @@ export function renderDirectionCard(
   const art = getStyle(direction.patch.styles.art);
   const technique = getStyle(direction.patch.styles.technique);
   const source = direction.sourceIds?.map(getReference).find(Boolean);
+  const edition =
+    direction.trendYear === undefined
+      ? undefined
+      : getTrendEdition(direction.trendYear);
   const learning = [
     direction.principle?.trim()
       ? `<p class="direction-principle"><b>Principle:</b> ${esc(direction.principle)}</p>`
@@ -39,20 +44,22 @@ export function renderDirectionCard(
     direction.tradeoff?.trim()
       ? `<p class="direction-tradeoff"><b>Tradeoff:</b> ${esc(direction.tradeoff)}</p>`
       : "",
+    direction.practiceTip?.trim()
+      ? `<p class="direction-practice"><b>Try this:</b> ${esc(direction.practiceTip)}</p>`
+      : "",
     source
       ? `<a class="link" href="${esc(source.url)}" target="_blank" rel="noopener noreferrer">Learn with ${esc(source.name)}</a>`
       : "",
   ].join("");
   const badges = [
-    direction.trendYear === 2026
-      ? '<span class="badge badge-outline direction-trend-badge">2026 starter</span>'
+    edition
+      ? `<span class="badge badge-outline direction-trend-badge">${edition.year} starter</span>`
       : "",
     direction.curatedRank !== undefined
       ? '<span class="badge badge-outline curated-badge">Curated pick</span>'
       : "",
   ].join("");
-  const label =
-    direction.trendYear === 2026 ? "Use this starter" : "Use this direction";
+  const label = edition ? "Use this starter" : "Use this direction";
   const button = (classes: string): string =>
     `<button type="button" class="${classes}" data-preset="${esc(direction.id)}" aria-pressed="${options.selected}">${label}</button>`;
 

@@ -10,6 +10,7 @@ let styles;
 let references;
 let recipe;
 let cards;
+let trends;
 
 before(async () => {
   server = await createServer({
@@ -32,6 +33,9 @@ before(async () => {
     "/src/lib/prompt-studio/domain/recipe.ts",
   );
   cards = await server.ssrLoadModule("/src/lib/prompt-studio/ui/directions.ts");
+  trends = await server.ssrLoadModule(
+    "/src/lib/prompt-studio/domain/trends.ts",
+  );
 });
 
 after(async () => {
@@ -189,6 +193,173 @@ function validateStarter(direction) {
     `${direction.id} must contain valid recipe values`,
   );
 }
+
+function validateTrendCatalog(editions, directions) {
+  const years = editions.map(({ year }) => year);
+  assert.equal(
+    new Set(years).size,
+    years.length,
+    "Edition years must be unique",
+  );
+  const directionsById = new Map(
+    directions.map((direction) => [direction.id, direction]),
+  );
+  for (const edition of editions) {
+    assert.equal(
+      new Set(edition.directionIds).size,
+      edition.directionIds.length,
+      `${edition.year} direction IDs must be unique`,
+    );
+    for (const directionId of edition.directionIds) {
+      const direction = directionsById.get(directionId);
+      assert.ok(direction, `Unknown edition direction: ${directionId}`);
+      assert.equal(
+        direction.trendYear,
+        edition.year,
+        `${directionId} must belong to ${edition.year}`,
+      );
+    }
+  }
+  for (const direction of directions) {
+    if (direction.trendYear === undefined) continue;
+    const edition = editions.find(({ year }) => year === direction.trendYear);
+    assert.ok(edition, `Unknown direction edition: ${direction.trendYear}`);
+    assert.ok(
+      edition.directionIds.includes(direction.id),
+      `${direction.id} must be listed in ${direction.trendYear}`,
+    );
+  }
+}
+
+test("trend edition catalog matches the six 2026 starter IDs", () => {
+  const starterIds = data.DIRECTIONS.filter(
+    ({ trendYear }) => trendYear === 2026,
+  ).map(({ id }) => id);
+  assert.equal(trends.CURRENT_TREND_EDITION.year, 2026);
+  assert.equal(trends.CURRENT_TREND_EDITION.label, "2026 starters");
+  assert.deepEqual(trends.CURRENT_TREND_EDITION.directionIds, starterIds);
+  assert.equal(trends.getTrendEdition(2026), trends.CURRENT_TREND_EDITION);
+  assert.equal(trends.getTrendEdition(2025), undefined);
+  validateTrendCatalog(trends.TREND_EDITIONS, data.DIRECTIONS);
+});
+
+test("trend edition validation rejects unknown or mismatched direction IDs", () => {
+  const edition = trends.CURRENT_TREND_EDITION;
+  const first = data.DIRECTIONS.find(
+    ({ id }) => id === edition.directionIds[0],
+  );
+  assert.throws(
+    () => validateTrendCatalog([edition, { ...edition }], data.DIRECTIONS),
+    /Edition years must be unique/,
+  );
+  assert.throws(
+    () =>
+      validateTrendCatalog(
+        [
+          {
+            ...edition,
+            directionIds: [edition.directionIds[0], edition.directionIds[0]],
+          },
+        ],
+        data.DIRECTIONS,
+      ),
+    /direction IDs must be unique/,
+  );
+  assert.throws(
+    () =>
+      validateTrendCatalog(
+        [{ ...edition, directionIds: [...edition.directionIds, "missing"] }],
+        data.DIRECTIONS,
+      ),
+    /Unknown edition direction: missing/,
+  );
+  assert.throws(
+    () => validateTrendCatalog([{ ...edition, year: 2025 }], data.DIRECTIONS),
+    new RegExp(`${first.id} must belong to 2025`),
+  );
+  assert.throws(
+    () =>
+      validateTrendCatalog(trends.TREND_EDITIONS, [
+        ...data.DIRECTIONS,
+        { ...first, id: "future-starter", trendYear: 2027 },
+      ]),
+    /Unknown direction edition: 2027/,
+  );
+});
+
+test("numeric edition filtering supports fixture years and all", () => {
+  const legacy = data.DIRECTIONS.find(
+    ({ trendYear }) => trendYear === undefined,
+  );
+  const fixture = { ...legacy, id: "fixture-2025", trendYear: 2025 };
+  const directions = [...data.DIRECTIONS, fixture];
+  assert.deepEqual(
+    api.filterDirections(directions, { trendYear: 2025 }).map(({ id }) => id),
+    ["fixture-2025"],
+  );
+  assert.deepEqual(
+    api.filterDirections(directions, { trendYear: "all" }),
+    directions,
+  );
+});
+
+test("every 2026 starter has one practical next step", () => {
+  const starters = data.DIRECTIONS.filter(
+    ({ trendYear }) => trendYear === 2026,
+  );
+  assert.equal(starters.length, 6);
+  assert.ok(starters.every(({ practiceTip }) => practiceTip?.trim()));
+});
+
+test("direction cards derive their starter badge and tip from catalog metadata", () => {
+  const starter = data.DIRECTIONS.find(({ id }) => id === "chromatic-pulse");
+  const starterCard = parse(
+    cards.renderDirectionCard(starter, {
+      variant: "suggested",
+      goal: "attention",
+      selected: false,
+    }),
+  );
+  assert.equal(
+    starterCard.querySelector(".direction-trend-badge").textContent,
+    "2026 starter",
+  );
+  assert.ok(
+    starterCard
+      .querySelector(".direction-practice")
+      .textContent.includes(starter.practiceTip),
+  );
+
+  const legacy = data.DIRECTIONS.find(
+    ({ trendYear }) => trendYear === undefined,
+  );
+  const legacyCard = parse(
+    cards.renderDirectionCard(legacy, {
+      variant: "suggested",
+      goal: "attention",
+      selected: false,
+    }),
+  );
+  assert.equal(legacyCard.querySelector(".direction-trend-badge"), null);
+  assert.equal(legacyCard.querySelector(".direction-practice"), null);
+});
+
+test("edition and practice metadata never enter recipes or compiled prompts", async () => {
+  const compiler = await server.ssrLoadModule(
+    "/src/lib/prompt-studio/domain/compiler.ts",
+  );
+  const starter = data.DIRECTIONS.find(({ id }) => id === "chromatic-pulse");
+  const next = api.applyDirection(recipe.DEFAULT_RECIPE, starter);
+  const recipeJson = JSON.stringify(next);
+  const compiled = compiler.compile(next).text;
+  for (const catalogText of [
+    trends.CURRENT_TREND_EDITION.label,
+    starter.practiceTip,
+  ]) {
+    assert.ok(!recipeJson.includes(catalogText));
+    assert.ok(!compiled.includes(catalogText));
+  }
+});
 
 test("2026 starters have complete valid educational metadata", () => {
   const starters = data.DIRECTIONS.filter(

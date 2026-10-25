@@ -55,7 +55,7 @@ export interface DirectionFilters {
   readonly styleId?: string | "all";
   readonly group?: string | "all";
   readonly curatedOnly?: boolean;
-  readonly trendYear?: 2026 | "all";
+  readonly trendYear?: number | "all";
 }
 
 export interface StyleFilters {
@@ -146,7 +146,10 @@ export function filterDirections(
 ): readonly Direction[] {
   const query = normalize(filters.query ?? "");
   return directions.filter((direction) => {
-    if (filters.trendYear === 2026 && direction.trendYear !== 2026)
+    if (
+      typeof filters.trendYear === "number" &&
+      direction.trendYear !== filters.trendYear
+    )
       return false;
     if (query && !directionSearchText(direction).includes(query)) return false;
     if (

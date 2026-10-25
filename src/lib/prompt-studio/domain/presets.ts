@@ -28,9 +28,10 @@ export interface Direction extends Preset {
   readonly rationale: Readonly<Partial<Record<GoalId, string>>>;
   /** Editorial ordering only. This does not represent user activity. */
   readonly curatedRank?: number;
-  readonly trendYear?: 2026;
+  readonly trendYear?: number;
   readonly principle?: string;
   readonly tradeoff?: string;
+  readonly practiceTip?: string;
   readonly sourceIds?: readonly string[];
 }
 
@@ -48,6 +49,8 @@ export const PRESETS: readonly Direction[] = [
       "Visible construction and controlled irregularity can make a message feel authored rather than automated.",
     tradeoff:
       "Rough layering competes with dense supporting copy, so the headline and one image should carry the first read.",
+    practiceTip:
+      "Keep the headline and one image as the first read; move supporting copy away from rough overlaps.",
     sourceIds: ["adobe-design-trends-2026", "behance-design-trends-2026"],
     rationale: {
       story:
@@ -85,6 +88,8 @@ export const PRESETS: readonly Direction[] = [
     principle:
       "Generous empty space makes one exaggerated element more noticeable.",
     tradeoff: "It works poorly when many messages need equal emphasis.",
+    practiceTip:
+      "Exaggerate one element and let the remaining space stay quiet.",
     sourceIds: ["behance-design-trends-2026", "figma-web-trends-2026"],
     rationale: {
       attention:
@@ -121,6 +126,8 @@ export const PRESETS: readonly Direction[] = [
       "Repeated geometry and deliberate color contrast create rhythm without adding literal action imagery.",
     tradeoff:
       "Vibrating color and optical pattern can reduce text legibility, so text must remain limited and strongly separated.",
+    practiceTip:
+      "Keep the headline short and separate it from the repeating pattern.",
     sourceIds: ["figma-web-trends-2026", "behance-design-trends-2026"],
     rationale: {
       bold: "Repeated optical shapes and deliberate color contrast give a short statement force and rhythm.",
@@ -155,6 +162,8 @@ export const PRESETS: readonly Direction[] = [
       "A single impossible metaphor feels more convincing when paper, ink, and scale behave consistently.",
     tradeoff:
       "The metaphor needs a direct connection to the subject or it becomes decorative ambiguity.",
+    practiceTip:
+      "Tie the impossible image to one concrete subject from the brief.",
     sourceIds: ["adobe-creative-trends-2026", "adobe-design-trends-2026"],
     rationale: {
       story:
@@ -194,6 +203,7 @@ export const PRESETS: readonly Direction[] = [
       "A place-specific object, pattern, or material gives a story more meaning than generic cultural decoration.",
     tradeoff:
       "The starter cannot invent local cues. The user's brief or concept must name them.",
+    practiceTip: "Name a real place, material, or object from the brief.",
     sourceIds: ["adobe-creative-trends-2026", "adobe-design-trends-2026"],
     rationale: {
       story:
@@ -227,6 +237,8 @@ export const PRESETS: readonly Direction[] = [
       "A strict typographic grid gives experimental optical imagery a stable reading order.",
     tradeoff:
       "The clean system can feel generic unless the central image or headline contains a specific idea.",
+    practiceTip:
+      "Give the central image or headline one specific idea so the grid does not feel generic.",
     sourceIds: ["figma-web-trends-2026", "dribbble-design-trends"],
     rationale: {
       attention:
