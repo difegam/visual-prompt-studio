@@ -6,6 +6,7 @@ import {
 } from "./styles";
 import { DIRECTIONS, clonePalette, type Direction } from "./presets";
 import { PURPOSES, type PurposeId, type Recipe } from "./recipe";
+import { getReference } from "./references";
 
 export const GOALS = [
   {
@@ -54,6 +55,7 @@ export interface DirectionFilters {
   readonly styleId?: string | "all";
   readonly group?: string | "all";
   readonly curatedOnly?: boolean;
+  readonly trendYear?: 2026 | "all";
 }
 
 export interface StyleFilters {
@@ -130,8 +132,11 @@ function directionSearchText(direction: Direction): string {
       return `${style.name} ${style.era} ${style.summary} ${style.keywords}`;
     })
     .join(" ");
+  const sourceNames = (direction.sourceIds ?? [])
+    .map((id) => getReference(id)?.name ?? "")
+    .join(" ");
   return normalize(
-    `${direction.name} ${direction.blurb} ${direction.group} ${formatLabels.join(" ")} ${goalLabels.join(" ")} ${styleText}`,
+    `${direction.name} ${direction.blurb} ${direction.group} ${formatLabels.join(" ")} ${goalLabels.join(" ")} ${styleText} ${direction.principle ?? ""} ${direction.tradeoff ?? ""} ${sourceNames}`,
   );
 }
 
@@ -141,6 +146,8 @@ export function filterDirections(
 ): readonly Direction[] {
   const query = normalize(filters.query ?? "");
   return directions.filter((direction) => {
+    if (filters.trendYear === 2026 && direction.trendYear !== 2026)
+      return false;
     if (query && !directionSearchText(direction).includes(query)) return false;
     if (
       filters.format &&
@@ -227,10 +234,23 @@ export function paginateItems<T>(
 }
 
 export function applyDirection(current: Recipe, direction: Direction): Recipe {
-  const design = getStyle(direction.patch.styles.design);
+  const patch = direction.patch;
+  const design = getStyle(patch.styles.design);
   return {
     ...current,
-    styles: { ...direction.patch.styles },
-    palette: design.palette ? clonePalette(design.palette) : current.palette,
+    styles: { ...patch.styles },
+    palette: patch.palette
+      ? [
+          { ...patch.palette[0] },
+          { ...patch.palette[1] },
+          { ...patch.palette[2] },
+        ]
+      : design.palette
+        ? clonePalette(design.palette)
+        : current.palette,
+    font: patch.font ?? current.font,
+    fontWeight: patch.fontWeight ?? current.fontWeight,
+    fontItalic: patch.fontItalic ?? current.fontItalic,
+    signatures: [...(patch.signatures ?? current.signatures)],
   };
 }

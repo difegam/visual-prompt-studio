@@ -124,6 +124,20 @@ test("recommendations prefer exact format and goal matches", () => {
   );
 });
 
+test("2026 starters appear among the first four relevant recommendations", () => {
+  for (const [format, goal] of [
+    ["poster", "attention"],
+    ["social", "atmosphere"],
+  ]) {
+    assert.ok(
+      api
+        .getRecommendations(format, goal, 4)
+        .some(({ trendYear }) => trendYear === 2026),
+      `${format} / ${goal} should recommend a 2026 starter`,
+    );
+  }
+});
+
 test("recommendations fall back deterministically without duplicate directions", () => {
   const first = api.getRecommendations("album-cover", "explain", 10);
   const second = api.getRecommendations("album-cover", "explain", 10);
@@ -165,6 +179,54 @@ test("direction search and format filters combine", () => {
     api.filterDirections(DIRECTIONS, { query: "jazz", format: "book-cover" })
       .length,
     0,
+  );
+});
+
+test("trend filtering selects only 2026 starters and clears with all", () => {
+  assert.deepEqual(
+    api
+      .filterDirections(data.DIRECTIONS, { trendYear: 2026 })
+      .map(({ trendYear }) => trendYear),
+    Array(6).fill(2026),
+  );
+  assert.deepEqual(
+    api.filterDirections(data.DIRECTIONS, { trendYear: "all" }),
+    data.DIRECTIONS,
+  );
+  assert.deepEqual(api.filterDirections(data.DIRECTIONS, {}), data.DIRECTIONS);
+});
+
+test("direction search includes principles, tradeoffs, and resolved source names", () => {
+  for (const query of [
+    "authored rather than automated",
+    "dense supporting copy",
+    "Adobe Express",
+  ]) {
+    assert.ok(
+      api
+        .filterDirections(data.DIRECTIONS, { query })
+        .some(({ id }) => id === "raw-human-voice"),
+      `Raw human voice should match ${query}`,
+    );
+  }
+});
+
+test("trend, text, format, goal, style, and curated filters share an intersection", () => {
+  const filters = {
+    trendYear: 2026,
+    query: "authored rather than automated",
+    format: "poster",
+    goal: "attention",
+    styleId: "dada-collage",
+    curatedOnly: true,
+  };
+  assert.deepEqual(
+    api.filterDirections(data.DIRECTIONS, filters).map(({ id }) => id),
+    ["raw-human-voice"],
+  );
+  assert.deepEqual(
+    api.filterDirections(data.DIRECTIONS, { ...filters, format: "book-cover" }),
+    [],
   );
 });
 
@@ -238,6 +300,10 @@ test("applying a direction changes its visual layers and preserves the user's br
     headline: "TIDELINE",
     purpose: "album-cover",
     aspect: "1:1",
+    font: "inter",
+    fontWeight: "bold",
+    fontItalic: true,
+    signatures: ["material"],
   };
   const direction = data.DIRECTIONS.find(({ id }) => id === "gallery");
   const next = api.applyDirection(current, direction);
@@ -247,4 +313,122 @@ test("applying a direction changes its visual layers and preserves the user's br
   assert.equal(next.purpose, current.purpose);
   assert.equal(next.aspect, current.aspect);
   assert.deepEqual(next.styles, direction.patch.styles);
+  assert.notEqual(next.styles, direction.patch.styles);
+  assert.deepEqual(
+    next.palette,
+    styles.getStyle(direction.patch.styles.design).palette,
+  );
+  assert.notEqual(
+    next.palette,
+    styles.getStyle(direction.patch.styles.design).palette,
+  );
+  assert.equal(next.font, current.font);
+  assert.equal(next.fontWeight, current.fontWeight);
+  assert.equal(next.fontItalic, current.fontItalic);
+  assert.deepEqual(next.signatures, current.signatures);
+});
+
+test("applying a starter changes only the safe bundle and clones mutable values", () => {
+  const current = {
+    ...recipe.DEFAULT_RECIPE,
+    idea: "  An exhibition about tidal wetlands  ",
+    purpose: "album-cover",
+    aspect: "1:1",
+    customAspects: ["7:5"],
+    headline: "TIDELINE  ",
+    extraText: ["  25 OCT", "Keep this exact"],
+    textMode: "space",
+    detail: "  One reed bends across the composition  ",
+    styles: { design: "swiss", art: "surrealism", technique: "risograph" },
+    palette: [
+      { hex: "#000000", name: "ink" },
+      { hex: "#FFFFFF", name: "paper" },
+      { hex: "#0000FF", name: "blue" },
+    ],
+    font: "inter",
+    fontWeight: "regular",
+    fontItalic: true,
+    signatures: ["restraint"],
+    avoids: ["dry-brush"],
+    cliche: "none",
+    target: "midjourney",
+    pattern: "seven-line",
+    language: "es",
+    edit: { change: "  Change the reed", preserve: "Keep the water  " },
+    midjourney: {
+      sref: ["12345", "https://example.com/style.png"],
+      raw: false,
+      stylize: 275,
+    },
+  };
+  const starter = data.DIRECTIONS.find(({ id }) => id === "raw-human-voice");
+  const protectedKeys = [
+    "version",
+    "idea",
+    "purpose",
+    "aspect",
+    "customAspects",
+    "headline",
+    "extraText",
+    "textMode",
+    "detail",
+    "avoids",
+    "cliche",
+    "target",
+    "pattern",
+    "language",
+    "edit",
+    "midjourney",
+  ];
+  const currentBefore = JSON.stringify(current);
+  const catalogBefore = JSON.stringify(starter);
+  const next = api.applyDirection(current, starter);
+
+  for (const key of [
+    "styles",
+    "palette",
+    "font",
+    "fontWeight",
+    "fontItalic",
+    "signatures",
+  ]) {
+    assert.deepEqual(
+      next[key],
+      starter.patch[key],
+      `${key} should use the starter value`,
+    );
+    assert.notDeepEqual(next[key], current[key], `${key} should change`);
+  }
+  for (const key of protectedKeys) {
+    assert.deepEqual(next[key], current[key], `${key} must be preserved`);
+    assert.equal(JSON.stringify(next[key]), JSON.stringify(current[key]));
+  }
+  // A patch may carry other recipe fields, but applying a direction must ignore them.
+  const unsafePatch = {
+    ...starter.patch,
+    ...Object.fromEntries(
+      protectedKeys.map((key) => [key, recipe.DEFAULT_RECIPE[key]]),
+    ),
+  };
+  assert.deepEqual(
+    api.applyDirection(current, { ...starter, patch: unsafePatch }),
+    next,
+  );
+  assert.notEqual(next.styles, starter.patch.styles);
+  assert.notEqual(next.palette, starter.patch.palette);
+  assert.notEqual(next.signatures, starter.patch.signatures);
+  for (let i = 0; i < next.palette.length; i++)
+    assert.notEqual(next.palette[i], starter.patch.palette[i]);
+  next.palette[0].hex = "#ABCDEF";
+  next.signatures.push("concept");
+  assert.deepEqual(
+    api.applyDirection(current, starter).palette,
+    starter.patch.palette,
+  );
+  assert.deepEqual(
+    api.applyDirection(current, starter).signatures,
+    starter.patch.signatures,
+  );
+  assert.equal(JSON.stringify(current), currentBefore);
+  assert.equal(JSON.stringify(starter), catalogBefore);
 });
