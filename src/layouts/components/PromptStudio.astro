@@ -81,10 +81,12 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
           class="idea textarea"
           rows="2"
           maxlength="400"
+          placeholder="A concert poster for a jazz quartet performing at a rooftop venue..."
           aria-describedby="idea-error"
           spellcheck="true"></textarea>
         <p class="field-error" id="idea-error" hidden>
-          Describe it in a few words so the model has a subject.
+          Describe what you're making in a few words so the AI has a clear
+          subject to work with.
         </p>
 
         <div class="grid-fields">
@@ -139,6 +141,7 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
                   class="input"
                   type="text"
                   maxlength="80"
+                  placeholder="SUMMER NIGHTS"
                   autocomplete="off"
                 />
               </StudioField>
@@ -149,8 +152,13 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
                 hint="one line each, up to 4"
                 info="Add supporting words such as a date, venue, or credit. Put each separate text element on its own line."
               >
-                <textarea id="f-extra" class="textarea" rows="2" maxlength="323"
-                ></textarea>
+                <textarea
+                  id="f-extra"
+                  class="textarea"
+                  rows="2"
+                  maxlength="323"
+                  placeholder="August 15, 2026
+Brooklyn, NY"></textarea>
               </StudioField>
             </div>
             <div class="field span2">
@@ -201,6 +209,7 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
                 class="input"
                 type="text"
                 maxlength="240"
+                placeholder="Musicians silhouetted against a golden sunset skyline"
                 autocomplete="off"
               />
             </StudioField>
@@ -954,7 +963,7 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
               class="input"
               type="text"
               maxlength="240"
-              placeholder="e.g. the background, to flat cobalt blue"
+              placeholder="the background to a deep navy gradient"
             />
           </div>
           <div class="field">
@@ -971,7 +980,7 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
               class="input"
               type="text"
               maxlength="240"
-              placeholder="e.g. the vase, its position and all text"
+              placeholder="the band members, their instruments, and the headline text"
             />
           </div>
         </div>
@@ -995,7 +1004,7 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
               type="text"
               autocomplete="off"
               spellcheck="false"
-              placeholder="e.g. 2378124706"
+              placeholder="2378124706"
             />
           </div>
           <p class="field-error" id="sref-error" hidden></p>
@@ -1024,7 +1033,7 @@ import SiteFooter from "@/layouts/components/SiteFooter.astro";
                 min="0"
                 max="1000"
                 step="50"
-                placeholder="default"
+                placeholder="250"
               />
             </StudioField>
           </div>

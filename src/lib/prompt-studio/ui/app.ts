@@ -273,6 +273,11 @@ export function startApp(): void {
 
   /* ── brief ── */
   const idea = $<HTMLTextAreaElement>("f-idea");
+  let ideaBlurred = false;
+  idea.addEventListener("blur", () => {
+    ideaBlurred = true;
+    render();
+  });
   const headline = $<HTMLInputElement>("f-headline");
   const extra = $<HTMLTextAreaElement>("f-extra");
   const detail = $<HTMLInputElement>("f-detail");
@@ -1765,7 +1770,8 @@ export function startApp(): void {
     }
     briefTextSeen = hasBriefText;
     const ideaIsInvalid = r.idea.trim().length < 3;
-    $("idea-error").hidden = !ideaIsInvalid;
+    const showIdeaError = ideaBlurred && ideaIsInvalid;
+    $("idea-error").hidden = !showIdeaError;
     idea.setAttribute("aria-invalid", String(ideaIsInvalid));
     $("f-aspect")
       .querySelectorAll<HTMLInputElement>("[data-aspect]")
