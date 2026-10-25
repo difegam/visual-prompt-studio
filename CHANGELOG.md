@@ -6,6 +6,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
+- "Try an example" pills under the brief: one per format loads a sample brief and keeps your visual look.
 - Compare page (`/compare`) with before and after sliders for a generic prompt against a studio prompt.
 - Direction comparison and prompt readability advice in the studio.
 - Principle-led design learning: topic filters and "Start with a principle" paths for learning sources.

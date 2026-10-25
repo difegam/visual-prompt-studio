@@ -14,6 +14,7 @@ let trends;
 let readability;
 let comparison;
 let openIn;
+let briefExamples;
 
 before(async () => {
   server = await createServer({
@@ -47,6 +48,9 @@ before(async () => {
   );
   openIn = await server.ssrLoadModule(
     "/src/lib/prompt-studio/domain/open-in.ts",
+  );
+  briefExamples = await server.ssrLoadModule(
+    "/src/lib/prompt-studio/domain/brief-examples.ts",
   );
 });
 
@@ -1090,4 +1094,49 @@ test("open-in links carry the prompt for ChatGPT and fall back to copying", () =
   });
   for (const id of ["sdxl", "generic"])
     assert.equal(openIn.openInFor(id, prompt), null);
+});
+
+test("every format has a brief example that passes the recipe schema", () => {
+  assert.deepEqual(
+    Object.keys(briefExamples.BRIEF_EXAMPLES).sort(),
+    recipe.PURPOSES.map(({ id }) => id).sort(),
+  );
+  for (const { id } of recipe.PURPOSES) {
+    const applied = briefExamples.applyBriefExample(recipe.BLANK_RECIPE, id);
+    const result = recipe.parseRecipe(applied);
+    assert.ok(result.ok, `${id}: ${result.ok ? "" : result.issues.join("; ")}`);
+    assert.ok(briefExamples.BRIEF_EXAMPLES[id].pill.length > 0);
+  }
+});
+
+test("applying a brief example changes only the brief and keeps the look", () => {
+  const base = {
+    ...recipe.BLANK_RECIPE,
+    target: "midjourney",
+    pattern: "concise",
+    font: "bebas",
+    avoids: ["gradients"],
+    customAspects: ["7:5"],
+  };
+  const applied = briefExamples.applyBriefExample(base, "story");
+  const story = recipe.PURPOSES.find(({ id }) => id === "story");
+  assert.equal(applied.purpose, "story");
+  assert.equal(applied.aspect, story.aspect);
+  assert.equal(applied.textMode, "render");
+  assert.equal(applied.idea, briefExamples.BRIEF_EXAMPLES.story.idea);
+  assert.equal(applied.headline, briefExamples.BRIEF_EXAMPLES.story.headline);
+  const briefKeys = [
+    "purpose",
+    "aspect",
+    "textMode",
+    "idea",
+    "headline",
+    "extraText",
+    "detail",
+  ];
+  const look = (value) =>
+    Object.fromEntries(
+      Object.entries(value).filter(([key]) => !briefKeys.includes(key)),
+    );
+  assert.deepEqual(look(applied), look(base));
 });

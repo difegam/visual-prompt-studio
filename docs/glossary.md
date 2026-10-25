@@ -18,4 +18,5 @@
 | Exclusion            | A named element the prompt should avoid, unless the selected visual style relies on that element.                                                   |
 | Compiled prompt      | The target-aware text produced from a prompt recipe, including a separate negative prompt when the target supports it.                              |
 | Direction comparison | A session-only, side-by-side view of two visual directions. Neither is applied until the user chooses one.                                          |
+| Example brief        | An editorial sample brief for one format, loaded by a "Try an example" pill. It replaces only the brief fields and is not usage data.               |
 | Starter edition      | A dated, editorially chosen set of starter directions (for example, 2026). Not evidence of popularity.                                              |

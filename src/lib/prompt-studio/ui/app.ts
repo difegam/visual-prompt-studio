@@ -18,6 +18,7 @@ import { FONTS, getFont, type FontId } from "../domain/fonts";
 import { PALETTE_VARIATIONS, nameForHex } from "../domain/palettes";
 import { MIXES, PRESETS, clonePalette, getDirection } from "../domain/presets";
 import { getReadabilityHints } from "../domain/readability";
+import { BRIEF_EXAMPLES, applyBriefExample } from "../domain/brief-examples";
 import { openInFor } from "../domain/open-in";
 import { CURRENT_TREND_EDITION } from "../domain/trends";
 import {
@@ -371,6 +372,25 @@ export function startApp(): void {
   const aspectLiveLabel = $("aspect-live-label");
   const aspectLiveOrientation = $("aspect-live-orientation");
   const aspectError = $("aspect-error");
+
+  const examplesEl = $("brief-examples");
+  examplesEl.innerHTML = PURPOSES.map(
+    (p) =>
+      `<button type="button" class="chip" data-example="${p.id}" aria-pressed="false">${esc(BRIEF_EXAMPLES[p.id].pill)}</button>`,
+  ).join("");
+  examplesEl.addEventListener("click", (event) => {
+    const id = (event.target as HTMLElement).closest<HTMLElement>(
+      "[data-example]",
+    )?.dataset.example;
+    const item = PURPOSES.find((p) => p.id === id);
+    if (!item) return;
+    const before = store.get();
+    store.set(applyBriefExample(before, item.id));
+    say(
+      `Loaded the ${BRIEF_EXAMPLES[item.id].pill.toLowerCase()} example. Your look is unchanged.`,
+      () => store.set(before),
+    );
+  });
 
   purpose.addEventListener("change", () => {
     const p = PURPOSES.find((x) => x.id === purpose.value);
@@ -2074,6 +2094,13 @@ export function startApp(): void {
       "[data-preset]",
       "aria-current",
       (el) => el.dataset.preset === view.presetId,
+    );
+
+    press(
+      examplesEl,
+      "[data-example]",
+      "aria-pressed",
+      (el) => r.idea === BRIEF_EXAMPLES[el.dataset.example as PurposeId]?.idea,
     );
 
     // layers

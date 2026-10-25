@@ -5,6 +5,7 @@ A reference for what the Studio does. The in-app guide at `/guide` covers the sa
 ## Brief
 
 - **What are you making?** Free text.
+- **Try an example.** One pill per format loads a sample brief (format, aspect, idea, headline, text and detail) so you can test the tool quickly. Your look, target and pattern stay as they are, and Undo restores the previous brief.
 - **Format.** Poster, Flyer, Book cover, Album cover, Social post, Story / Reel cover, Editorial illustration, Event banner. Each suggests an aspect ratio.
 - **Goal.** What the piece must communicate. Format and goal drive the recommendations.
 - **Aspect ratio.** Nine presets plus a custom-ratio dialog.
