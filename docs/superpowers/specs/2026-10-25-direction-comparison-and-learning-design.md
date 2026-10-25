@@ -26,12 +26,12 @@ The implementation must extend the project as it now exists:
 - Make existing design-learning references findable by concept.
 - Support annual trend editions while preserving older editions and checked-source dates.
 - Preserve the quick path from brief to format, goal, direction, and copy.
-- Add no permanent control to the copy dock and no extra required step before copying.
+- Add no extra required step before copying. Direction comparison adds no copy-dock control; the accepted "Open in" control is described under Accepted scope additions.
 
 ## Non-goals
 
 - Do not add image generation, accounts, analytics, remote fetching, personalization, or popularity ranking.
-- Do not add required recipe inputs or a new route.
+- Do not add required recipe inputs. Direction comparison itself adds no route; the `/compare` page is described under Accepted scope additions.
 - Do not change `RecipeSchema` from version 2 or store comparison selections, learning filters, or advisory state in a recipe.
 - Do not grade the generated image or promise that its text will be legible. The app does not generate or inspect images.
 - Do not treat editorial trend forecasts or community engagement as measured evidence of design effectiveness.
@@ -57,7 +57,7 @@ A wizard could teach concepts step by step, but it would repeat format, goal, an
 
 ### Compare two directions
 
-Each suggested and explorer card gets a secondary `Add to comparison` control. Users can select at most two directions. A compact comparison bar appears directly below the suggested list, and a matching bar appears at the top of the open explorer. Both show the selected direction names, a clear action, and a `Compare directions` button that becomes available when two directions are selected. The primary `Use this starter` or `Use this direction` action remains unchanged.
+Each suggested and explorer card gets a secondary `Add to comparison` control. Users can select at most two directions. A compact comparison bar appears directly below the suggested list, and a matching bar appears at the top of the open explorer. Both show the selected direction names, a clear action, and a `Compare directions` button that becomes available when two directions are selected. The primary `Use this starter` or `Use this direction` action remains unchanged. The comparison dialog columns label their apply action `Use <direction name>`.
 
 Selection state is shared between the suggested and explorer lists, survives filtering and pagination during the page session, and is never written to the recipe or local storage. A selected card exposes `aria-pressed="true"` on its comparison control. Selecting a third direction replaces the oldest selection and announces the change. Applying either selected direction clears comparison state after the existing Undo state has been recorded.
 
@@ -109,6 +109,17 @@ Replace the single literal 2026 trend marker with a general numeric `trendYear` 
 This release seeds only the six real 2026 starters. It does not invent an older edition to demonstrate the model. Tests validate the one-edition catalog and use test fixtures to prove that a later or older numeric edition can coexist and filter correctly.
 
 The app continues to load static metadata only. There is no automatic expiry, update check, or network request. The maintenance note must say that a person should review source availability, record new checked dates, revise principles and tradeoffs, and decide whether an edition remains current. `current` is an editorial designation, not popularity evidence.
+
+### Accepted scope additions
+
+These shipped on the same branch and are accepted as part of this work:
+
+- **Compare page (`/compare`).** A static page with before and after sliders for a generic prompt against a studio prompt (`src/pages/compare.astro`, `compare-cases.ts`, `src/assets/compare/`).
+- **Open in links.** A copy-dock control for ChatGPT, Gemini, Midjourney and FLUX (`domain/open-in.ts`). ChatGPT receives the prompt in the URL when it fits in 2000 characters, so it can appear in browser history and the guide says so. The other targets copy the prompt first, then open the app. This is user-initiated and does not fetch remote content.
+- **Copy feedback.** The copy buttons animate and read `Proof approved`. The live region still announces `Copied N characters`.
+- **Grouped menu.** Studio, Compare and Guide are main links with an active state; Blog and About are quieter links; GitHub and the theme switcher align right. The nav bar is 64px tall. `menu.json` and `DESIGN.md` match.
+- **Brief field placeholders.** Placeholders were added or reworded, and the idea error shows after blur. First-run values stay blank.
+- **Apply semantics.** Applying any direction clears the comparison selection after the Undo state is recorded.
 
 ## User flow
 

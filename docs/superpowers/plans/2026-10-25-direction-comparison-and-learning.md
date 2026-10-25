@@ -498,3 +498,7 @@ git commit -m "docs: explain direction comparison and learning"
 - [ ] **Step 9: Request final code review**
 
 Use `superpowers:requesting-code-review` against the implementation range. Resolve findings, rerun affected verification, and leave the branch with only the user's unrelated pre-existing changes unstaged.
+
+## Addendum: accepted scope
+
+See "Accepted scope additions" in the design spec. The `/compare` page, Open in links, copy feedback, grouped menu and brief-field placeholders shipped alongside this plan. Task 5 (principle-led learning) and the catalog-driven edition UI are now implemented: `filterReferences`, `LEARNING_TOPICS`, the topic chips and paths, and `CURRENT_TREND_EDITION` in the explorer.
