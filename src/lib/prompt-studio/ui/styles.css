@@ -2814,13 +2814,6 @@ textarea {
     padding-inline: max(12px, env(safe-area-inset-left, 0px));
   }
 
-  .bar {
-    min-height: 58px;
-    flex-wrap: nowrap;
-    gap: 8px;
-    padding-block: 6px;
-  }
-
   .brand {
     gap: 7px;
     font-size: 14px;
@@ -2829,19 +2822,6 @@ textarea {
   .brand .reg {
     width: 21px;
     height: 21px;
-  }
-
-  .bar-actions {
-    width: auto;
-    margin-left: auto;
-    flex-wrap: nowrap;
-    gap: 1px;
-  }
-
-  .bar-actions .btn {
-    min-height: 38px;
-    padding-inline: 8px;
-    font-size: 12px;
   }
 
   .studio-theme-switcher {
@@ -3155,50 +3135,7 @@ dialog::backdrop {
     flex: 1;
   }
 }
-/* The header needs 734px; below that the nav links live in the footer. */
-@media (min-width: 641px) and (max-width: 733px) {
-  .bar-nav {
-    display: none;
-  }
-}
-@media (min-width: 641px) and (max-width: 900px) {
-  .bar {
-    gap: 12px;
-  }
-  .brand {
-    flex-shrink: 0;
-    white-space: nowrap;
-  }
-  .bar-nav {
-    gap: 10px;
-    white-space: nowrap;
-  }
-  .bar-actions {
-    flex-wrap: nowrap;
-    gap: 2px;
-  }
-  .bar-actions .btn {
-    padding-inline: 7px;
-    font-size: 12px;
-  }
-}
 @media (max-width: 640px) {
-  .bar {
-    flex-wrap: wrap;
-    gap: 8px 16px;
-    padding-block: 8px;
-  }
-  .bar-nav {
-    display: none;
-  }
-  .bar-actions {
-    margin-left: 0;
-    width: 100%;
-  }
-  .bar-actions .btn {
-    padding: 6px 8px;
-    font-size: 13px;
-  }
   .grid-fields,
   .signatures {
     grid-template-columns: minmax(0, 1fr);
@@ -3984,4 +3921,133 @@ dialog::backdrop {
 }
 .guide-section .guide-steps > li + li {
   margin-top: 14px;
+}
+
+/* ── bar: responsive ladder ──
+   >=1024px brand | nav | tools ... github, theme (menu inline, always open)
+   <1024px  brand | Menu ... github, theme (nav + tools in a dropdown panel) */
+.bar-menu,
+.bar-menu::details-content,
+.bar-panel {
+  display: contents;
+}
+.bar-menu-toggle {
+  display: none;
+}
+.bar-tools {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+.bar-actions {
+  margin-left: 0;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+.bar-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  color: var(--ink);
+}
+.bar-icon:hover {
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
+}
+.bar-icon svg {
+  width: 20px;
+  height: 20px;
+}
+.brand {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+@media (max-width: 1023px) {
+  .bar {
+    gap: 8px;
+  }
+  .bar-menu {
+    display: block;
+    margin-left: auto;
+  }
+  .bar-menu::details-content {
+    display: block;
+  }
+  .bar-menu-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 40px;
+    padding-inline: 10px;
+    border-radius: 8px;
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+  }
+  .bar-menu-toggle::-webkit-details-marker {
+    display: none;
+  }
+  .bar-menu-toggle:hover {
+    background: color-mix(in srgb, var(--ink) 7%, transparent);
+  }
+  .bar-menu-toggle svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+  }
+  .bar-menu[open] .ico-open,
+  .bar-menu:not([open]) .ico-close {
+    display: none;
+  }
+  .bar-panel {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px max(12px, env(safe-area-inset-left, 0px)) 12px;
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+    box-shadow: 0 12px 24px -12px
+      color-mix(in srgb, var(--ink) 30%, transparent);
+  }
+  .bar-menu:not([open]) .bar-panel {
+    display: none;
+  }
+  .bar-nav {
+    flex-direction: column;
+    gap: 0;
+  }
+  .bar-nav a {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 10px;
+    font-size: 15px;
+  }
+  .bar-tools {
+    margin: 4px 0 0;
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+  }
+  .bar-tools .btn {
+    flex: 1;
+    min-height: 44px;
+    font-size: 14px;
+  }
+}
+@media (max-width: 359px) {
+  .bar-menu-toggle span {
+    display: none;
+  }
 }
