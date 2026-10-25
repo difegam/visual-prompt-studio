@@ -4,6 +4,7 @@ import {
   type CompiledPrompt,
   type Segment,
 } from "../domain/compiler";
+import { targetLogo } from "./target-logos";
 import {
   AVOIDS,
   CLICHES,
@@ -1376,13 +1377,14 @@ export function startApp(): void {
   /* ── target & pattern ── */
   $("f-target").innerHTML = TARGETS.map(
     (t) =>
-      `<label class="seg-option"><input class="radio" type="radio" name="target" value="${t.id}" data-target="${t.id}" /><span title="${esc(t.model)}">${esc(t.label)}</span></label>`,
+      `<label class="seg-option" data-tip="${esc(t.label)}"><input class="radio" type="radio" name="target" value="${t.id}" data-target="${t.id}" aria-label="${esc(t.label)}" /><span title="${esc(t.label)} · ${esc(t.model)}">${targetLogo(t.id)}</span></label>`,
   ).join("");
   $("f-target").addEventListener("change", (e) => {
     const input = (e.target as HTMLElement).closest<HTMLInputElement>(
       "[data-target]",
     );
     if (input && TARGETS.some((target) => target.id === input.value)) {
+      $("f-target").dataset.motion = "on";
       patch({ target: input.value as TargetId });
     }
   });
@@ -1958,7 +1960,16 @@ export function startApp(): void {
       .querySelectorAll<HTMLInputElement>("[data-target]")
       .forEach((input) => (input.checked = input.value === r.target));
     const t = TARGETS.find((x) => x.id === r.target)!;
-    $("target-note").textContent = `${t.model}. ${t.note}`;
+    const targetNote = $("target-note");
+    const noteText = `${t.model}. ${t.note}`;
+    if (targetNote.textContent !== noteText) {
+      targetNote.textContent = noteText;
+      if ($("f-target").dataset.motion) {
+        targetNote.classList.remove("is-in");
+        void targetNote.offsetWidth;
+        targetNote.classList.add("is-in");
+      }
+    }
     const allowed = PATTERNS_BY_TARGET[r.target];
     const optionsKey = allowed.join();
     if (pattern.dataset.key !== optionsKey) {
