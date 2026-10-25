@@ -7,6 +7,8 @@ import {
   type TechniqueId,
 } from "./styles";
 import type { ClicheId } from "./avoids";
+import type { PurposeId } from "./recipe";
+import type { GoalId } from "./discovery";
 
 /** A quick start overrides only what makes it distinct; the rest comes from the default. */
 export interface Preset {
@@ -19,11 +21,32 @@ export interface Preset {
   };
 }
 
-export const PRESETS: readonly Preset[] = [
+export interface Direction extends Preset {
+  readonly formats: readonly PurposeId[];
+  readonly goals: readonly GoalId[];
+  readonly group: string;
+  readonly rationale: Readonly<Partial<Record<GoalId, string>>>;
+  /** Editorial ordering only. This does not represent user activity. */
+  readonly curatedRank?: number;
+}
+
+export const PRESETS: readonly Direction[] = [
   {
     id: "gallery",
     name: "Gallery opening",
     blurb: "Grid clarity and one surprising metaphor.",
+    formats: ["poster", "social", "editorial"],
+    goals: ["attention", "story", "atmosphere"],
+    group: "Culture and events",
+    curatedRank: 3,
+    rationale: {
+      attention:
+        "A strict grid keeps the event details legible while surreal imagery gives the eye one unexpected focal point.",
+      story:
+        "A surreal metaphor invites viewers to pause and interpret the exhibition rather than rely on a familiar art icon.",
+      atmosphere:
+        "Risograph color and one dreamlike image make the gallery feel experimental without crowding the layout.",
+    },
     patch: {
       styles: { design: "swiss", art: "surrealism", technique: "risograph" },
     },
@@ -32,6 +55,17 @@ export const PRESETS: readonly Preset[] = [
     id: "jazz",
     name: "After-hours jazz",
     blurb: "Rhythmic geometry in two decisive inks.",
+    formats: ["poster", "flyer", "album-cover", "social", "story"],
+    goals: ["attention", "atmosphere", "bold"],
+    group: "Culture and events",
+    curatedRank: 1,
+    rationale: {
+      attention:
+        "Bauhaus geometry gives the headline a clear place to land, and the stepped bass image creates a distinct focal point.",
+      atmosphere:
+        "Cubist rhythm and screen-printed inks suggest the syncopation and intimacy of a late-night set.",
+      bold: "Large geometric forms and a tightly limited palette make the event read quickly at a distance.",
+    },
     patch: {
       idea: "A poster for a late-night jazz trio residency in a basement club",
       headline: "BLUE HOURS",
@@ -45,6 +79,17 @@ export const PRESETS: readonly Preset[] = [
     id: "coffee",
     name: "Neighborhood coffee",
     blurb: "A single object, silence and warmth.",
+    formats: ["poster", "flyer", "social", "story", "banner"],
+    goals: ["attention", "atmosphere", "bold"],
+    group: "Products and places",
+    curatedRank: 2,
+    rationale: {
+      attention:
+        "One cup and its long shadow give the eye a single focal point, while the open space keeps the opening time easy to find.",
+      atmosphere:
+        "Japanese minimalism and letterpress texture make the shop feel calm, tactile, and local.",
+      bold: "A single oversized object can make a quiet, memorable statement without adding decorative clutter.",
+    },
     patch: {
       idea: "A poster for a small neighborhood coffee roaster opening at dawn",
       headline: "FIRST LIGHT",
@@ -62,6 +107,17 @@ export const PRESETS: readonly Preset[] = [
     id: "festival",
     name: "Indie festival",
     blurb: "Playful culture cues without neon.",
+    formats: ["poster", "flyer", "social", "story", "banner"],
+    goals: ["story", "atmosphere", "bold"],
+    group: "Culture and events",
+    curatedRank: 4,
+    rationale: {
+      story:
+        "The paper-crane stage turns the festival setting into a visual metaphor that gives the lineup a story.",
+      atmosphere:
+        "Cut-paper shapes and risograph inks bring a handmade, communal mood to the event.",
+      bold: "Memphis shapes create high contrast and playful movement without leaning on the usual neon concert look.",
+    },
     patch: {
       idea: "A lineup poster for a two-day independent music festival in a city park",
       headline: "PARK NOISE",
@@ -75,6 +131,18 @@ export const PRESETS: readonly Preset[] = [
     id: "museum",
     name: "Museum education",
     blurb: "Geometry that teaches instead of decorates.",
+    formats: ["poster", "flyer", "social", "editorial"],
+    goals: ["explain", "attention", "story"],
+    group: "Learning and information",
+    curatedRank: 5,
+    rationale: {
+      explain:
+        "A clear geometric system makes the bridge's structure the lesson, and the arch-shaped headline links the words to the idea.",
+      attention:
+        "Primary shapes and a simple hierarchy direct attention to the central engineering concept.",
+      story:
+        "The arch formed from the headline connects a familiar structure to the question of how bridges hold weight.",
+    },
     patch: {
       idea: "A poster for a family workshop on how bridges carry weight",
       headline: "HOW BRIDGES HOLD",
@@ -88,6 +156,17 @@ export const PRESETS: readonly Preset[] = [
     id: "botanical",
     name: "Botanical print",
     blurb: "Historical drawing and honest printing.",
+    formats: ["poster", "editorial", "social"],
+    goals: ["story", "atmosphere", "attention"],
+    group: "Learning and information",
+    rationale: {
+      story:
+        "One unfolding fern gives the exhibition a clear visual narrative, from a closed frond to a full specimen.",
+      atmosphere:
+        "Cyanotype's blue-on-paper process gives the botanical study a quiet archival mood.",
+      attention:
+        "The long fern frond provides one strong path through the poster instead of several competing images.",
+    },
     patch: {
       idea: "A poster for a herbarium exhibition at a university garden",
       headline: "PRESSED",
@@ -100,6 +179,18 @@ export const PRESETS: readonly Preset[] = [
     id: "book",
     name: "Literary novel",
     blurb: "A cover that holds one idea.",
+    formats: ["book-cover", "social"],
+    goals: ["story", "atmosphere", "attention"],
+    group: "Books and editorial",
+    curatedRank: 6,
+    rationale: {
+      story:
+        "The lighthouse beam becoming an eyelid turns the novel's premise into one compact visual metaphor.",
+      atmosphere:
+        "A painterly Polish poster treatment and linocut texture make the cover feel literary and nocturnal.",
+      attention:
+        "A single surreal image gives the title room and makes the book's central tension easy to remember.",
+    },
     patch: {
       idea: "A cover for a literary novel about a lighthouse keeper who stops sleeping",
       purpose: "book-cover",
@@ -119,6 +210,14 @@ export const PRESETS: readonly Preset[] = [
     id: "race",
     name: "City night run",
     blurb: "Urgency without slanted sport type.",
+    formats: ["poster", "flyer", "social", "story", "banner"],
+    goals: ["attention", "bold"],
+    group: "Culture and events",
+    rationale: {
+      attention:
+        "The route becomes one red diagonal, so the eye moves through the city before it reaches the event details.",
+      bold: "Constructivist scale and a single red route give the race urgency without relying on generic running figures.",
+    },
     patch: {
       idea: "A poster for a 10 km night run through the old town",
       headline: "RUN THE WALLS",
@@ -132,6 +231,16 @@ export const PRESETS: readonly Preset[] = [
     id: "gala",
     name: "Winter gala",
     blurb: "Deco elegance with optical tension.",
+    formats: ["poster", "flyer", "social", "banner"],
+    goals: ["atmosphere", "attention", "bold"],
+    group: "Culture and events",
+    rationale: {
+      atmosphere:
+        "Art Deco symmetry, stepped forms, and screen-printed inks give the invitation a formal winter mood.",
+      attention:
+        "The centered sunburst creates a clear focal point and leaves room for the date.",
+      bold: "Optical geometry gives the formal event a sharper visual character than a conventional gold flourish.",
+    },
     patch: {
       idea: "An invitation poster for a winter fundraising gala at the city theatre",
       headline: "MIDWINTER",
@@ -144,6 +253,16 @@ export const PRESETS: readonly Preset[] = [
     id: "zine",
     name: "Culture zine",
     blurb: "Found material with a strong editorial anchor.",
+    formats: ["book-cover", "editorial", "social"],
+    goals: ["story", "bold", "attention"],
+    group: "Books and editorial",
+    rationale: {
+      story:
+        "Found shop lettering turns the subject into the cover itself, making the story visible before it is read.",
+      bold: "Dada collage and halftone create a deliberately rough surface with a strong editorial headline.",
+      attention:
+        "Oversized found letters establish the first read, while the halftone finish supports the local archive feel.",
+    },
     patch: {
       idea: "A cover for a local culture zine issue about forgotten shop signs",
       purpose: "book-cover",
@@ -159,6 +278,8 @@ export const PRESETS: readonly Preset[] = [
     },
   },
 ];
+
+export const DIRECTIONS = PRESETS;
 
 /** Three-layer mixes that clash on purpose (beailabs guide, section 5). */
 export const MIXES: readonly {

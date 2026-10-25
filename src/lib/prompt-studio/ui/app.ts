@@ -15,7 +15,18 @@ import {
 } from "../domain/avoids";
 import { FONTS, getFont, type FontId } from "../domain/fonts";
 import { PALETTE_VARIATIONS, nameForHex } from "../domain/palettes";
-import { MIXES, PRESETS, applyPreset, clonePalette } from "../domain/presets";
+import { MIXES, PRESETS, clonePalette } from "../domain/presets";
+import {
+  GOALS,
+  applyDirection,
+  filterDirections,
+  filterStyles,
+  getRecommendations,
+  paginateItems,
+  type DirectionFilters,
+  type StyleFilters,
+  type GoalId,
+} from "../domain/discovery";
 import {
   ASPECT_LABELS,
   DEFAULT_ASPECTS,
@@ -46,6 +57,7 @@ import {
   stylesOf,
   type ArtId,
   type DesignId,
+  type BrowsableStyle,
   type StyleLayer,
   type TechniqueId,
 } from "../domain/styles";
@@ -163,6 +175,7 @@ interface View {
   baseline: boolean;
   refKind: ReferenceKind | "all";
   presetId: string | null;
+  goal: GoalId;
   highlight: string | null;
 }
 
@@ -173,6 +186,7 @@ export function startApp(): void {
     baseline: false,
     refKind: "all",
     presetId: null,
+    goal: "attention",
     highlight: null,
   };
   let compiled: CompiledPrompt = compile(store.get());
@@ -210,10 +224,14 @@ export function startApp(): void {
   const extra = $<HTMLTextAreaElement>("f-extra");
   const detail = $<HTMLInputElement>("f-detail");
   const purpose = $<HTMLSelectElement>("f-purpose");
+  const goalPicker = $<HTMLSelectElement>("f-goal");
   const aspectPicker = $("f-aspect");
 
   purpose.innerHTML = PURPOSES.map(
     (p) => `<option value="${p.id}">${esc(p.label)}</option>`,
+  ).join("");
+  goalPicker.innerHTML = GOALS.map(
+    (goal) => `<option value="${goal.id}">${esc(goal.label)}</option>`,
   ).join("");
   function renderAspectOptions(r: Recipe): void {
     const options: { aspect: Aspect; custom: boolean }[] = DEFAULT_ASPECTS.map(
@@ -290,6 +308,11 @@ export function startApp(): void {
   purpose.addEventListener("change", () => {
     const p = PURPOSES.find((x) => x.id === purpose.value);
     if (p) patch({ purpose: p.id, aspect: p.aspect });
+  });
+  goalPicker.addEventListener("change", () => {
+    if (!GOALS.some((goal) => goal.id === goalPicker.value)) return;
+    view.goal = goalPicker.value as GoalId;
+    renderDirections(store.get());
   });
   aspectPicker.addEventListener("change", (e) => {
     const input = (e.target as HTMLElement).closest<HTMLInputElement>(
@@ -405,46 +428,212 @@ export function startApp(): void {
 
   /* ── quick starts ── */
   const presetsEl = $("presets");
-  presetsEl.innerHTML = PRESETS.map((p) => {
-    const d = getStyle(p.patch.styles.design);
-    const inks = inksFrom(
-      d.palette
-        ? [d.palette[0].hex, d.palette[1].hex, d.palette[2].hex]
-        : ["#eee", "#333", "#999"],
+  const directionResults = $("direction-results");
+  const directionSearch = $<HTMLInputElement>("direction-search");
+  const directionFormat = $<HTMLSelectElement>("direction-format");
+  const directionGoal = $<HTMLSelectElement>("direction-goal");
+  const directionGroup = $<HTMLSelectElement>("direction-group");
+  const curatedOnly = $<HTMLInputElement>("direction-curated");
+  const directionPagination = $("direction-pagination");
+  let directionPage = 1;
+  function renderDirections(recipe: Recipe): void {
+    const goal = GOALS.find((item) => item.id === view.goal)!;
+    const directions = getRecommendations(recipe.purpose, view.goal, 4);
+    $("goal-guidance").textContent = goal.description;
+    $("direction-count").textContent =
+      `${directions.length} suggested directions`;
+    presetsEl.innerHTML = directions
+      .map((direction) => {
+        const design = getStyle(direction.patch.styles.design);
+        const art = getStyle(direction.patch.styles.art);
+        const technique = getStyle(direction.patch.styles.technique);
+        const palette = design.palette;
+        const inks = inksFrom(
+          palette
+            ? [palette[0].hex, palette[1].hex, palette[2].hex]
+            : ["#eee", "#333", "#999"],
+        );
+        const thumb = proofSvg({
+          design: direction.patch.styles.design,
+          art: direction.patch.styles.art,
+          technique: direction.patch.styles.technique,
+          inks,
+          ratio: 1.25,
+          headline: "",
+          foot: [],
+          fontCss: "sans-serif",
+          condensed: false,
+          uid: `direction-${direction.id}`,
+          label: `${direction.name}: ${design.name}, ${art.name}, ${technique.name}`,
+        });
+        const rationale =
+          direction.rationale[view.goal] ??
+          `${goal.description} ${design.name} brings ${design.summary.toLowerCase()} while ${art.name} shapes the imagery and ${technique.name} defines the finish.`;
+        const curated =
+          direction.curatedRank !== undefined
+            ? '<span class="badge badge-outline curated-badge">Curated pick</span>'
+            : "";
+        return `<article class="card direction-card bg-base-100" role="listitem">
+          <div class="direction-thumb">${thumb}</div>
+          <div class="card-body direction-body">
+            <div class="direction-title-row"><h3>${esc(direction.name)}</h3>${curated}</div>
+            <p class="direction-blurb">${esc(direction.blurb)}</p>
+            <p class="direction-rationale">${esc(rationale)}</p>
+            <ul class="direction-layers" aria-label="Visual layers">
+              <li><b>Layout</b><span>${esc(design.name)}</span></li>
+              <li><b>Imagery</b><span>${esc(art.name)}</span></li>
+              <li><b>Finish</b><span>${esc(technique.name)}</span></li>
+            </ul>
+            <button type="button" class="btn btn-primary direction-apply" data-preset="${direction.id}" aria-pressed="${view.presetId === direction.id}">Use this direction</button>
+          </div>
+        </article>`;
+      })
+      .join("");
+  }
+  renderDirections(store.get());
+  directionFormat.innerHTML = `<option value="all">All project types</option>${PURPOSES.map((item) => `<option value="${item.id}">${esc(item.label)}</option>`).join("")}`;
+  directionGoal.innerHTML = `<option value="all">All goals</option>${GOALS.map((item) => `<option value="${item.id}">${esc(item.label)}</option>`).join("")}`;
+
+  function applyChosenDirection(id: string | undefined): void {
+    const direction = PRESETS.find((item) => item.id === id);
+    if (!direction) return;
+    const before = store.get();
+    view.presetId = direction.id;
+    store.set(applyDirection(before, direction));
+    say(
+      `Applied “${direction.name}”. Your brief and output settings are unchanged.`,
+      () => store.set(before),
     );
-    const thumb = proofSvg({
-      design: p.patch.styles.design,
-      art: p.patch.styles.art,
-      technique: "clean",
-      inks,
-      ratio: 1.25,
-      headline: "",
-      foot: [],
-      fontCss: "sans-serif",
-      condensed: false,
-      uid: `pre-${p.id}`,
-    });
-    return `<button type="button" class="start" role="listitem" data-preset="${p.id}"><span class="thumb">${thumb}</span><span><b>${esc(p.name)}</b><span>${esc(p.blurb)}</span></span></button>`;
-  }).join("");
-  presetsEl.addEventListener("click", (e) => {
-    const b = (e.target as HTMLElement).closest<HTMLButtonElement>(
+  }
+  presetsEl.addEventListener("click", (event) => {
+    const button = (event.target as HTMLElement).closest<HTMLButtonElement>(
       "[data-preset]",
     );
-    const preset = PRESETS.find((p) => p.id === b?.dataset.preset);
-    if (!preset) return;
-    const before = store.get();
-    view.presetId = preset.id;
-    store.set(applyPreset(before, preset));
-    say(`Loaded “${preset.name}”.`, () => store.set(before));
+    if (button) applyChosenDirection(button.dataset.preset);
+  });
+
+  function renderDirectionExplorer(): void {
+    const filters: DirectionFilters = {
+      query: directionSearch.value,
+      format: directionFormat.value as DirectionFilters["format"],
+      goal: directionGoal.value as DirectionFilters["goal"],
+      curatedOnly: curatedOnly.checked,
+    };
+    const filtered = filterDirections(PRESETS, filters).toSorted(
+      (a, b) =>
+        (a.curatedRank ?? Number.MAX_SAFE_INTEGER) -
+          (b.curatedRank ?? Number.MAX_SAFE_INTEGER) ||
+        a.name.localeCompare(b.name),
+    );
+    const page = paginateItems(filtered, directionPage, 6);
+    directionPage = page.page;
+    const by = directionGroup.value;
+    const groupFor = (direction: (typeof PRESETS)[number]): string =>
+      by === "goal"
+        ? (GOALS.find((goal) => direction.goals.includes(goal.id))?.label ??
+          "Other goals")
+        : (PURPOSES.find((purpose) => direction.formats.includes(purpose.id))
+            ?.label ?? "Other project types");
+    const groups = Map.groupBy(page.items, groupFor);
+    const groupsMarkup = [...groups]
+      .map(
+        ([
+          group,
+          items,
+        ]) => `<section class="direction-result-group" aria-label="${esc(group)} directions">
+        <h3>${esc(group)}</h3>
+        ${items
+          .map((direction) => {
+            const design = getStyle(direction.patch.styles.design);
+            const art = getStyle(direction.patch.styles.art);
+            const technique = getStyle(direction.patch.styles.technique);
+            const curated =
+              direction.curatedRank !== undefined
+                ? '<span class="badge badge-outline curated-badge">Curated pick</span>'
+                : "";
+            return `<article class="direction-result card bg-base-100" role="listitem">
+            <div class="direction-result-copy">
+              <div class="direction-title-row"><h4>${esc(direction.name)}</h4>${curated}</div>
+              <p>${esc(direction.blurb)}</p>
+              <small>Layout: ${esc(design.name)} · Imagery: ${esc(art.name)} · Finish: ${esc(technique.name)}</small>
+            </div>
+            <button type="button" class="btn btn-outline direction-result-apply" data-preset="${direction.id}" aria-pressed="${view.presetId === direction.id}">Use direction</button>
+          </article>`;
+          })
+          .join("")}
+      </section>`,
+      )
+      .join("");
+    directionResults.innerHTML = page.total
+      ? groupsMarkup
+      : `<div class="empty-directions"><p>No directions match these filters.</p><button type="button" class="btn btn-ghost btn-sm" data-clear-direction-search>Clear search and filters</button></div>`;
+    $("explorer-status").textContent = page.total
+      ? `${page.total} ${page.total === 1 ? "direction" : "directions"}${curatedOnly.checked ? " · studio-curated picks" : ""}`
+      : "0 directions";
+    directionPagination.innerHTML =
+      page.pageCount > 1
+        ? `<div class="join"><button class="btn btn-sm join-item" type="button" data-page="${page.page - 1}" ${page.page === 1 ? "disabled" : ""} aria-label="Previous page">Previous</button><span class="btn btn-sm join-item pagination-current" aria-current="page">Page ${page.page} of ${page.pageCount}</span><button class="btn btn-sm join-item" type="button" data-page="${page.page + 1}" ${page.page === page.pageCount ? "disabled" : ""} aria-label="Next page">Next</button></div>`
+        : "";
+  }
+  renderDirectionExplorer();
+  directionSearch.addEventListener("input", () => {
+    directionPage = 1;
+    renderDirectionExplorer();
+  });
+  [directionFormat, directionGoal, directionGroup, curatedOnly].forEach(
+    (input) =>
+      input.addEventListener("change", () => {
+        directionPage = 1;
+        renderDirectionExplorer();
+      }),
+  );
+  directionResults.addEventListener("click", (event) => {
+    const target = event.target as HTMLElement;
+    if (target.closest("[data-clear-direction-search]")) {
+      directionSearch.value = "";
+      directionFormat.value = "all";
+      directionGoal.value = "all";
+      curatedOnly.checked = false;
+      directionPage = 1;
+      renderDirectionExplorer();
+      directionSearch.focus();
+      return;
+    }
+    const button = target.closest<HTMLButtonElement>("[data-preset]");
+    if (button) applyChosenDirection(button.dataset.preset);
+  });
+  directionPagination.addEventListener("click", (event) => {
+    const button = (event.target as HTMLElement).closest<HTMLButtonElement>(
+      "[data-page]",
+    );
+    if (!button || button.disabled) return;
+    directionPage = Number(button.dataset.page);
+    renderDirectionExplorer();
+    directionResults.focus();
   });
 
   /* ── style tiles ── */
   const tabs =
     document.querySelectorAll<HTMLButtonElement>('.tabs [role="tab"]');
   const panels: Record<StyleLayer, HTMLElement> = {
-    design: $("panel-design"),
-    art: $("panel-art"),
-    technique: $("panel-technique"),
+    design: $("styles-design-grid"),
+    art: $("styles-art-grid"),
+    technique: $("styles-technique-grid"),
+  };
+  const styleBrowsePage: Record<StyleLayer, number> = {
+    design: 1,
+    art: 1,
+    technique: 1,
+  };
+  const styleRenderKey: Record<StyleLayer, string> = {
+    design: "",
+    art: "",
+    technique: "",
+  };
+  const styleRenderers: Record<StyleLayer, () => void> = {
+    design: () => {},
+    art: () => {},
+    technique: () => {},
   };
   tabs.forEach((t) =>
     t.addEventListener("click", () => {
@@ -463,41 +652,154 @@ export function startApp(): void {
   });
 
   for (const layer of ["design", "art", "technique"] as const) {
-    panels[layer].innerHTML = stylesOf(layer)
-      .map(
-        (s) =>
-          `<button type="button" class="tile" data-layer="${layer}" data-style="${s.id}" aria-pressed="false">
-            <span class="art" data-thumb="${s.id}"></span>
-            <span class="meta"><b>${esc(s.name)}</b><small>${esc(s.era)}</small><span>${esc(s.summary)}</span></span>
-          </button>`,
-      )
-      .join("");
-    panels[layer].addEventListener("click", (e) => {
-      const b = (e.target as HTMLElement).closest<HTMLButtonElement>(
-        "[data-style]",
-      );
-      if (b) selectStyle(layer, b.dataset.style!);
-    });
-  }
+    const styles = stylesOf(layer);
+    const search = $<HTMLInputElement>(`style-search-${layer}`);
+    const group = $<HTMLSelectElement>(`style-group-${layer}`);
+    const curated = $<HTMLInputElement>(`style-curated-${layer}`);
+    group.innerHTML = `<option value="all">All groups</option>${[...new Set(styles.map((style) => style.group))].map((name) => `<option value="${esc(name)}">${esc(name)}</option>`).join("")}`;
 
-  // Design thumbnails show each movement in its own palette; they never change.
-  for (const s of stylesOf("design")) {
-    const p = s.palette!;
-    panels.design.querySelector(`[data-thumb="${s.id}"]`)!.innerHTML = proofSvg(
-      {
-        design: s.id as DesignId,
-        art: "none",
-        technique: "clean",
-        inks: inksFrom([p[0].hex, p[1].hex, p[2].hex]),
-        ratio: 11 / 16,
-        headline: s.name.split(" ")[0]!.toUpperCase(),
-        foot: [],
-        fontCss: getFont(s.fontId ?? "inter")?.css ?? "sans-serif",
-        condensed: s.fontId === "oswald" || s.fontId === "bebas",
-        uid: `t-${s.id}`,
-        label: `${s.name} layout sketch`,
-      },
+    function renderStyleLayer(): void {
+      const filters: StyleFilters = {
+        query: search.value,
+        group: group.value,
+        curatedOnly: curated.checked,
+      };
+      const filtered = filterStyles(styles, filters).toSorted(
+        (a, b) => Number(b.curated) - Number(a.curated),
+      );
+      const page = paginateItems(filtered, styleBrowsePage[layer], 8);
+      styleBrowsePage[layer] = page.page;
+      const currentId = store.get().styles[layer];
+      const recipe = store.get();
+      const paletteKey =
+        layer === "design"
+          ? ""
+          : recipe.palette.map((color) => color.hex).join("|");
+      const renderKey = JSON.stringify([
+        search.value,
+        group.value,
+        curated.checked,
+        page.page,
+        currentId,
+        paletteKey,
+      ]);
+      if (styleRenderKey[layer] === renderKey) return;
+      styleRenderKey[layer] = renderKey;
+      const selectedStyle = getStyle(currentId);
+      const currentVisible = page.items.some((style) => style.id === currentId);
+      const selectedNote = $(`style-selected-${layer}`);
+      selectedNote.innerHTML = currentVisible
+        ? `<span>Current selection</span><strong>${esc(selectedStyle.name)}</strong>`
+        : `<span>Current selection</span><strong>${esc(selectedStyle.name)}</strong><small>Outside these results. Clear a filter or use its page controls to find it.</small>`;
+      $(`style-status-${layer}`).textContent =
+        `${page.total} ${page.total === 1 ? "style" : "styles"}${curated.checked ? " · studio-curated picks" : ""}`;
+      panels[layer].innerHTML = page.total
+        ? page.items.map((style) => styleTileMarkup(layer, style)).join("")
+        : `<div class="empty-directions"><p>No styles match these filters.</p><button type="button" class="btn btn-ghost btn-sm" data-clear-style-filters>Clear search and filters</button></div>`;
+      panels[layer]
+        .querySelectorAll<HTMLElement>("[data-style]")
+        .forEach((button) =>
+          button.setAttribute(
+            "aria-pressed",
+            String(button.dataset.style === currentId),
+          ),
+        );
+      for (const style of page.items) {
+        const target = panels[layer].querySelector<HTMLElement>(
+          `[data-thumb="${style.id}"]`,
+        );
+        if (!target) continue;
+        if (layer === "design") {
+          const p = style.palette!;
+          target.innerHTML = proofSvg({
+            design: style.id as DesignId,
+            art: "none",
+            technique: "clean",
+            inks: inksFrom([p[0].hex, p[1].hex, p[2].hex]),
+            ratio: 11 / 16,
+            headline: style.name.split(" ")[0]!.toUpperCase(),
+            foot: [],
+            fontCss: getFont(style.fontId ?? "inter")?.css ?? "sans-serif",
+            condensed: style.fontId === "oswald" || style.fontId === "bebas",
+            uid: `t-${style.id}`,
+            label: `${style.name} layout sketch`,
+          });
+        } else if (layer === "art") {
+          const palette = effectivePalette(recipe);
+          target.innerHTML = motifSvg(
+            style.id as ArtId,
+            inksFrom([palette[0].hex, palette[1].hex, palette[2].hex]),
+            `a-${style.id}`,
+          );
+        } else {
+          const palette = effectivePalette({
+            ...recipe,
+            styles: { ...recipe.styles, technique: style.id as TechniqueId },
+          });
+          target.innerHTML = finishSvg(
+            style.id as TechniqueId,
+            inksFrom([palette[0].hex, palette[1].hex, palette[2].hex]),
+            `f-${style.id}`,
+          );
+        }
+      }
+      const pagination = $(`style-pagination-${layer}`);
+      pagination.innerHTML =
+        page.pageCount > 1
+          ? `<div class="join"><button class="btn btn-sm join-item" type="button" data-page="${page.page - 1}" ${page.page === 1 ? "disabled" : ""} aria-label="Previous page">Previous</button><span class="btn btn-sm join-item pagination-current" aria-current="page">Page ${page.page} of ${page.pageCount}</span><button class="btn btn-sm join-item" type="button" data-page="${page.page + 1}" ${page.page === page.pageCount ? "disabled" : ""} aria-label="Next page">Next</button></div>`
+          : "";
+    }
+    styleRenderers[layer] = renderStyleLayer;
+
+    function styleTileMarkup(
+      styleLayer: StyleLayer,
+      style: BrowsableStyle,
+    ): string {
+      const curatedBadge = style.curated
+        ? '<span class="badge badge-outline style-curated-badge">Curated pick</span>'
+        : "";
+      const thumb = `<span class="art" data-thumb="${style.id}"></span>`;
+      return `<button type="button" class="tile" data-layer="${styleLayer}" data-style="${style.id}" aria-pressed="false">
+        ${thumb}
+        <span class="meta"><span class="style-title-row"><b>${esc(style.name)}</b>${curatedBadge}</span><small>${esc(style.era)}</small><span>${esc(style.summary)}</span></span>
+      </button>`;
+    }
+
+    search.addEventListener("input", () => {
+      styleBrowsePage[layer] = 1;
+      renderStyleLayer();
+    });
+    [group, curated].forEach((control) =>
+      control.addEventListener("change", () => {
+        styleBrowsePage[layer] = 1;
+        renderStyleLayer();
+      }),
     );
+    panels[layer].addEventListener("click", (event) => {
+      const target = event.target as HTMLElement;
+      if (target.closest("[data-clear-style-filters]")) {
+        search.value = "";
+        group.value = "all";
+        curated.checked = false;
+        styleBrowsePage[layer] = 1;
+        renderStyleLayer();
+        search.focus();
+        return;
+      }
+      const button = target.closest<HTMLButtonElement>("[data-style]");
+      if (button) selectStyle(layer, button.dataset.style!);
+    });
+    panels[layer].tabIndex = -1;
+    $(`style-pagination-${layer}`).addEventListener("click", (event) => {
+      const button = (event.target as HTMLElement).closest<HTMLButtonElement>(
+        "[data-page]",
+      );
+      if (!button || button.disabled) return;
+      styleBrowsePage[layer] = Number(button.dataset.page);
+      renderStyleLayer();
+      panels[layer].focus();
+    });
+    renderStyleLayer();
   }
 
   function selectStyle(layer: StyleLayer, id: string): void {
@@ -1044,35 +1346,9 @@ export function startApp(): void {
       t.setAttribute("aria-selected", String(on));
       t.tabIndex = on ? 0 : -1;
     });
-    (Object.keys(panels) as StyleLayer[]).forEach(
-      (l) => (panels[l].hidden = l !== view.layer),
-    );
-  }
-
-  let thumbKey = "";
-  function renderThumbs(r: Recipe): void {
-    const pal = effectivePalette(r);
-    const key = pal.map((c) => c.hex).join();
-    if (key === thumbKey) return;
-    thumbKey = key;
-    const inks = inksFrom([pal[0].hex, pal[1].hex, pal[2].hex]);
-    for (const s of stylesOf("art")) {
-      panels.art.querySelector(`[data-thumb="${s.id}"]`)!.innerHTML = motifSvg(
-        s.id as ArtId,
-        inks,
-        `a-${s.id}`,
-      );
-    }
-    for (const s of stylesOf("technique")) {
-      // Techniques that dictate color preview in their own palette.
-      const own = effectivePalette({
-        ...r,
-        styles: { ...r.styles, technique: s.id as TechniqueId },
-      });
-      const k = inksFrom([own[0].hex, own[1].hex, own[2].hex]);
-      panels.technique.querySelector(`[data-thumb="${s.id}"]`)!.innerHTML =
-        finishSvg(s.id as TechniqueId, k, `f-${s.id}`);
-    }
+    (Object.keys(panels) as StyleLayer[]).forEach((layer) => {
+      $(`panel-${layer}`).hidden = layer !== view.layer;
+    });
   }
 
   function renderPrompt(segments: readonly Segment[], el: HTMLElement): void {
@@ -1091,6 +1367,9 @@ export function startApp(): void {
     sync(headline, r.headline);
     sync(detail, r.detail);
     sync(purpose, r.purpose);
+    sync(goalPicker, view.goal);
+    renderDirections(r);
+    renderDirectionExplorer();
     if (document.activeElement !== extra) sync(extra, r.extraText.join("\n"));
     renderAspectOptions(r);
     const ideaIsInvalid = r.idea.trim().length < 3;
@@ -1112,6 +1391,7 @@ export function startApp(): void {
     // layers
     renderTabs();
     for (const layer of ["design", "art", "technique"] as const) {
+      styleRenderers[layer]();
       press(
         panels[layer],
         "[data-style]",
@@ -1120,7 +1400,6 @@ export function startApp(): void {
       );
       $(`cur-${layer}`).textContent = getStyle(r.styles[layer]).name;
     }
-    renderThumbs(r);
 
     // palette
     const pal = effectivePalette(r);

@@ -63,19 +63,6 @@ import FieldInfo from "@/layouts/components/FieldInfo.astro";
           Describe it in a few words so the model has a subject.
         </p>
 
-        <div class="starts">
-          <span class="starts-label" id="starts-label"
-            >Start from an example</span
-          >
-          <div
-            class="starts-row"
-            id="presets"
-            role="list"
-            aria-labelledby="starts-label"
-          >
-          </div>
-        </div>
-
         <div class="grid-fields">
           <StudioField
             label="Format"
@@ -83,6 +70,13 @@ import FieldInfo from "@/layouts/components/FieldInfo.astro";
             info="Pick what the image is for, such as a poster or album cover. It shapes the composition and sets a matching aspect ratio, which you can change afterward."
           >
             <select id="f-purpose" class="select"></select>
+          </StudioField>
+          <StudioField
+            label="What should the design do?"
+            controlId="f-goal"
+            info="Choose the communication goal. The suggestions explain how their layout, imagery, and finish can help achieve it. You can change any layer afterward."
+          >
+            <select id="f-goal" class="select select-bordered"></select>
           </StudioField>
           <div class="field">
             <div class="field-heading">
@@ -171,6 +165,90 @@ import FieldInfo from "@/layouts/components/FieldInfo.astro";
             />
           </StudioField>
         </div>
+
+        <section class="directions" aria-labelledby="directions-h">
+          <div class="directions-heading">
+            <div>
+              <h2 id="directions-h">Choose a visual direction</h2>
+              <p id="goal-guidance" class="goal-guidance"></p>
+            </div>
+            <span
+              id="direction-count"
+              class="badge badge-outline"
+              aria-live="polite"></span>
+          </div>
+          <div
+            id="presets"
+            class="direction-grid"
+            role="list"
+            aria-labelledby="directions-h"
+          >
+          </div>
+          <p class="curation-note">
+            Curated picks are studio recommendations, not usage counts.
+          </p>
+          <details class="direction-explorer">
+            <summary class="btn btn-ghost">Explore all directions</summary>
+            <div class="explorer-body">
+              <div class="explorer-filters" aria-label="Filter all directions">
+                <label class="explorer-search" for="direction-search"
+                  >Search by name, style, or goal
+                  <input
+                    id="direction-search"
+                    class="input input-bordered"
+                    type="search"
+                    autocomplete="off"
+                  />
+                </label>
+                <label for="direction-format"
+                  >Project type
+                  <select id="direction-format" class="select select-bordered"
+                  ></select>
+                </label>
+                <label for="direction-goal"
+                  >Communication goal
+                  <select id="direction-goal" class="select select-bordered"
+                  ></select>
+                </label>
+                <label for="direction-group"
+                  >Group directions by
+                  <select id="direction-group" class="select select-bordered">
+                    <option value="format">Project type</option>
+                    <option value="goal">Communication goal</option>
+                  </select>
+                </label>
+                <label class="curated-filter" for="direction-curated">
+                  <input
+                    id="direction-curated"
+                    class="checkbox"
+                    type="checkbox"
+                  />
+                  <span>Curated picks only</span>
+                </label>
+              </div>
+              <p
+                id="explorer-status"
+                class="explorer-status"
+                role="status"
+                aria-live="polite"
+              >
+              </p>
+              <div
+                id="direction-results"
+                class="direction-results"
+                role="list"
+                tabindex="-1"
+              >
+              </div>
+              <nav
+                id="direction-pagination"
+                class="pagination-row"
+                aria-label="Direction pages"
+              >
+              </nav>
+            </div>
+          </details>
+        </section>
       </section>
 
       <section class="layers" aria-labelledby="layers-h">
@@ -218,27 +296,152 @@ import FieldInfo from "@/layouts/components/FieldInfo.astro";
           >
         </div>
         <div
-          class="tile-grid"
+          class="style-panel"
           id="panel-design"
           role="tabpanel"
           aria-labelledby="tab-design"
         >
+          <div class="style-browser-controls">
+            <label for="style-search-design"
+              >Search layout styles<input
+                id="style-search-design"
+                class="input input-bordered"
+                type="search"
+                autocomplete="off"
+              /></label
+            >
+            <label for="style-group-design"
+              >Group<select
+                id="style-group-design"
+                class="select select-bordered"></select></label
+            >
+            <label class="style-curated-filter" for="style-curated-design"
+              ><input
+                id="style-curated-design"
+                class="checkbox"
+                type="checkbox"
+              /><span>Curated picks only</span></label
+            >
+          </div>
+          <p
+            class="style-result-status"
+            id="style-status-design"
+            role="status"
+            aria-live="polite"
+          >
+          </p>
+          <div
+            class="selected-style-note"
+            id="style-selected-design"
+            aria-live="polite"
+          >
+          </div>
+          <div class="tile-grid" id="styles-design-grid"></div>
+          <nav
+            class="pagination-row"
+            id="style-pagination-design"
+            aria-label="Layout style pages"
+          >
+          </nav>
         </div>
         <div
-          class="tile-grid"
+          class="style-panel"
           id="panel-art"
           role="tabpanel"
           aria-labelledby="tab-art"
           hidden
         >
+          <div class="style-browser-controls">
+            <label for="style-search-art"
+              >Search imagery styles<input
+                id="style-search-art"
+                class="input input-bordered"
+                type="search"
+                autocomplete="off"
+              /></label
+            >
+            <label for="style-group-art"
+              >Group<select id="style-group-art" class="select select-bordered"
+              ></select></label
+            >
+            <label class="style-curated-filter" for="style-curated-art"
+              ><input
+                id="style-curated-art"
+                class="checkbox"
+                type="checkbox"
+              /><span>Curated picks only</span></label
+            >
+          </div>
+          <p
+            class="style-result-status"
+            id="style-status-art"
+            role="status"
+            aria-live="polite"
+          >
+          </p>
+          <div
+            class="selected-style-note"
+            id="style-selected-art"
+            aria-live="polite"
+          >
+          </div>
+          <div class="tile-grid" id="styles-art-grid"></div>
+          <nav
+            class="pagination-row"
+            id="style-pagination-art"
+            aria-label="Imagery style pages"
+          >
+          </nav>
         </div>
         <div
-          class="tile-grid"
+          class="style-panel"
           id="panel-technique"
           role="tabpanel"
           aria-labelledby="tab-technique"
           hidden
         >
+          <div class="style-browser-controls">
+            <label for="style-search-technique"
+              >Search finish styles<input
+                id="style-search-technique"
+                class="input input-bordered"
+                type="search"
+                autocomplete="off"
+              /></label
+            >
+            <label for="style-group-technique"
+              >Group<select
+                id="style-group-technique"
+                class="select select-bordered"></select></label
+            >
+            <label class="style-curated-filter" for="style-curated-technique"
+              ><input
+                id="style-curated-technique"
+                class="checkbox"
+                type="checkbox"
+              /><span>Curated picks only</span></label
+            >
+          </div>
+          <p
+            class="style-result-status"
+            id="style-status-technique"
+            role="status"
+            aria-live="polite"
+          >
+          </p>
+          <div
+            class="selected-style-note"
+            id="style-selected-technique"
+            aria-live="polite"
+          >
+          </div>
+          <div class="tile-grid" id="styles-technique-grid"></div>
+          <nav
+            class="pagination-row"
+            id="style-pagination-technique"
+            aria-label="Finish style pages"
+          >
+          </nav>
         </div>
 
         <div class="mixes">

@@ -43,11 +43,21 @@ export interface StyleDef {
   readonly traits: readonly StyleTrait[];
   /** Specimen font that best previews this style, if any. */
   readonly fontId?: string;
+  /** Search and browse metadata, not sent to image models. */
+  readonly searchTerms?: readonly string[];
+  readonly group?: string;
+  readonly curated?: boolean;
 }
+
+export type BrowsableStyle = StyleDef & {
+  readonly searchTerms: readonly string[];
+  readonly group: string;
+  readonly curated: boolean;
+};
 
 const c = (hex: `#${string}`, name: string): PaletteColor => ({ hex, name });
 
-export const STYLES = [
+const STYLE_DEFINITIONS = [
   // ── Design movements ────────────────────────────────────────────────
   {
     id: "swiss",
@@ -476,6 +486,73 @@ export const STYLES = [
   },
 ] as const satisfies readonly StyleDef[];
 
+const STYLE_GROUP_BY_ID: Partial<
+  Record<(typeof STYLE_DEFINITIONS)[number]["id"], string>
+> = {
+  swiss: "Grid and hierarchy",
+  bauhaus: "Geometry and systems",
+  constructivism: "Energy and urgency",
+  "de-stijl": "Geometry and systems",
+  "art-deco": "Ornamental geometry",
+  "art-nouveau": "Ornamental geometry",
+  memphis: "Playful expression",
+  "japanese-minimal": "Space and focus",
+  editorial: "Editorial typography",
+  "polish-poster": "Metaphor and story",
+  none: "No added illustration",
+  surrealism: "Metaphor and story",
+  "pop-art": "Playful expression",
+  "op-art": "Geometry and systems",
+  cubism: "Geometry and systems",
+  "ukiyo-e": "Print and illustration",
+  "dada-collage": "Metaphor and story",
+  suprematism: "Geometry and systems",
+  psychedelia: "Playful expression",
+  "cut-paper": "Print and illustration",
+  clean: "Clean and digital",
+  risograph: "Ink and print",
+  screenprint: "Ink and print",
+  letterpress: "Ink and print",
+  cyanotype: "Photo processes",
+  etching: "Ink and print",
+  halftone: "Ink and print",
+  linocut: "Ink and print",
+  "mono-accent": "Clean and digital",
+};
+
+const CURATED_STYLE_IDS = new Set([
+  "swiss",
+  "bauhaus",
+  "constructivism",
+  "japanese-minimal",
+  "editorial",
+  "surrealism",
+  "cut-paper",
+  "pop-art",
+  "risograph",
+  "screenprint",
+  "letterpress",
+  "clean",
+]);
+
+const defaultGroupByLayer: Record<StyleLayer, string> = {
+  design: "Graphic movements",
+  art: "Art movements",
+  technique: "Print techniques",
+};
+
+export const STYLES = STYLE_DEFINITIONS.map((style) => ({
+  ...style,
+  searchTerms: [
+    style.id.replaceAll("-", " "),
+    style.name,
+    style.era,
+    style.summary,
+  ],
+  group: STYLE_GROUP_BY_ID[style.id] ?? defaultGroupByLayer[style.layer],
+  curated: CURATED_STYLE_IDS.has(style.id),
+})) satisfies readonly BrowsableStyle[];
+
 export type Style = (typeof STYLES)[number];
 export type StyleId = Style["id"];
 export type DesignId = Extract<Style, { layer: "design" }>["id"];
@@ -490,7 +567,7 @@ export function getStyle(id: StyleId): StyleDef {
   return s;
 }
 
-export function stylesOf(layer: StyleLayer): readonly StyleDef[] {
+export function stylesOf(layer: StyleLayer): readonly BrowsableStyle[] {
   return STYLES.filter((s) => s.layer === layer);
 }
 

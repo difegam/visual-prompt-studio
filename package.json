@@ -15,6 +15,7 @@
     "build:preview": "node scripts/build.mjs preview",
     "preview": "astro preview",
     "check": "pnpm run generate-json && astro check",
+    "test:discovery": "node --test scripts/test-prompt-discovery.mjs",
     "lint": "eslint \"src/**/*.{astro,js,mjs,cjs,jsx,ts,tsx}\" \"scripts/**/*.{js,mjs,cjs}\" astro.config.mjs eslint.config.js",
     "format": "prettier -w ./src",
     "format:check": "prettier --check .",
