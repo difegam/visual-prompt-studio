@@ -43,7 +43,7 @@ The implementation must extend the project as it now exists:
 
 ### Extend the current composer and reference catalog
 
-Selected. Add an optional comparison dialog beside the current suggestions, enrich the direction metadata, derive local readability hints from the current recipe, and add concept filters to the existing learning-source area. This keeps the present workflow, uses the current static catalog and vanilla TypeScript architecture, and requires no dependency or schema migration.
+Selected. Add an optional comparison dialog beside the current suggestions, enrich the direction metadata, derive local readability hints from the current recipe, and add concept filters to the existing learning-source area. This keeps the present workflow and uses the current static catalog and vanilla TypeScript architecture. A dependency remains available if the project policy's comparison shows that it reduces total complexity or risk.
 
 ### Create a separate trend and learning page
 
@@ -120,9 +120,15 @@ The app continues to load static metadata only. There is no automatic expiry, up
 6. If they want to learn more, they open the existing reference area, choose a concept topic, and follow a linked article.
 7. In the explorer, the user can filter by the current trend edition or search earlier editions with the other filters.
 
+## Dependency assessment
+
+Vanilla TypeScript is the current choice for this feature. Native `<dialog>`, page-local arrays, pure domain helpers, delegated events, and the existing string renderers cover the approved behavior without introducing another state or component model.
+
+This is an assessment, not a permanent ban. If implementation reveals materially more state synchronization, focus management, or validation complexity than the design anticipates, compare the vanilla approach with a focused dependency under the policy in `AGENTS.md`. Adopt a dependency only when the comparison shows a net maintainability, reliability, or security benefit after API stability, transitive packages, bundle cost, browser support, and license fit are included.
+
 ## Data and implementation constraints
 
-- Preserve Astro plus vanilla TypeScript. Add no client framework or dependency.
+- Preserve Astro and use vanilla TypeScript first. Follow the `AGENTS.md` dependency policy before adding or replacing any package.
 - Preserve `RecipeSchema` version 2 and all saved recipe compatibility.
 - Keep comparison selection, topic filters, and readability hints out of persisted state and compiled prompts.
 - Apply direction bundles only through the existing allow-listed `applyDirection` contract.

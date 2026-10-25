@@ -4,7 +4,7 @@
 
 **Goal:** Let users compare two visual directions before applying one, act on concise design advice, find learning sources by principle, and maintain yearly starter editions without changing persisted recipes.
 
-**Architecture:** Keep Astro as the static shell and the vanilla TypeScript app as the interaction owner. Add focused pure modules for trend-edition metadata, readability rules, and comparison rendering/state, then connect them to the existing shared direction cards, filter summaries, native-dialog pattern, and reference carousel. All new state remains page-local; the recipe schema and compiler stay unchanged.
+**Architecture:** Keep Astro as the static shell and use the vanilla TypeScript app as the first interaction approach. Add focused pure modules for trend-edition metadata, readability rules, and comparison rendering/state, then connect them to the existing shared direction cards, filter summaries, native-dialog pattern, and reference carousel. All new state remains page-local; the recipe schema and compiler stay unchanged. A focused dependency is permitted only if the `AGENTS.md` evaluation shows a net maintainability, reliability, or security benefit.
 
 **Tech Stack:** Astro 7.4, TypeScript 6, vanilla browser TypeScript, Tailwind CSS 4, daisyUI 5, Zod 4, Node test runner through Vite SSR, `node-html-parser`, Playwright CLI.
 
@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- Preserve Astro plus vanilla TypeScript; add no client framework or dependency.
+- Preserve Astro and start with vanilla TypeScript. Follow the `AGENTS.md` dependency policy before adding or replacing a package.
 - Keep `RecipeSchema` at version 2 and do not persist comparison, topic-filter, readability, or trend-edition UI state.
 - Apply direction bundles only through the existing allow-listed `applyDirection(current, direction)` contract.
 - Keep the existing `Compare with an undirected prompt` control unchanged. Use the full label `Compare directions` for the new feature.
@@ -23,6 +23,10 @@
 - Keep external links descriptive and retain `target="_blank"` with `rel="noopener noreferrer"`.
 - Keep all controls keyboard reachable, restore focus after rerenders and dialog closure, and support 390 by 844 pixels without horizontal scrolling.
 - Keep source, direction, and trend data static, local, deterministic, and reviewable.
+
+## Dependency decision gate
+
+The planned implementation needs no new dependency: native `<dialog>`, page-local arrays, pure helpers, delegated DOM events, and the existing renderers cover the required behavior. Recheck this conclusion after Task 3, before integrating browser state in Task 4. If the vanilla implementation would require materially more custom state coordination, focus handling, or defensive code than planned, record a comparison of the no-dependency approach and the narrowest viable package using every factor in `AGENTS.md`. A dependency may replace the planned approach only when that comparison shows a clear net benefit; update this plan, `package.json`, and the lockfile before continuing.
 
 ## Review Focus
 
@@ -279,31 +283,35 @@ git commit -m "feat: add direction comparison rendering"
 
 Before editing Astro or CSS, connect to the configured Astro docs MCP and read the current guidance for client-side scripts, native dialogs, and accessible component markup. Use `astro-template-guidance` to read `component-usage.md` and `styling-and-theming.md`, then use the daisyUI skill for modal, button, badge, and card rules.
 
-- [ ] **Step 2: Capture the failing browser baseline**
+- [ ] **Step 2: Recheck the dependency decision**
+
+Compare the completed pure modules and planned browser wiring with the dependency decision gate above. Record the conclusion in the plan progress note. Continue with vanilla TypeScript when the existing platform capabilities still cover the work. If a dependency has a clear net benefit, update the plan with the chosen package, its responsibility, evaluation, install step, lockfile changes, audit command, and removal boundary before writing integration code.
+
+- [ ] **Step 3: Capture the failing browser baseline**
 
 Start the app with `./scripts/with-node.sh pnpm dev`, then run `playwright-cli open` and `playwright-cli goto http://localhost:4321/`. Confirm the current cards have no comparison controls, no comparison dialog exists, and an exact-text `op-art` recipe shows no readability action. Record the relevant snapshot names in the plan progress note.
 
-- [ ] **Step 3: Add the comparison and readability shells**
+- [ ] **Step 4: Add the comparison and readability shells**
 
 Add the two comparison-bar mounts adjacent to their corresponding direction lists. Add a native DaisyUI modal with the same header, explicit close form, and backdrop behavior as the font picker. Add a hidden readability region between the proof figure and target controls with `role="note"`; its action is a real button. Give `#direction-summary` `tabindex="-1"` so it is the stable focus destination after applying from the dialog.
 
-- [ ] **Step 4: Wire comparison state and shared card rendering**
+- [ ] **Step 5: Wire comparison state and shared card rendering**
 
 Initialize `view.comparisonIds` to `[]`. Pass `compared: view.comparisonIds.includes(direction.id)` in both card render paths. Use delegated events for `[data-compare-direction]`, `[data-open-comparison]`, and `[data-clear-comparison]`. Rerender both bars and both card lists after every selection change without resetting filters or pages. Announce third-item replacement with the replaced direction name.
 
-- [ ] **Step 5: Wire dialog open, close, focus, and apply behavior**
+- [ ] **Step 6: Wire dialog open, close, focus, and apply behavior**
 
 Open only when two catalog directions resolve. Close the narrow-screen proof panel before `showModal()`. Render fresh comparison content from the current recipe on every open. Support Escape, the explicit close button, and backdrop close. Restore focus to the opener when it still exists, otherwise to the comparison bar in the same area. Applying from the dialog must call the existing `applyChosenDirection`, close the dialog, preserve Undo, clear comparison state, and focus the now-visible `#direction-summary`.
 
-- [ ] **Step 6: Render the highest-priority readability hint**
+- [ ] **Step 7: Render the highest-priority readability hint**
 
 Call `getReadabilityHints` during the existing render cycle. Render only the first hint, or hide the mount when none applies. `Review headline` closes the mobile proof panel, scrolls to `#f-headline`, and focuses it; `Review text` does the same for `#f-extra`. Do not modify the recipe or copy controls.
 
-- [ ] **Step 7: Style desktop and narrow-screen behavior**
+- [ ] **Step 8: Style desktop and narrow-screen behavior**
 
 Use a two-column comparison grid at desktop widths and the font picker's full-height, vertically stacked modal pattern at narrow widths. Keep selection bars compact and wrapping. Keep compare and apply controls distinct, preserve visible focus, and ensure the readability note does not cover the copy dock or mobile action bar.
 
-- [ ] **Step 8: Run automated verification**
+- [ ] **Step 9: Run automated verification**
 
 Run:
 
@@ -314,7 +322,7 @@ Run:
 
 Expected: PASS with zero Astro errors.
 
-- [ ] **Step 9: Verify the comparison flow in a real browser**
+- [ ] **Step 10: Verify the comparison flow in a real browser**
 
 With Playwright CLI:
 
@@ -327,7 +335,7 @@ With Playwright CLI:
 - resize to 390 by 844 pixels, open the proof panel, then open comparison and confirm the proof panel closes and the dialog has no horizontal scrolling;
 - inspect the console and confirm no errors.
 
-- [ ] **Step 10: Commit the integrated comparison flow**
+- [ ] **Step 11: Commit the integrated comparison flow**
 
 ```bash
 git add src/layouts/components/PromptStudio.astro src/lib/prompt-studio/ui/styles.css
