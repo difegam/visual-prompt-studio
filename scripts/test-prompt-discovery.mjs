@@ -15,6 +15,7 @@ let readability;
 let comparison;
 let openIn;
 let briefExamples;
+let guided;
 
 before(async () => {
   server = await createServer({
@@ -51,6 +52,9 @@ before(async () => {
   );
   briefExamples = await server.ssrLoadModule(
     "/src/lib/prompt-studio/domain/brief-examples.ts",
+  );
+  guided = await server.ssrLoadModule(
+    "/src/lib/prompt-studio/ui/guided-path.ts",
   );
 });
 
@@ -1139,4 +1143,98 @@ test("applying a brief example changes only the brief and keeps the look", () =>
       Object.entries(value).filter(([key]) => !briefKeys.includes(key)),
     );
   assert.deepEqual(look(applied), look(base));
+});
+
+test("guided path: steps keep a fixed order and announce their position", () => {
+  assert.deepEqual(guided.STEP_IDS, ["describe", "look", "refine", "send"]);
+  assert.equal(guided.neighbour("describe", -1), null);
+  assert.equal(guided.neighbour("describe", 1), "look");
+  assert.equal(guided.neighbour("send", 1), null);
+  assert.equal(guided.stepAnnouncement("look"), "Step 2 of 4: Look");
+});
+
+test("guided path: a blank recipe starts at Describe and nothing is done", () => {
+  const blank = recipe.BLANK_RECIPE;
+  const ctx = { directionName: null };
+  for (const id of guided.STEP_IDS) {
+    assert.equal(guided.isStepDone(id, blank, ctx), false, id);
+  }
+  assert.equal(guided.initialStep(blank, ctx), "describe");
+  assert.equal(guided.stepSummary("describe", blank, ctx), "Not started");
+  assert.equal(guided.stepSummary("look", blank, ctx), "Starting look");
+});
+
+test("guided path: a saved brief moves the start to Look", () => {
+  const withBrief = { ...recipe.BLANK_RECIPE, idea: "A jazz concert poster" };
+  const ctx = { directionName: null };
+  assert.equal(guided.isStepDone("describe", withBrief, ctx), true);
+  assert.equal(guided.initialStep(withBrief, ctx), "look");
+});
+
+test("guided path: an applied direction or edited layers complete Look", () => {
+  const base = { ...recipe.BLANK_RECIPE, idea: "A jazz concert poster" };
+  assert.equal(
+    guided.isStepDone("look", base, { directionName: "Chromatic pulse" }),
+    true,
+  );
+  assert.equal(
+    guided.stepSummary("look", base, { directionName: "Chromatic pulse" }),
+    "Chromatic pulse",
+  );
+  const other = styles.DESIGN_IDS.find(
+    (id) => id !== recipe.BLANK_RECIPE.styles.design,
+  );
+  const edited = { ...base, styles: { ...base.styles, design: other } };
+  assert.equal(
+    guided.isStepDone("look", edited, { directionName: null }),
+    true,
+  );
+  assert.equal(
+    guided.stepSummary("look", edited, { directionName: null }),
+    "Custom look",
+  );
+  assert.equal(guided.initialStep(edited, { directionName: null }), "describe");
+});
+
+test("guided path: Refine is done only when palette or typeface changed", () => {
+  const ctx = { directionName: null };
+  const base = recipe.BLANK_RECIPE;
+  assert.equal(guided.isStepDone("refine", base, ctx), false);
+  assert.equal(
+    guided.isStepDone("refine", { ...base, font: "style" }, ctx),
+    false,
+  );
+  const palette = [
+    { ...base.palette[0], hex: "#112233" },
+    base.palette[1],
+    base.palette[2],
+  ];
+  assert.equal(guided.isStepDone("refine", { ...base, palette }, ctx), true);
+});
+
+test("guided path: the Expert preference tolerates blocked storage", () => {
+  const blocked = {
+    getItem() {
+      throw new Error("blocked");
+    },
+    setItem() {
+      throw new Error("blocked");
+    },
+    removeItem() {
+      throw new Error("blocked");
+    },
+  };
+  assert.equal(guided.loadExpert(null), false);
+  assert.equal(guided.loadExpert(blocked), false);
+  assert.doesNotThrow(() => guided.saveExpert(blocked, true));
+  const memory = new Map();
+  const store = {
+    getItem: (k) => memory.get(k) ?? null,
+    setItem: (k, v) => memory.set(k, v),
+    removeItem: (k) => memory.delete(k),
+  };
+  guided.saveExpert(store, true);
+  assert.equal(guided.loadExpert(store), true);
+  guided.saveExpert(store, false);
+  assert.equal(guided.loadExpert(store), false);
 });

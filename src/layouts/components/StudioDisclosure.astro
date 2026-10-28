@@ -3,12 +3,18 @@ interface Props {
   title: string;
   description: string;
   className?: string;
+  /** Guided-path step this disclosure belongs to. */
+  step?: string;
 }
 
-const { title, description, className = "" } = Astro.props;
+const { title, description, className = "", step } = Astro.props;
 ---
 
-<details class:list={["collapse-arrow studio-disclosure collapse", className]}>
+<details
+  class:list={["collapse-arrow studio-disclosure collapse", className]}
+  data-step={step}
+  data-advanced
+>
   <summary class="collapse-title">
     <span class="disclosure-title">{title}</span>
     <span class="disclosure-description">{description}</span>

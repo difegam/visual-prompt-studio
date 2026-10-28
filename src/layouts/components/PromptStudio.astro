@@ -30,199 +30,201 @@ import { CURRENT_TREND_EDITION } from "@/lib/prompt-studio/domain/trends";
           >
         </div>
       </div>
-      <ol class="intro-steps" aria-label="How to use the studio">
-        <li class="c">
-          <span class="step-n" aria-hidden="true">1</span>
-          <div>
-            <h3>Describe it</h3>
-            <p>
-              Say what you are making, pick a format, and add exact text if the
-              image needs words.
-            </p>
-          </div>
-        </li>
-        <li class="m">
-          <span class="step-n" aria-hidden="true">2</span>
-          <div>
-            <h3>Shape the look</h3>
-            <p>
-              Start from a direction or set Layout, Imagery and Finish yourself.
-              Each layer is independent.
-            </p>
-          </div>
-        </li>
-        <li class="y">
-          <span class="step-n" aria-hidden="true">3</span>
-          <div>
-            <h3>Copy for your model</h3>
-            <p>
-              Choose where it is going under <strong>Send to</strong>, then
-              press Copy prompt.
-            </p>
-          </div>
-        </li>
-      </ol>
+    </div>
+  </section>
+
+  <section
+    class="step-rail-wrap"
+    id="guided-path"
+    aria-labelledby="step-heading"
+  >
+    <div class="step-rail-inner">
+      <ol class="step-rail" id="step-rail" aria-label="Steps"></ol>
+      <div class="step-rail-meta">
+        <h2 id="step-heading" tabindex="-1"></h2>
+        <label class="label expert-toggle cursor-pointer gap-3">
+          <span>Show all options</span>
+          <input
+            type="checkbox"
+            id="btn-expert"
+            class="toggle expert-toggle-input"
+            role="switch"
+          />
+        </label>
+      </div>
+      <p class="sr-only" id="step-live" role="status" aria-live="polite"></p>
     </div>
   </section>
 
   <main class="studio" id="compose">
     <div class="composer">
       <section class="brief" aria-labelledby="brief-h">
-        <h1 id="brief-h" class="lede">Give the image a point of view.</h1>
-        <div class="field-heading">
-          <label class="idea-label" for="f-idea">What are you making?</label>
-          <FieldInfo
-            label="What are you making?"
-            id="idea"
-            info="Describe the subject and where the image will be used. A clear brief gives the prompt a concrete starting point."
-          />
-        </div>
-        <textarea
-          id="f-idea"
-          class="idea textarea"
-          rows="2"
-          maxlength="400"
-          placeholder="A concert poster for a jazz quartet performing at a rooftop venue..."
-          aria-describedby="idea-error"
-          spellcheck="true"></textarea>
-        <p class="field-error" id="idea-error" hidden>
-          Describe what you're making in a few words so the AI has a clear
-          subject to work with.
-        </p>
+        <div class="step-group" data-step="describe">
+          <h1 id="brief-h" class="lede">Give the image a point of view.</h1>
+          <div class="field-heading">
+            <label class="idea-label" for="f-idea">What are you making?</label>
+            <FieldInfo
+              label="What are you making?"
+              id="idea"
+              info="Describe the subject and where the image will be used. A clear brief gives the prompt a concrete starting point."
+            />
+          </div>
+          <textarea
+            id="f-idea"
+            class="idea textarea"
+            rows="2"
+            maxlength="400"
+            placeholder="A concert poster for a jazz quartet performing at a rooftop venue..."
+            aria-describedby="idea-error"
+            spellcheck="true"></textarea>
+          <p class="field-error" id="idea-error" hidden>
+            Describe what you're making in a few words so the AI has a clear
+            subject to work with.
+          </p>
 
-        <div class="examples" role="group" aria-labelledby="examples-label">
-          <span class="examples-label" id="examples-label">Try an example</span>
-          <div class="chips" id="brief-examples"></div>
-        </div>
+          <div class="examples" role="group" aria-labelledby="examples-label">
+            <span class="examples-label" id="examples-label"
+              >Try an example</span
+            >
+            <div class="chips" id="brief-examples"></div>
+          </div>
 
-        <div class="grid-fields">
-          <StudioField
-            label="Format"
-            controlId="f-purpose"
-            info="Pick what the image is for, such as a poster or album cover. It shapes the composition and sets a matching aspect ratio, which you can change afterward."
-          >
-            <select id="f-purpose" class="select"></select>
-          </StudioField>
-          <StudioField
-            label="What should the design do?"
-            controlId="f-goal"
-            info="Choose the communication goal. The suggestions explain how their layout, imagery, and finish can help achieve it. You can change any layer afterward."
-          >
-            <select id="f-goal" class="select select-bordered"></select>
-          </StudioField>
-        </div>
-
-        <StudioDisclosure
-          title="Add text and size"
-          description="Aspect ratio, headline, supporting text, concept"
-          className="brief-details"
-        >
           <div class="grid-fields">
-            <div class="field">
-              <div class="field-heading">
-                <span id="aspect-label">Aspect ratio</span>
-                <FieldInfo
-                  label="Aspect ratio"
-                  id="aspect"
-                  info="Width to height of the image. Pick the shape of the place it will appear, such as Feed for a 4:5 social post or Story for 9:16. It changes how the prompt frames the subject."
-                />
-              </div>
-              <div
-                class="aspect-seg"
-                id="f-aspect"
-                role="group"
-                aria-labelledby="aspect-label"
-              >
-              </div>
-            </div>
-            <div class="text-stack">
-              <StudioField
-                label="Headline"
-                className="text-field"
-                controlId="f-headline"
-                info="Enter the main words that should appear in the image. Keep it short for stronger placement and legibility."
-              >
-                <input
-                  id="f-headline"
-                  class="input"
-                  type="text"
-                  maxlength="80"
-                  placeholder="SUMMER NIGHTS"
-                  autocomplete="off"
-                />
-              </StudioField>
-              <StudioField
-                label="Other text"
-                className="text-field"
-                controlId="f-extra"
-                hint="one line each, up to 4"
-                info="Add supporting words such as a date, venue, or credit. Put each separate text element on its own line."
-              >
-                <textarea
-                  id="f-extra"
-                  class="textarea"
-                  rows="2"
-                  maxlength="323"
-                  placeholder="August 15, 2026
-Brooklyn, NY"></textarea>
-              </StudioField>
-            </div>
-            <div class="field span2">
-              <div class="field-heading">
-                <span id="textmode-label">Text in the image</span>
-                <FieldInfo
-                  label="Text in the image"
-                  id="textmode"
-                  info="Choose whether the image model should render the supplied wording or leave a clear area for you to add type later."
-                />
-              </div>
-              <div
-                class="seg"
-                role="radiogroup"
-                aria-labelledby="textmode-label"
-              >
-                <label class="seg-option">
-                  <input
-                    class="radio"
-                    type="radio"
-                    name="textmode"
-                    value="render"
-                    data-textmode="render"
-                  />
-                  <span>Render the exact text</span>
-                </label>
-                <label class="seg-option">
-                  <input
-                    class="radio"
-                    type="radio"
-                    name="textmode"
-                    value="space"
-                    data-textmode="space"
-                  />
-                  <span>Leave clean space, I'll set it later</span>
-                </label>
-              </div>
-            </div>
             <StudioField
-              label="Your concept"
-              controlId="f-detail"
-              hint="one specific image idea beats ten adjectives"
+              label="Format"
+              controlId="f-purpose"
+              info="Pick what the image is for, such as a poster or album cover. It shapes the composition and sets a matching aspect ratio, which you can change afterward."
+            >
+              <select id="f-purpose" class="select"></select>
+            </StudioField>
+            <StudioField
+              label="What should the design do?"
+              controlId="f-goal"
+              info="Choose the communication goal. The suggestions explain how their layout, imagery, and finish can help achieve it. You can change any layer afterward."
+            >
+              <select id="f-goal" class="select select-bordered"></select>
+            </StudioField>
+          </div>
+
+          <div class="grid-fields">
+            <StudioField
+              label="Headline"
               className="span2"
-              info="Describe one memorable visual metaphor or scene. A concrete image idea is easier for a model to follow than a list of style adjectives."
+              controlId="f-headline"
+              info="Enter the main words that should appear in the image. Keep it short for stronger placement and legibility."
             >
               <input
-                id="f-detail"
+                id="f-headline"
                 class="input"
                 type="text"
-                maxlength="240"
-                placeholder="Musicians silhouetted against a golden sunset skyline"
+                maxlength="80"
+                placeholder="SUMMER NIGHTS"
                 autocomplete="off"
               />
             </StudioField>
           </div>
-        </StudioDisclosure>
 
-        <section class="directions" aria-labelledby="directions-h">
+          <StudioDisclosure
+            title="Add text and size"
+            description="Aspect ratio, supporting text, concept"
+            className="brief-details"
+          >
+            <div class="grid-fields">
+              <div class="field">
+                <div class="field-heading">
+                  <span id="aspect-label">Aspect ratio</span>
+                  <FieldInfo
+                    label="Aspect ratio"
+                    id="aspect"
+                    info="Width to height of the image. Pick the shape of the place it will appear, such as Feed for a 4:5 social post or Story for 9:16. It changes how the prompt frames the subject."
+                  />
+                </div>
+                <div
+                  class="aspect-seg"
+                  id="f-aspect"
+                  role="group"
+                  aria-labelledby="aspect-label"
+                >
+                </div>
+              </div>
+              <div class="text-stack">
+                <StudioField
+                  label="Other text"
+                  className="text-field"
+                  controlId="f-extra"
+                  hint="one line each, up to 4"
+                  info="Add supporting words such as a date, venue, or credit. Put each separate text element on its own line."
+                >
+                  <textarea
+                    id="f-extra"
+                    class="textarea"
+                    rows="2"
+                    maxlength="323"
+                    placeholder="August 15, 2026
+Brooklyn, NY"></textarea>
+                </StudioField>
+              </div>
+              <div class="field span2">
+                <div class="field-heading">
+                  <span id="textmode-label">Text in the image</span>
+                  <FieldInfo
+                    label="Text in the image"
+                    id="textmode"
+                    info="Choose whether the image model should render the supplied wording or leave a clear area for you to add type later."
+                  />
+                </div>
+                <div
+                  class="seg"
+                  role="radiogroup"
+                  aria-labelledby="textmode-label"
+                >
+                  <label class="seg-option">
+                    <input
+                      class="radio"
+                      type="radio"
+                      name="textmode"
+                      value="render"
+                      data-textmode="render"
+                    />
+                    <span>Render the exact text</span>
+                  </label>
+                  <label class="seg-option">
+                    <input
+                      class="radio"
+                      type="radio"
+                      name="textmode"
+                      value="space"
+                      data-textmode="space"
+                    />
+                    <span>Leave clean space, I'll set it later</span>
+                  </label>
+                </div>
+              </div>
+              <StudioField
+                label="Your concept"
+                controlId="f-detail"
+                hint="one specific image idea beats ten adjectives"
+                className="span2"
+                info="Describe one memorable visual metaphor or scene. A concrete image idea is easier for a model to follow than a list of style adjectives."
+              >
+                <input
+                  id="f-detail"
+                  class="input"
+                  type="text"
+                  maxlength="240"
+                  placeholder="Musicians silhouetted against a golden sunset skyline"
+                  autocomplete="off"
+                />
+              </StudioField>
+            </div>
+          </StudioDisclosure>
+        </div>
+
+        <section
+          class="directions"
+          data-step="look"
+          aria-labelledby="directions-h"
+        >
           <div class="directions-heading">
             <div>
               <h2 id="directions-h">Start from a direction</h2>
@@ -336,213 +338,227 @@ Brooklyn, NY"></textarea>
         </section>
       </section>
 
-      <section class="layers" aria-labelledby="layers-h">
-        <div class="section-head">
-          <div class="field-heading section-title-row">
-            <h2 id="layers-h">Visual language</h2>
-            <FieldInfo
-              label="Visual language"
-              id="visual-language"
-              info="Choose one layout, one kind of imagery, and one finish. These layers combine into a single art direction."
-            />
+      <StudioDisclosure
+        step="look"
+        title="Build the look layer by layer"
+        description="Choose layout, imagery and finish yourself"
+        className="layers-detour"
+      >
+        <section class="layers" aria-labelledby="layers-h">
+          <div class="section-head">
+            <div class="field-heading section-title-row">
+              <h2 id="layers-h">Visual language</h2>
+              <FieldInfo
+                label="Visual language"
+                id="visual-language"
+                info="Choose one layout, one kind of imagery, and one finish. These layers combine into a single art direction."
+              />
+            </div>
+            <p>
+              Pick one per layer. Each controls a different part of the image,
+              so they combine.
+            </p>
           </div>
-          <p>
-            Pick one per layer. Each controls a different part of the image, so
-            they combine.
-          </p>
-        </div>
-        <div class="tabs" role="tablist" aria-label="Style layers">
-          <button
-            type="button"
-            role="tab"
-            id="tab-design"
-            aria-controls="panel-design"
-            data-layer="design"
-            ><i class="sep c" aria-hidden="true"></i>Layout<small
-              id="cur-design"></small></button
-          >
-          <button
-            type="button"
-            role="tab"
-            id="tab-art"
-            aria-controls="panel-art"
-            data-layer="art"
-            ><i class="sep m" aria-hidden="true"></i>Imagery<small id="cur-art"
-            ></small></button
-          >
-          <button
-            type="button"
-            role="tab"
-            id="tab-technique"
-            aria-controls="panel-technique"
-            data-layer="technique"
-            ><i class="sep y" aria-hidden="true"></i>Finish<small
-              id="cur-technique"></small></button
-          >
-        </div>
-        <div
-          class="style-panel"
-          id="panel-design"
-          role="tabpanel"
-          aria-labelledby="tab-design"
-        >
-          <div class="style-browser-controls">
-            <label for="style-search-design"
-              >Search layout styles<input
-                id="style-search-design"
-                class="input input-bordered"
-                type="search"
-                autocomplete="off"
-              /></label
+          <div class="tabs" role="tablist" aria-label="Style layers">
+            <button
+              type="button"
+              role="tab"
+              id="tab-design"
+              aria-controls="panel-design"
+              data-layer="design"
+              ><i class="sep c" aria-hidden="true"></i>Layout<small
+                id="cur-design"></small></button
             >
-            <label for="style-group-design"
-              >Group<select
-                id="style-group-design"
-                class="select select-bordered"></select></label
+            <button
+              type="button"
+              role="tab"
+              id="tab-art"
+              aria-controls="panel-art"
+              data-layer="art"
+              ><i class="sep m" aria-hidden="true"></i>Imagery<small
+                id="cur-art"></small></button
             >
-            <label class="style-curated-filter" for="style-curated-design"
-              ><input
-                id="style-curated-design"
-                class="checkbox"
-                type="checkbox"
-              /><span>Curated picks only</span></label
+            <button
+              type="button"
+              role="tab"
+              id="tab-technique"
+              aria-controls="panel-technique"
+              data-layer="technique"
+              ><i class="sep y" aria-hidden="true"></i>Finish<small
+                id="cur-technique"></small></button
             >
           </div>
-          <div id="style-active-filters-design"></div>
-          <p
-            class="style-result-status"
-            id="style-status-design"
-            role="status"
-            aria-live="polite"
-          >
-          </p>
           <div
-            class="selected-style-note"
-            id="style-selected-design"
-            aria-live="polite"
+            class="style-panel"
+            id="panel-design"
+            role="tabpanel"
+            aria-labelledby="tab-design"
           >
+            <div class="style-browser-controls">
+              <label for="style-search-design"
+                >Search layout styles<input
+                  id="style-search-design"
+                  class="input input-bordered"
+                  type="search"
+                  autocomplete="off"
+                /></label
+              >
+              <label for="style-group-design"
+                >Group<select
+                  id="style-group-design"
+                  class="select select-bordered"></select></label
+              >
+              <label class="style-curated-filter" for="style-curated-design"
+                ><input
+                  id="style-curated-design"
+                  class="checkbox"
+                  type="checkbox"
+                /><span>Curated picks only</span></label
+              >
+            </div>
+            <div id="style-active-filters-design"></div>
+            <p
+              class="style-result-status"
+              id="style-status-design"
+              role="status"
+              aria-live="polite"
+            >
+            </p>
+            <div
+              class="selected-style-note"
+              id="style-selected-design"
+              aria-live="polite"
+            >
+            </div>
+            <div class="tile-grid" id="styles-design-grid"></div>
+            <nav
+              class="pagination-row"
+              id="style-pagination-design"
+              aria-label="Layout style pages"
+            >
+            </nav>
           </div>
-          <div class="tile-grid" id="styles-design-grid"></div>
-          <nav
-            class="pagination-row"
-            id="style-pagination-design"
-            aria-label="Layout style pages"
-          >
-          </nav>
-        </div>
-        <div
-          class="style-panel"
-          id="panel-art"
-          role="tabpanel"
-          aria-labelledby="tab-art"
-          hidden
-        >
-          <div class="style-browser-controls">
-            <label for="style-search-art"
-              >Search imagery styles<input
-                id="style-search-art"
-                class="input input-bordered"
-                type="search"
-                autocomplete="off"
-              /></label
-            >
-            <label for="style-group-art"
-              >Group<select id="style-group-art" class="select select-bordered"
-              ></select></label
-            >
-            <label class="style-curated-filter" for="style-curated-art"
-              ><input
-                id="style-curated-art"
-                class="checkbox"
-                type="checkbox"
-              /><span>Curated picks only</span></label
-            >
-          </div>
-          <div id="style-active-filters-art"></div>
-          <p
-            class="style-result-status"
-            id="style-status-art"
-            role="status"
-            aria-live="polite"
-          >
-          </p>
           <div
-            class="selected-style-note"
-            id="style-selected-art"
-            aria-live="polite"
+            class="style-panel"
+            id="panel-art"
+            role="tabpanel"
+            aria-labelledby="tab-art"
+            hidden
           >
+            <div class="style-browser-controls">
+              <label for="style-search-art"
+                >Search imagery styles<input
+                  id="style-search-art"
+                  class="input input-bordered"
+                  type="search"
+                  autocomplete="off"
+                /></label
+              >
+              <label for="style-group-art"
+                >Group<select
+                  id="style-group-art"
+                  class="select select-bordered"></select></label
+              >
+              <label class="style-curated-filter" for="style-curated-art"
+                ><input
+                  id="style-curated-art"
+                  class="checkbox"
+                  type="checkbox"
+                /><span>Curated picks only</span></label
+              >
+            </div>
+            <div id="style-active-filters-art"></div>
+            <p
+              class="style-result-status"
+              id="style-status-art"
+              role="status"
+              aria-live="polite"
+            >
+            </p>
+            <div
+              class="selected-style-note"
+              id="style-selected-art"
+              aria-live="polite"
+            >
+            </div>
+            <div class="tile-grid" id="styles-art-grid"></div>
+            <nav
+              class="pagination-row"
+              id="style-pagination-art"
+              aria-label="Imagery style pages"
+            >
+            </nav>
           </div>
-          <div class="tile-grid" id="styles-art-grid"></div>
-          <nav
-            class="pagination-row"
-            id="style-pagination-art"
-            aria-label="Imagery style pages"
-          >
-          </nav>
-        </div>
-        <div
-          class="style-panel"
-          id="panel-technique"
-          role="tabpanel"
-          aria-labelledby="tab-technique"
-          hidden
-        >
-          <div class="style-browser-controls">
-            <label for="style-search-technique"
-              >Search finish styles<input
-                id="style-search-technique"
-                class="input input-bordered"
-                type="search"
-                autocomplete="off"
-              /></label
-            >
-            <label for="style-group-technique"
-              >Group<select
-                id="style-group-technique"
-                class="select select-bordered"></select></label
-            >
-            <label class="style-curated-filter" for="style-curated-technique"
-              ><input
-                id="style-curated-technique"
-                class="checkbox"
-                type="checkbox"
-              /><span>Curated picks only</span></label
-            >
-          </div>
-          <div id="style-active-filters-technique"></div>
-          <p
-            class="style-result-status"
-            id="style-status-technique"
-            role="status"
-            aria-live="polite"
-          >
-          </p>
           <div
-            class="selected-style-note"
-            id="style-selected-technique"
-            aria-live="polite"
+            class="style-panel"
+            id="panel-technique"
+            role="tabpanel"
+            aria-labelledby="tab-technique"
+            hidden
           >
+            <div class="style-browser-controls">
+              <label for="style-search-technique"
+                >Search finish styles<input
+                  id="style-search-technique"
+                  class="input input-bordered"
+                  type="search"
+                  autocomplete="off"
+                /></label
+              >
+              <label for="style-group-technique"
+                >Group<select
+                  id="style-group-technique"
+                  class="select select-bordered"></select></label
+              >
+              <label class="style-curated-filter" for="style-curated-technique"
+                ><input
+                  id="style-curated-technique"
+                  class="checkbox"
+                  type="checkbox"
+                /><span>Curated picks only</span></label
+              >
+            </div>
+            <div id="style-active-filters-technique"></div>
+            <p
+              class="style-result-status"
+              id="style-status-technique"
+              role="status"
+              aria-live="polite"
+            >
+            </p>
+            <div
+              class="selected-style-note"
+              id="style-selected-technique"
+              aria-live="polite"
+            >
+            </div>
+            <div class="tile-grid" id="styles-technique-grid"></div>
+            <nav
+              class="pagination-row"
+              id="style-pagination-technique"
+              aria-label="Finish style pages"
+            >
+            </nav>
           </div>
-          <div class="tile-grid" id="styles-technique-grid"></div>
-          <nav
-            class="pagination-row"
-            id="style-pagination-technique"
-            aria-label="Finish style pages"
-          >
-          </nav>
-        </div>
 
-        <div class="mixes">
-          <button type="button" class="btn" id="btn-shuffle"
-            >Shuffle a clashing mix</button
-          >
-          <div class="mix-row" id="mixes"></div>
-        </div>
+          <div class="mixes">
+            <button type="button" class="btn" id="btn-shuffle"
+              >Shuffle a clashing mix</button
+            >
+            <div class="mix-row" id="mixes"></div>
+          </div>
+        </section>
+      </StudioDisclosure>
 
+      <section
+        class="palette-section"
+        data-step="refine"
+        aria-labelledby="palette-h"
+      >
         <div class="palette-block">
           <div class="palette-head">
             <div class="field-heading section-title-row">
-              <h3>Palette</h3>
+              <h3 id="palette-h">Palette</h3>
               <FieldInfo
                 label="Palette"
                 id="palette"
@@ -562,6 +578,7 @@ Brooklyn, NY"></textarea>
         title="Fine-tune the direction"
         description="Typography, exclusions and creative intent"
         className="fine-tune"
+        step="refine"
       >
         <section aria-labelledby="type-h">
           <div class="section-head">
@@ -852,29 +869,19 @@ Brooklyn, NY"></textarea>
           <div class="signatures" id="signatures"></div>
         </section>
       </StudioDisclosure>
-    </div>
-
-    <aside class="proof" id="proof-panel" aria-labelledby="proof-h">
-      <div class="proof-inner">
-        <h2 id="proof-h" class="sr-only">Proof and prompt</h2>
-        <figure class="sheet card card-border">
-          <div class="crop" id="proof"></div>
-          <figcaption>
-            <ul class="seps" id="seps"></ul>
-            <p class="caveat">
-              Vector study of the direction, not a generated image.
-            </p>
-          </figcaption>
-        </figure>
-
-        <div
-          id="readability-hint"
-          class="alert alert-soft readability-hint"
-          role="note"
-          hidden
-        >
+      <section
+        class="send-panel"
+        id="send-panel"
+        data-step="send"
+        aria-labelledby="send-h"
+      >
+        <div class="section-head">
+          <h2 id="send-h">Where is it going?</h2>
+          <p>
+            Pick the image model you will paste into. The prompt adapts to it,
+            then press Copy prompt.
+          </p>
         </div>
-
         <div class="target-block">
           <div class="field-heading">
             <span class="mini-label" id="target-label">Send to</span>
@@ -894,49 +901,159 @@ Brooklyn, NY"></textarea>
           <p class="target-note" id="target-note"></p>
         </div>
 
-        <div class="pattern-row">
-          <StudioField
-            label="Prompt shape"
-            controlId="f-pattern"
-            info="Choose how the prompt is organized. The art direction keeps it compact; the production spec adds more explicit constraints."
-          >
-            <select id="f-pattern" class="select"></select>
-          </StudioField>
-          <div class="field" id="lang-field">
-            <div class="field-heading">
-              <span id="lang-label">Language</span>
-              <FieldInfo
-                label="Language"
-                id="language"
-                info="This changes the language of the generated prompt. It does not translate the text entered for the image."
-              />
-            </div>
-            <div class="seg" role="radiogroup" aria-labelledby="lang-label">
-              <label class="seg-option">
-                <input
-                  class="radio"
-                  type="radio"
-                  name="language"
-                  value="en"
-                  data-lang="en"
+        <button type="button" class="btn" id="btn-existing-image">
+          Start from an existing image
+        </button>
+        <StudioDisclosure
+          title="Prompt shape, language and model settings"
+          description="Advanced: how the prompt is organized and written"
+          className="send-advanced"
+        >
+          <div class="pattern-row">
+            <StudioField
+              label="Prompt shape"
+              controlId="f-pattern"
+              info="Choose how the prompt is organized. The art direction keeps it compact; the production spec adds more explicit constraints."
+            >
+              <select id="f-pattern" class="select"></select>
+            </StudioField>
+            <div class="field" id="lang-field">
+              <div class="field-heading">
+                <span id="lang-label">Language</span>
+                <FieldInfo
+                  label="Language"
+                  id="language"
+                  info="This changes the language of the generated prompt. It does not translate the text entered for the image."
                 />
-                <span>EN</span>
-              </label>
-              <label class="seg-option">
-                <input
-                  class="radio"
-                  type="radio"
-                  name="language"
-                  value="es"
-                  data-lang="es"
-                />
-                <span>ES</span>
-              </label>
+              </div>
+              <div class="seg" role="radiogroup" aria-labelledby="lang-label">
+                <label class="seg-option">
+                  <input
+                    class="radio"
+                    type="radio"
+                    name="language"
+                    value="en"
+                    data-lang="en"
+                  />
+                  <span>EN</span>
+                </label>
+                <label class="seg-option">
+                  <input
+                    class="radio"
+                    type="radio"
+                    name="language"
+                    value="es"
+                    data-lang="es"
+                  />
+                  <span>ES</span>
+                </label>
+              </div>
             </div>
           </div>
-        </div>
-        <p class="pattern-hint" id="pattern-hint"></p>
+          <p class="pattern-hint" id="pattern-hint"></p>
 
+          <div class="ctx" id="edit-fields" hidden>
+            <div class="field">
+              <div class="field-heading">
+                <label for="f-change">Change only</label>
+                <FieldInfo
+                  label="Change only"
+                  id="change-only"
+                  info="Describe the specific part to edit. The prompt asks the model to leave everything else untouched."
+                />
+              </div>
+              <input
+                id="f-change"
+                class="input"
+                type="text"
+                maxlength="240"
+                placeholder="the background to a deep navy gradient"
+              />
+            </div>
+            <div class="field">
+              <div class="field-heading">
+                <label for="f-preserve">Keep exactly</label>
+                <FieldInfo
+                  label="Keep exactly"
+                  id="keep-exactly"
+                  info="List the subjects, placement, and text that should remain unchanged in the edit."
+                />
+              </div>
+              <input
+                id="f-preserve"
+                class="input"
+                type="text"
+                maxlength="240"
+                placeholder="the band members, their instruments, and the headline text"
+              />
+            </div>
+          </div>
+
+          <div class="ctx" id="mj-fields" hidden>
+            <div class="field">
+              <div class="field-heading">
+                <label for="f-sref"
+                  >Style reference codes <small>--sref, space separated</small
+                  ></label
+                >
+                <FieldInfo
+                  label="Style reference codes"
+                  id="style-reference-codes"
+                  info="Add one or more numeric Midjourney style reference codes, separated by spaces. These are passed through as --sref values."
+                />
+              </div>
+              <input
+                id="f-sref"
+                class="input"
+                type="text"
+                autocomplete="off"
+                spellcheck="false"
+                placeholder="2378124706"
+              />
+            </div>
+            <p class="field-error" id="sref-error" hidden></p>
+            <div class="mj-row">
+              <div class="check-row">
+                <label class="check" for="f-raw">
+                  <input id="f-raw" class="checkbox" type="checkbox" />
+                  <span>--raw <small>skip default beautification</small></span>
+                </label>
+                <FieldInfo
+                  label="Raw mode"
+                  id="raw-mode"
+                  info="Passes Midjourney's --raw flag to reduce its default beautification and give your art direction more influence."
+                />
+              </div>
+              <StudioField
+                label="--s stylize"
+                controlId="f-stylize"
+                className="small"
+                info="Controls how strongly Midjourney applies its own aesthetic defaults. Leave it blank to use the model's default."
+              >
+                <input
+                  id="f-stylize"
+                  class="input"
+                  type="number"
+                  min="0"
+                  max="1000"
+                  step="50"
+                  placeholder="250"
+                />
+              </StudioField>
+            </div>
+          </div>
+        </StudioDisclosure>
+      </section>
+
+      <div class="step-nav" id="step-nav">
+        <button type="button" class="btn ghost" id="step-back">Back</button>
+        <button type="button" class="btn primary" id="step-next">Next</button>
+      </div>
+    </div>
+
+    <aside class="proof" id="proof-panel" aria-labelledby="proof-h">
+      <div class="proof-inner">
+        <h2 id="proof-h" class="sr-only">Proof and prompt</h2>
         <div class="copy-dock">
           <div class="actions">
             <div class="join copy-join">
@@ -982,141 +1099,122 @@ Brooklyn, NY"></textarea>
           <p class="status" id="status" role="status" aria-live="polite"></p>
         </div>
 
-        <div class="ctx" id="edit-fields" hidden>
-          <div class="field">
-            <div class="field-heading">
-              <label for="f-change">Change only</label>
-              <FieldInfo
-                label="Change only"
-                id="change-only"
-                info="Describe the specific part to edit. The prompt asks the model to leave everything else untouched."
-              />
-            </div>
+        <div
+          role="tablist"
+          class="tabs tabs-lift tabs-bottom proof-tabs"
+          aria-label="Proof and prompt"
+        >
+          <label class="tab gap-2">
             <input
-              id="f-change"
-              class="input"
-              type="text"
-              maxlength="240"
-              placeholder="the background to a deep navy gradient"
+              type="radio"
+              name="proof_tabs"
+              id="tab-proof"
+              aria-label="Proof"
+              checked
             />
-          </div>
-          <div class="field">
-            <div class="field-heading">
-              <label for="f-preserve">Keep exactly</label>
-              <FieldInfo
-                label="Keep exactly"
-                id="keep-exactly"
-                info="List the subjects, placement, and text that should remain unchanged in the edit."
-              />
-            </div>
-            <input
-              id="f-preserve"
-              class="input"
-              type="text"
-              maxlength="240"
-              placeholder="the band members, their instruments, and the headline text"
-            />
-          </div>
-        </div>
-
-        <div class="ctx" id="mj-fields" hidden>
-          <div class="field">
-            <div class="field-heading">
-              <label for="f-sref"
-                >Style reference codes <small>--sref, space separated</small
-                ></label
-              >
-              <FieldInfo
-                label="Style reference codes"
-                id="style-reference-codes"
-                info="Add one or more numeric Midjourney style reference codes, separated by spaces. These are passed through as --sref values."
-              />
-            </div>
-            <input
-              id="f-sref"
-              class="input"
-              type="text"
-              autocomplete="off"
-              spellcheck="false"
-              placeholder="2378124706"
-            />
-          </div>
-          <p class="field-error" id="sref-error" hidden></p>
-          <div class="mj-row">
-            <div class="check-row">
-              <label class="check" for="f-raw">
-                <input id="f-raw" class="checkbox" type="checkbox" />
-                <span>--raw <small>skip default beautification</small></span>
-              </label>
-              <FieldInfo
-                label="Raw mode"
-                id="raw-mode"
-                info="Passes Midjourney's --raw flag to reduce its default beautification and give your art direction more influence."
-              />
-            </div>
-            <StudioField
-              label="--s stylize"
-              controlId="f-stylize"
-              className="small"
-              info="Controls how strongly Midjourney applies its own aesthetic defaults. Leave it blank to use the model's default."
+            <svg
+              class="size-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+              focusable="false"
             >
-              <input
-                id="f-stylize"
-                class="input"
-                type="number"
-                min="0"
-                max="1000"
-                step="50"
-                placeholder="250"
-              />
-            </StudioField>
+              <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+              <circle cx="9" cy="10" r="1.5"></circle>
+              <path d="m21 16-5-5-8 9"></path>
+            </svg>
+            Proof
+          </label>
+          <div class="tab-content proof-tab-content">
+            <figure class="sheet card card-border">
+              <div class="crop" id="proof"></div>
+              <figcaption>
+                <ul class="seps" id="seps"></ul>
+                <p class="caveat">
+                  Vector study of the direction, not a generated image.
+                </p>
+              </figcaption>
+            </figure>
+
+            <div
+              id="readability-hint"
+              class="alert alert-soft readability-hint"
+              role="note"
+              hidden
+            >
+            </div>
+          </div>
+
+          <label class="tab gap-2">
+            <input
+              type="radio"
+              name="proof_tabs"
+              id="tab-prompt"
+              aria-label="Generated prompt"
+            />
+            <svg
+              class="size-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path d="M4 6h16M4 12h16M4 18h10"></path>
+            </svg>
+            <span id="prompt-label"
+              ><span class="sr-only">Generated </span>Prompt</span
+            >
+            <span class="count" id="prompt-count"></span>
+          </label>
+          <div class="tab-content proof-tab-content">
+            <div class="prompt-box">
+              <div class="prompt-wrap">
+                <button
+                  type="button"
+                  class="btn btn-ghost btn-sm btn-square prompt-copy"
+                  id="btn-copy-icon"
+                  aria-label="Copy prompt"
+                  title="Copy prompt"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <rect x="9" y="9" width="11" height="11" rx="2"></rect>
+                    <path d="M5 15V6a2 2 0 0 1 2-2h9"></path>
+                  </svg>
+                </button>
+                <div
+                  class="prompt"
+                  id="prompt"
+                  role="group"
+                  tabindex="0"
+                  aria-labelledby="prompt-label"
+                >
+                </div>
+              </div>
+              <div id="neg-wrap" hidden>
+                <div class="prompt-head">
+                  <span class="mini-label" id="neg-label">Negative prompt</span>
+                </div>
+                <div
+                  class="prompt neg"
+                  id="neg"
+                  role="group"
+                  tabindex="0"
+                  aria-labelledby="neg-label"
+                >
+                </div>
+              </div>
+              <ul class="notices" id="notices"></ul>
+            </div>
           </div>
         </div>
-
-        <details class="prompt-disclosure" open>
-          <summary>
-            <span class="mini-label" id="prompt-label">Generated prompt</span>
-            <span class="count" id="prompt-count"></span>
-          </summary>
-          <div class="prompt-box">
-            <div class="prompt-wrap">
-              <button
-                type="button"
-                class="btn btn-ghost btn-sm btn-square prompt-copy"
-                id="btn-copy-icon"
-                aria-label="Copy prompt"
-                title="Copy prompt"
-              >
-                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                  <rect x="9" y="9" width="11" height="11" rx="2"></rect>
-                  <path d="M5 15V6a2 2 0 0 1 2-2h9"></path>
-                </svg>
-              </button>
-              <div
-                class="prompt"
-                id="prompt"
-                role="group"
-                tabindex="0"
-                aria-labelledby="prompt-label"
-              >
-              </div>
-            </div>
-            <div id="neg-wrap" hidden>
-              <div class="prompt-head">
-                <span class="mini-label" id="neg-label">Negative prompt</span>
-              </div>
-              <div
-                class="prompt neg"
-                id="neg"
-                role="group"
-                tabindex="0"
-                aria-labelledby="neg-label"
-              >
-              </div>
-            </div>
-            <ul class="notices" id="notices"></ul>
-          </div>
-        </details>
       </div>
     </aside>
   </main>

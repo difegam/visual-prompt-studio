@@ -79,6 +79,7 @@ import {
   toggleComparisonSelection,
 } from "./direction-comparison";
 import { bindInfoPopovers } from "./info-popover";
+import { bindGuidedPath } from "./guided-path-ui";
 import { esc } from "./escape";
 
 /* ── tiny utilities ──────────────────────────────────────────────────── */
@@ -1634,6 +1635,10 @@ export function startApp(): void {
   const copyIconHtml = copyIcon.innerHTML;
   const copyButtons = [$("btn-copy"), $("btn-copy-mobile")];
   const promptBox = promptEl.closest<HTMLElement>(".prompt-box");
+  const promptTab = $("tab-prompt") as HTMLInputElement;
+  const showPromptTab = (): void => {
+    promptTab.checked = true;
+  };
   let copyIconTimer = 0;
   const setCopyLabel = (text: string): void => {
     for (const b of copyButtons) {
@@ -1642,7 +1647,7 @@ export function startApp(): void {
   };
   /** Reveal the selected prompt so the user can copy it by hand. */
   const copyBlocked = (): void => {
-    promptEl.closest("details")?.setAttribute("open", "");
+    showPromptTab();
     say("Copy was blocked. The prompt is selected: press Ctrl+C or ⌘C.");
   };
   async function copyPrompt(): Promise<void> {
@@ -1703,6 +1708,7 @@ export function startApp(): void {
     proofPanel.toggleAttribute("data-open", open);
     proofToggle.setAttribute("aria-expanded", String(open));
     proofToggle.textContent = open ? "Hide prompt" : "See prompt";
+    if (open) showPromptTab();
   }
   proofToggle.addEventListener("click", () =>
     setProofOpen(!proofPanel.hasAttribute("data-open")),
@@ -2372,6 +2378,13 @@ export function startApp(): void {
   });
 
   render();
+  bindGuidedPath({
+    initial: initialRecipe,
+    getRecipe: () => store.get(),
+    getDirectionName: () => getDirection(view.presetId)?.name ?? null,
+    subscribe: (listener) => store.subscribe(() => listener()),
+    say: (message) => say(message),
+  });
 }
 
 function clonePaletteValue(p: Recipe["palette"]): Recipe["palette"] {

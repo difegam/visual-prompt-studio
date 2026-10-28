@@ -2288,19 +2288,6 @@ textarea:hover {
   flex-direction: column;
   gap: 8px;
 }
-@media (min-width: 1041px) {
-  /* .proof scrolls, so the dock keeps Copy in view below the fold */
-  .copy-dock {
-    position: sticky;
-    bottom: 0;
-    z-index: 2;
-    margin-inline: -4px;
-    padding: 10px 4px 8px;
-    background: var(--sheet);
-    box-shadow: 0 -10px 12px -8px
-      color-mix(in srgb, var(--ink) 14%, transparent);
-  }
-}
 .status:empty {
   min-height: 0;
 }
@@ -3970,44 +3957,7 @@ dialog::backdrop {
   }
 }
 
-/* ── generated prompt disclosure + copy icon ── */
-.prompt-disclosure {
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  overflow: clip;
-}
-.prompt-disclosure > summary {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 8px;
-  padding: 12px 14px;
-  cursor: pointer;
-  list-style: none;
-}
-.prompt-disclosure > summary::-webkit-details-marker {
-  display: none;
-}
-.prompt-disclosure > summary::after {
-  content: "";
-  order: 3;
-  width: 8px;
-  height: 8px;
-  border: solid currentColor;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg) translateY(-2px);
-  transition: transform 0.15s;
-  align-self: center;
-}
-.prompt-disclosure[open] > summary::after {
-  transform: rotate(-135deg);
-}
-.prompt-disclosure > summary .count {
-  margin-left: auto;
-}
-.prompt-disclosure > .prompt-box {
-  padding: 0 14px 14px;
-}
+/* ── generated prompt copy icon ── */
 .prompt-wrap {
   position: relative;
 }
@@ -4044,13 +3994,27 @@ dialog::backdrop {
 }
 .intro-inner {
   display: grid;
-  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: clamp(24px, 4vw, 64px);
   align-items: center;
-  padding: clamp(28px, 4vw, 40px) clamp(24px, 3vw, 36px);
+  padding: clamp(18px, 2.5vw, 24px) clamp(20px, 3vw, 32px);
   border: 1px solid var(--line);
   border-radius: 16px;
   background: var(--sheet);
+}
+.intro-copy {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 32px;
+  align-items: center;
+}
+.intro-copy > * {
+  grid-column: 1;
+}
+.intro-copy .intro-actions {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  margin-top: 0;
 }
 .intro-kicker {
   font-size: 12px;
@@ -4066,14 +4030,14 @@ dialog::backdrop {
   font-stretch: 75%;
   line-height: 1.05;
   letter-spacing: -0.035em;
-  max-width: 16ch;
-  margin-bottom: 12px;
+  max-width: none;
+  margin-bottom: 8px;
 }
 .intro-copy > p:not(.intro-kicker) {
   font-size: 15px;
   line-height: 1.5;
   color: var(--muted);
-  max-width: 50ch;
+  max-width: 70ch;
 }
 .intro-actions {
   display: flex;
@@ -4084,33 +4048,6 @@ dialog::backdrop {
 .intro-actions .btn {
   min-height: 40px;
 }
-.intro-steps {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-}
-.intro-steps li {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 14px 14px 16px;
-  border: 1px solid var(--line);
-  border-top: 3px solid var(--sep, var(--ink));
-  border-radius: 10px;
-  background: var(--paper);
-}
-.intro-steps li.c {
-  --sep: var(--c);
-}
-.intro-steps li.m {
-  --sep: var(--m);
-}
-.intro-steps li.y {
-  --sep: var(--y);
-}
 .step-n {
   font-size: 28px;
   line-height: 1;
@@ -4119,43 +4056,25 @@ dialog::backdrop {
   letter-spacing: -0.03em;
   color: var(--sep, var(--ink));
 }
-.intro-steps h3 {
-  font-size: 16px;
-  font-weight: 700;
-  font-stretch: 88%;
-  letter-spacing: -0.02em;
-  line-height: 1.25;
-  margin-bottom: 6px;
-}
-.intro-steps p {
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--muted);
-}
 @media (max-width: 1040px) {
   .intro {
     padding: 22px 22px 0;
   }
-  .intro-inner {
+  .intro-copy {
     grid-template-columns: 1fr;
+  }
+  .intro-copy .intro-actions {
+    grid-column: 1;
+    grid-row: auto;
+    margin-top: 12px;
   }
 }
 @media (max-width: 640px) {
   .intro {
     padding: 14px 0 0;
   }
-  .intro-steps {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-  .intro-steps li {
-    flex-direction: row;
-    align-items: baseline;
-    gap: 12px;
-  }
   .step-n {
     font-size: 22px;
-    flex: 0 0 auto;
   }
 }
 
@@ -4527,4 +4446,473 @@ dialog::backdrop {
   .bar-menu-toggle span {
     display: none;
   }
+}
+
+/* ── guided path ── */
+.step-group {
+  display: contents;
+}
+.step-rail-wrap {
+  max-width: 1480px;
+  margin: 0 auto;
+  padding: 20px 24px 0;
+}
+.step-rail-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.step-rail {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.step-rail li {
+  display: flex;
+}
+.step-tab {
+  flex: 1;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas: "n label chips" "n summary chips";
+  column-gap: 12px;
+  align-items: center;
+  text-align: left;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--line);
+  border-radius: 10px;
+  background: var(--sheet);
+  color: var(--ink);
+  cursor: pointer;
+  transition:
+    border-color 200ms var(--ease-out),
+    box-shadow 200ms var(--ease-out);
+}
+.step-tab .step-n {
+  grid-area: n;
+  color: var(--muted);
+}
+.step-tab .step-label {
+  grid-area: label;
+  font-weight: 700;
+}
+.step-tab .step-summary {
+  grid-area: summary;
+  color: var(--muted);
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.step-tab[data-done] {
+  border-top-color: var(--ok);
+}
+.step-tab[aria-current="step"] {
+  border-color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--ink);
+}
+.step-tab[aria-current="step"] .step-n {
+  color: var(--accent);
+}
+.step-tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.step-rail-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.step-rail-meta h2 {
+  font-size: 18px;
+  font-stretch: 88%;
+  letter-spacing: -0.015em;
+}
+.step-rail-meta h2:focus {
+  outline: none;
+}
+.step-rail-meta h2:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+.expert-toggle {
+  padding: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.expert-toggle-input:checked {
+  --input-color: var(--accent);
+}
+.expert-toggle-input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.step-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.step-nav .btn[hidden] {
+  display: none;
+}
+.step-nav #step-next {
+  margin-left: auto;
+}
+.send-panel {
+  padding: clamp(20px, 3vw, 32px);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--sheet);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
+}
+.send-panel > * {
+  align-self: stretch;
+}
+.send-panel > .btn {
+  align-self: flex-start;
+}
+
+/* Guided view: show only the current step's panels. */
+#studio-app[data-view="guided"]:not([data-step="describe"])
+  [data-step="describe"],
+#studio-app[data-view="guided"]:not([data-step="look"]) [data-step="look"],
+#studio-app[data-view="guided"]:not([data-step="refine"]) [data-step="refine"],
+#studio-app[data-view="guided"]:not([data-step="send"]) [data-step="send"] {
+  display: none;
+}
+/* The brief card only holds Describe and Look content. */
+#studio-app[data-view="guided"][data-step="refine"] .brief,
+#studio-app[data-view="guided"][data-step="send"] .brief {
+  display: none;
+}
+/* Expert view: the whole page, without the rail. */
+#studio-app[data-view="expert"] .step-rail,
+#studio-app[data-view="expert"] #step-nav,
+#studio-app[data-view="expert"] #step-heading,
+#studio-app[data-view="expert"] #btn-existing-image {
+  display: none;
+}
+#studio-app[data-view="expert"] .step-rail-inner {
+  gap: 0;
+}
+#studio-app[data-view="expert"] .step-rail-meta {
+  justify-content: flex-end;
+}
+/* Beside the prompt, the Send panel drops its card. */
+.proof .send-panel {
+  padding: 0;
+  border: 0;
+  background: none;
+  gap: 12px;
+}
+.proof .send-panel .section-head {
+  display: none;
+}
+/* Without JavaScript the rail has nothing to drive, so show the page as is. */
+#studio-app:not([data-view]) .step-rail-wrap,
+#studio-app:not([data-view]) #step-nav,
+#studio-app:not([data-view]) #btn-existing-image {
+  display: none;
+}
+
+@media (max-width: 1040px) {
+  .step-rail-wrap {
+    padding: 14px 22px 0;
+  }
+}
+@media (max-width: 640px) {
+  .step-rail-wrap {
+    padding: 12px 16px 0;
+  }
+  .step-rail {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .step-tab {
+    grid-template-columns: 1fr;
+    grid-template-areas: "n" "label";
+    justify-items: center;
+    text-align: center;
+    padding: 8px 4px;
+  }
+  .step-tab .step-summary,
+  .step-tab .step-chips {
+    display: none;
+  }
+  .step-tab .step-n {
+    font-size: 20px;
+  }
+  .step-tab .step-label {
+    font-size: 13px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .step-tab {
+    transition: none;
+  }
+}
+
+/* ── proof / prompt tabs (daisyUI tabs-lift, bottom) ── */
+.proof-tabs {
+  --tab-bg: var(--sheet);
+  --tab-border-color: var(--line);
+  --tab-p: 14px;
+  color: var(--ink);
+}
+.proof-tabs > .tab {
+  color: var(--muted);
+  font-weight: 600;
+}
+.proof-tabs > .tab:has(:checked) {
+  color: var(--ink);
+}
+.proof-tabs > .tab:has(:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.proof-tab-content {
+  padding: 16px;
+  background: var(--sheet);
+  border-color: var(--line);
+  display: none;
+  flex-direction: column;
+  gap: 16px;
+}
+.proof-tabs > .tab:has(:checked) + .proof-tab-content {
+  display: flex;
+}
+.proof-tab-content .sheet {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.proof-tab-content .prompt-box {
+  gap: 12px;
+}
+@media (max-width: 1040px) {
+  /* Keep both tabs inside the sheet without scrolling it. */
+  .proof-tab-content .crop svg {
+    max-height: 19dvh;
+  }
+  .proof-tab-content .prompt {
+    max-height: 24dvh;
+  }
+  .proof-tab-content .neg {
+    max-height: 10dvh;
+  }
+}
+@media (max-width: 640px) {
+  .proof-tab-content {
+    padding: 12px;
+    gap: 10px;
+  }
+}
+
+/* ── guided path motion ──
+   Operate surface: motion shows where you are and where you came from.
+   Arrival animations only run under [data-entering], which the script sets
+   after a user-initiated step change, so typing and re-renders stay still. */
+#studio-app {
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --step-shift: 14px;
+}
+#studio-app[data-dir="back"] {
+  --step-shift: -14px;
+}
+
+/* The indicator slides between steps. */
+.step-rail {
+  position: relative;
+}
+.step-rail::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--ind-w, 0);
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--accent);
+  transform: translateX(var(--ind-x, 0));
+  pointer-events: none;
+}
+.step-rail[data-ready]::after {
+  transition: transform 340ms var(--ease-out);
+}
+
+/* A changed summary settles in where the old one was. */
+@keyframes summary-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+.step-summary.is-changed {
+  animation: summary-in 220ms var(--ease-out) both;
+}
+
+/* The arriving panel comes from the direction of travel. */
+@keyframes step-in {
+  from {
+    opacity: 0;
+    transform: translateX(var(--step-shift));
+  }
+}
+#studio-app[data-view="guided"][data-entering] .step-group > *,
+#studio-app[data-view="guided"][data-entering] .directions,
+#studio-app[data-view="guided"][data-entering] .layers-detour,
+#studio-app[data-view="guided"][data-entering] .palette-section,
+#studio-app[data-view="guided"][data-entering] .fine-tune,
+#studio-app[data-view="guided"][data-entering] .send-panel,
+#studio-app[data-entering] #step-heading {
+  animation: step-in 300ms var(--ease-out) both;
+}
+
+/* Lists that arrive as lists: short, capped stagger. */
+@keyframes item-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+#studio-app[data-view="guided"][data-entering] #presets > *,
+#studio-app[data-view="guided"][data-entering] #f-target > * {
+  animation: item-in 280ms var(--ease-out) both;
+}
+/* Ink swatches dab onto the sheet. */
+@keyframes ink-dab {
+  from {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+}
+#studio-app[data-view="guided"][data-entering] #swatches > *,
+#studio-app[data-view="guided"][data-entering] #variations > * {
+  animation: ink-dab 320ms var(--ease-out) both;
+}
+#studio-app[data-entering]
+  :is(#presets, #f-target, #swatches, #variations)
+  > :nth-child(1) {
+  animation-delay: 60ms;
+}
+#studio-app[data-entering]
+  :is(#presets, #f-target, #swatches, #variations)
+  > :nth-child(2) {
+  animation-delay: 95ms;
+}
+#studio-app[data-entering]
+  :is(#presets, #f-target, #swatches, #variations)
+  > :nth-child(3) {
+  animation-delay: 130ms;
+}
+#studio-app[data-entering]
+  :is(#presets, #f-target, #swatches, #variations)
+  > :nth-child(n + 4) {
+  animation-delay: 165ms;
+}
+
+/* Arriving at Send: one ring blooms on the primary action. */
+@keyframes copy-nudge {
+  from {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+  to {
+    box-shadow: 0 0 0 14px color-mix(in srgb, var(--accent) 0%, transparent);
+  }
+}
+#studio-app[data-view="guided"][data-entering][data-step="send"] #btn-copy {
+  animation: copy-nudge 720ms var(--ease-out) 320ms 1 both;
+}
+
+/* Reduced motion: the global rule near the top of this file switches every
+   transition and animation off, so steps change instantly. */
+
+/* ── guided path color roles ──
+   The studio already codes work in separations: cyan layout, magenta imagery,
+   yellow finish, ink for type. Look and Refine reuse that key so the bar says
+   what each step touches: the layer bar for Look, the recipe's own palette
+   inks for Refine. Describe and Send stay plain. */
+.step-chips {
+  grid-area: chips;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.step-chips::before {
+  content: "";
+}
+[data-chips="look"] .step-chips::before {
+  width: 34px;
+  height: 10px;
+  border-radius: 5px;
+  background: linear-gradient(
+    90deg,
+    var(--c) 0 33.3%,
+    var(--m) 33.3% 66.6%,
+    var(--y) 66.6%
+  );
+}
+[data-chips="refine"] .step-chips::before {
+  width: 34px;
+  height: 12px;
+  border-radius: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--ink-1, var(--line)) 0 33.3%,
+    var(--ink-2, var(--line)) 33.3% 66.6%,
+    var(--ink-3, var(--line)) 66.6%
+  );
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 28%, transparent);
+}
+[data-chips="describe"] .step-chips,
+[data-chips="send"] .step-chips {
+  display: none;
+}
+
+/* Done is a check as well as a color, so it survives color-blind viewing. */
+.step-tab[data-done] .step-n {
+  color: var(--ok);
+}
+.step-tab[data-done] .step-n::after {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 11px;
+  margin-left: 5px;
+  border: solid var(--ok);
+  border-width: 0 2.5px 2.5px 0;
+  transform: translateY(-3px) rotate(45deg);
+}
+.step-tab:hover:not([aria-current="step"]) {
+  border-color: color-mix(in srgb, var(--ink) 45%, var(--line));
+}
+
+/* Direction cards show which separation each layer row belongs to. */
+.direction-layers li::before {
+  content: "";
+  flex: 0 0 9px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  align-self: center;
+  background: var(--sep, var(--line));
+}
+.direction-layers li:nth-child(1) {
+  --sep: var(--c);
+}
+.direction-layers li:nth-child(2) {
+  --sep: var(--m);
+}
+.direction-layers li:nth-child(3) {
+  --sep: var(--y);
 }

@@ -20,3 +20,9 @@
 | Direction comparison | A session-only, side-by-side view of two visual directions. Neither is applied until the user chooses one.                                          |
 | Example brief        | An editorial sample brief for one format, loaded by a "Try an example" pill. It replaces only the brief fields and is not usage data.               |
 | Starter edition      | A dated, editorially chosen set of starter directions (for example, 2026). Not evidence of popularity.                                              |
+| Guided path          | The default way through the Studio: a short sequence of steps that offers a few choices at a time and a recommended next move.                      |
+| Step                 | One stage of the guided path (Describe, Look, Refine, Send). Steps are never locked; the user can jump to any of them.                              |
+| Main road            | The minimal set of choices on the guided path that is enough to produce a copyable prompt.                                                          |
+| Detour               | An optional side route from a step (such as browsing all directions) that returns to the same step.                                                 |
+| Advanced option      | A control kept out of the main road, collapsed but reachable from any step.                                                                         |
+| Expert view          | A remembered user preference that turns off the guided path and shows every control at once.                                                        |

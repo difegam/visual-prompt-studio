@@ -22,7 +22,7 @@ Visual Prompt Studio is a local-first, copy-first composer for art-directed imag
 
 ## Operating Context
 
-- The user composes a recipe on the single-page homepage, copies the compiled prompt, and uses it in an external image tool.
+- The user composes a recipe on the single-page homepage, copies the compiled prompt, and uses it in an external image tool. A guided path (Describe, Look, Refine, Send) is the default way through it; an Expert view shows every control at once.
 - Recipes persist in browser storage and can be exported and imported as validated JSON.
 - Inspiration links open external sites.
 

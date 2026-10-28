@@ -2,6 +2,18 @@
 
 A reference for what the Studio does. The in-app guide at `/guide` covers the same ground for end users.
 
+## Guided path
+
+The Studio opens as a four-step path: **Describe, Look, Refine, Send**. A step bar shows one step's controls at a time, with Back and Next, and a one-line summary of your current choice for each step. Steps are never locked, so you can open any of them, and the prompt panel stays visible throughout.
+
+- **Main road.** Describe: idea, format, goal, headline. Look: pick a direction. Refine: palette. Send: target model, then Copy prompt.
+- **Detours** return to the same step: "Try an example", the direction explorer and compare, "Build the look layer by layer", and "Start from an existing image" (Edit with reference).
+- **Advanced options** stay collapsed in their step: text and size, typography, exclusions, authorial intent, prompt shape, language and model settings.
+- The **Show all options** switch turns the step bar off and shows every control on one page. The choice is remembered in the browser. The step itself is not stored.
+- Changing step slides an indicator along the step bar and brings the new panel in from the direction you are moving. Motion only plays after you change step, never while you type, and it is off when the system asks for reduced motion.
+- Changing step moves focus to the step heading and announces "Step N of 4" to screen readers.
+- A step with no input still gives a usable prompt: the starting look (Swiss layout, Surrealism imagery, Risograph finish) applies until you choose a direction.
+
 ## Brief
 
 - **What are you making?** Free text.
@@ -53,7 +65,7 @@ Prompts can be written in English or Spanish. Notices explain target-specific be
 
 ## Copying and comparing
 
-Copy prompt, Copy negative (when the target has one), and Compare with an undirected prompt.
+Copy prompt, Copy negative (when the target has one), and Compare with an undirected prompt. The copy buttons stay above two tabs: **Proof** (the vector study, layer legend and readability advice) and **Prompt** (the generated prompt, negative prompt, character count and notices).
 
 **Open in** links open ChatGPT, Gemini, Midjourney or FLUX. ChatGPT receives the prompt in the link (when it fits in 2000 characters), so it can appear in browser history. The other targets copy the prompt first, then open the tool.
 

@@ -4,6 +4,19 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+
+- Guided path: a four-step bar (Describe, Look, Refine, Send) that shows a few choices at a time, with detours and collapsed advanced options. "Show all options" restores the all-controls page and is remembered.
+
+### Changed
+
+- The step bar now uses the studio's color key: Look shows the cyan, magenta and yellow layer bar, Refine shows your recipe's palette inks, and completed steps show a check as well as green. Direction cards mark Layout, Imagery and Finish with their layer colors.
+- Step changes now animate: an indicator slides between steps, and the new panel arrives from the direction you are moving. Direction cards, ink swatches and model buttons settle in, and Copy gets a single ring on arriving at Send. None of it plays while you type, and reduced-motion settings turn it all off.
+- "Show all options" is now a switch instead of a button.
+- The homepage intro no longer lists three static steps; the step bar replaces them.
+- Send to, prompt shape, language and model settings now sit in the Send step instead of the prompt panel.
+- The proof and the generated prompt are now two tabs (Proof, Prompt) under the copy buttons, instead of a proof with a collapsed prompt.
+
 ## [1.1.0] - 2026-10-25
 
 ### Added
