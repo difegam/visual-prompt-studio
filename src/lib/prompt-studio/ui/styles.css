@@ -793,6 +793,48 @@ textarea:hover {
 .info-popover > * + * {
   margin-top: 8px;
 }
+.proof-hover {
+  cursor: help;
+}
+.proof-hover:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.proof-explainer {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  width: min(280px, calc(100vw - 24px));
+  padding: 14px 36px 14px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--sheet);
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.5;
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.18);
+}
+.proof-explainer:not(:popover-open) {
+  display: none;
+}
+.proof-explainer h3 {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.proof-explainer p {
+  margin: 0;
+  color: var(--muted);
+}
+.proof-explainer p + p {
+  margin-top: 6px;
+}
+.proof-explainer-close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+}
 .direction-blurb {
   color: var(--ink);
   font-size: 12px;
@@ -1931,7 +1973,7 @@ textarea:hover {
 }
 #f-target {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
   width: 100%;
   padding: 6px;
@@ -1941,6 +1983,7 @@ textarea:hover {
 #f-target .seg-option {
   height: 52px;
   min-height: 52px;
+  position: relative;
   border-radius: 12px;
   color: var(--ink);
   background: var(--sheet);
@@ -1953,11 +1996,19 @@ textarea:hover {
 #f-target .seg-option > span {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  gap: 10px;
+  padding-inline: 12px;
   width: 100%;
   height: 100%;
-  padding: 0;
   border-radius: 12px;
+}
+#f-target .seg-option > span b {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: left;
+  overflow-wrap: anywhere;
 }
 #f-target .seg-option:hover:not(:has(input:checked)) {
   background: color-mix(in srgb, var(--accent) 10%, var(--sheet));
@@ -1969,33 +2020,6 @@ textarea:hover {
   border-color: var(--accent);
   color: var(--accent-ink);
   box-shadow: 0 4px 12px -4px color-mix(in srgb, var(--accent) 60%, transparent);
-}
-/* Name tooltip, since the buttons carry no text. */
-#f-target .seg-option::after {
-  content: attr(data-tip);
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  z-index: 5;
-  padding: 4px 8px;
-  border-radius: 6px;
-  background: var(--ink);
-  color: var(--paper);
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.3;
-  white-space: nowrap;
-  pointer-events: none;
-  opacity: 0;
-  transform: translate(-50%, 3px);
-  transition:
-    opacity 120ms ease-out,
-    transform 120ms ease-out;
-}
-#f-target .seg-option:hover::after,
-#f-target .seg-option:has(input:focus-visible)::after {
-  opacity: 1;
-  transform: translate(-50%, 0);
 }
 .seg-logo {
   flex: none;
@@ -4076,6 +4100,19 @@ dialog::backdrop {
   .step-n {
     font-size: 22px;
   }
+  .step-n svg {
+    width: 22px;
+    height: 22px;
+  }
+  /* Stacked label sits under the icon, so the badge moves to its top-right. */
+  .step-tab[data-done] .step-n::after {
+    bottom: auto;
+    top: -5px;
+  }
+  .step-tab[data-done] .step-n::before {
+    bottom: auto;
+    top: -1px;
+  }
 }
 
 /* ── guide page ── */
@@ -4483,9 +4520,9 @@ dialog::backdrop {
   text-align: left;
   padding: 10px 14px;
   border: 1px solid var(--line);
-  border-top: 3px solid var(--line);
   border-radius: 10px;
   background: var(--sheet);
+  position: relative;
   color: var(--ink);
   cursor: pointer;
   transition:
@@ -4494,7 +4531,7 @@ dialog::backdrop {
 }
 .step-tab .step-n {
   grid-area: n;
-  color: var(--muted);
+  color: var(--step-c);
 }
 .step-tab .step-label {
   grid-area: label;
@@ -4508,15 +4545,36 @@ dialog::backdrop {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.step-tab[data-done] {
-  border-top-color: var(--ok);
+/* Each step owns a color: its icon, its done bar, and the sliding indicator. */
+.step-tab[data-step-tab="describe"],
+#studio-app[data-step="describe"] .step-rail {
+  --step-c: var(--ok);
+}
+.step-tab[data-step-tab="look"],
+#studio-app[data-step="look"] .step-rail {
+  --step-c: var(--c);
+}
+.step-tab[data-step-tab="refine"],
+#studio-app[data-step="refine"] .step-rail {
+  --step-c: var(--m);
+}
+.step-tab[data-step-tab="send"],
+#studio-app[data-step="send"] .step-rail {
+  --step-c: var(--y);
+}
+.step-tab[data-done]::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 12px;
+  right: 12px;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background: var(--step-c);
 }
 .step-tab[aria-current="step"] {
   border-color: var(--ink);
   box-shadow: inset 0 0 0 1px var(--ink);
-}
-.step-tab[aria-current="step"] .step-n {
-  color: var(--accent);
 }
 .step-tab:focus-visible {
   outline: 2px solid var(--accent);
@@ -4524,10 +4582,34 @@ dialog::backdrop {
 }
 .step-rail-meta {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
+}
+.step-heading-block {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+  max-width: 62ch;
+}
+.step-purpose {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+.step-optional {
+  padding: 1px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.step-optional[hidden] {
+  display: none;
 }
 .step-rail-meta h2 {
   font-size: 18px;
@@ -4565,6 +4647,9 @@ dialog::backdrop {
 .step-nav #step-next {
   margin-left: auto;
 }
+.step-nav .btn {
+  min-height: 48px;
+}
 .send-panel {
   padding: clamp(20px, 3vw, 32px);
   border: 1px solid var(--line);
@@ -4595,10 +4680,37 @@ dialog::backdrop {
 #studio-app[data-view="guided"][data-step="send"] .brief {
   display: none;
 }
+/* Look continues the brief card, so its direction block needs no divider. */
+#studio-app[data-view="guided"][data-step="look"] .directions {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+/* Refine's palette sits in a card like the other steps. */
+#studio-app[data-view="guided"] .composer > .palette-section {
+  padding: clamp(20px, 3vw, 32px);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--sheet);
+}
+#studio-app[data-view="guided"] .palette-section .palette-block {
+  margin-top: 0;
+}
+/* The generic section rule must not flatten the Send card's top padding. */
+#studio-app[data-view="guided"] .composer > .send-panel {
+  padding-top: clamp(20px, 3vw, 32px);
+}
+#studio-app[data-view="guided"] .send-panel > .section-head {
+  margin-bottom: 0;
+}
+/* The step purpose line already says this. */
+#studio-app[data-view="guided"] .send-panel > .section-head p {
+  display: none;
+}
 /* Expert view: the whole page, without the rail. */
 #studio-app[data-view="expert"] .step-rail,
 #studio-app[data-view="expert"] #step-nav,
-#studio-app[data-view="expert"] #step-heading,
+#studio-app[data-view="expert"] .step-heading-block,
 #studio-app[data-view="expert"] #btn-existing-image {
   display: none;
 }
@@ -4738,11 +4850,11 @@ dialog::backdrop {
   content: "";
   position: absolute;
   top: 0;
-  left: 0;
-  width: var(--ind-w, 0);
-  height: 3px;
-  border-radius: 3px 3px 0 0;
-  background: var(--accent);
+  left: 12px;
+  width: max(0px, calc(var(--ind-w, 0px) - 24px));
+  height: 4px;
+  border-radius: 0 0 4px 4px;
+  background: var(--step-c, var(--accent));
   transform: translateX(var(--ind-x, 0));
   pointer-events: none;
 }
@@ -4879,19 +4991,42 @@ dialog::backdrop {
   display: none;
 }
 
-/* Done is a check as well as a color, so it survives color-blind viewing. */
-.step-tab[data-done] .step-n {
-  color: var(--ok);
+/* Done is a check badge as well as a color, so it survives color-blind viewing. */
+.step-tab .step-n {
+  position: relative;
+  display: inline-flex;
+}
+.step-n svg {
+  width: 26px;
+  height: 26px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 .step-tab[data-done] .step-n::after {
   content: "";
-  display: inline-block;
+  position: absolute;
+  bottom: -5px;
+  right: -8px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--step-c);
+  box-shadow: 0 0 0 2px var(--sheet);
+}
+.step-tab[data-done] .step-n::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  bottom: 1px;
+  right: -4px;
   width: 6px;
-  height: 11px;
-  margin-left: 5px;
-  border: solid var(--ok);
-  border-width: 0 2.5px 2.5px 0;
-  transform: translateY(-3px) rotate(45deg);
+  height: 3px;
+  border: solid var(--sheet);
+  border-width: 0 0 2px 2px;
+  transform: rotate(-45deg);
 }
 .step-tab:hover:not([aria-current="step"]) {
   border-color: color-mix(in srgb, var(--ink) 45%, var(--line));

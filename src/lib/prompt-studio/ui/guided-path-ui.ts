@@ -5,6 +5,7 @@ import {
   isStepDone,
   loadExpert,
   neighbour,
+  nextLabel,
   saveExpert,
   stepAnnouncement,
   stepIndex,
@@ -41,6 +42,8 @@ export function bindGuidedPath(options: Options): void {
   const root = byId("studio-app");
   const rail = byId<HTMLOListElement>("step-rail");
   const heading = byId("step-heading");
+  const purpose = byId("step-purpose");
+  const optionalTag = byId("step-optional");
   const live = byId("step-live");
   const back = byId<HTMLButtonElement>("step-back");
   const next = byId<HTMLButtonElement>("step-next");
@@ -86,7 +89,7 @@ export function bindGuidedPath(options: Options): void {
     button.dataset.stepTab = step.id;
     button.dataset.chips = step.id;
     button.innerHTML =
-      `<span class="step-n" aria-hidden="true">${stepIndex(step.id) + 1}</span>` +
+      `<span class="step-n" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false">${step.icon}</svg></span>` +
       `<span class="step-label">${step.label}</span>` +
       `<small class="step-summary"></small>` +
       `<span class="step-chips" aria-hidden="true"></span>` +
@@ -126,9 +129,12 @@ export function bindGuidedPath(options: Options): void {
     });
     const info = STEPS[stepIndex(current)]!;
     heading.textContent = `${stepIndex(current) + 1} of ${STEPS.length} · ${info.heading}`;
-    back.hidden = neighbour(current, -1) === null;
-    const last = neighbour(current, 1) === null;
-    next.textContent = last ? "Copy prompt" : "Next";
+    purpose.textContent = info.purpose;
+    optionalTag.hidden = !info.optional;
+    const prev = neighbour(current, -1);
+    back.hidden = prev === null;
+    if (prev) back.textContent = `Back: ${STEPS[stepIndex(prev)]!.label}`;
+    next.textContent = nextLabel(current);
     placeIndicator();
   }
 

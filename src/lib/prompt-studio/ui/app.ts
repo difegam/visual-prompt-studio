@@ -1557,7 +1557,7 @@ export function startApp(): void {
   /* ── target & pattern ── */
   $("f-target").innerHTML = TARGETS.map(
     (t) =>
-      `<label class="seg-option" data-tip="${esc(t.label)}"><input class="radio" type="radio" name="target" value="${t.id}" data-target="${t.id}" aria-label="${esc(t.label)}" /><span title="${esc(t.label)} · ${esc(t.model)}">${targetLogo(t.id)}</span></label>`,
+      `<label class="seg-option" data-tip="${esc(t.label)}"><input class="radio" type="radio" name="target" value="${t.id}" data-target="${t.id}" aria-label="${esc(t.label)}" /><span title="${esc(t.label)} · ${esc(t.model)}">${targetLogo(t.id)}<b>${esc(t.label)}</b></span></label>`,
   ).join("");
   $("f-target").addEventListener("change", (e) => {
     const input = (e.target as HTMLElement).closest<HTMLInputElement>(
@@ -1782,6 +1782,58 @@ export function startApp(): void {
   $("seps").addEventListener("mouseleave", () => {
     view.highlight = null;
     promptEl.className = "prompt";
+  });
+
+  // Hovering (or focusing/tapping) the proof explains what it is.
+  const proofHover = $("proof-hover");
+  const proofExplainer = $("proof-explainer");
+  let proofTimer = 0;
+  const showProofExplainer = () => {
+    if (proofExplainer.matches(":popover-open")) return;
+    proofExplainer.showPopover();
+    const r = proofHover.getBoundingClientRect();
+    const w = proofExplainer.offsetWidth;
+    const h = proofExplainer.offsetHeight;
+    const left = Math.min(
+      Math.max(12, r.left + r.width / 2 - w / 2),
+      window.innerWidth - w - 12,
+    );
+    const below = r.bottom + 8 + h <= window.innerHeight - 12;
+    const top = below ? r.bottom + 8 : Math.max(12, r.top - h - 8);
+    proofExplainer.style.left = `${left}px`;
+    proofExplainer.style.top = `${top}px`;
+  };
+  const hideProofExplainer = () => {
+    window.clearTimeout(proofTimer);
+    if (proofExplainer.matches(":popover-open")) proofExplainer.hidePopover();
+  };
+  proofHover.addEventListener("mouseenter", () => {
+    window.clearTimeout(proofTimer);
+    proofTimer = window.setTimeout(showProofExplainer, 150);
+  });
+  proofHover.addEventListener("mouseleave", (e) => {
+    if (
+      e.relatedTarget instanceof Node &&
+      proofExplainer.contains(e.relatedTarget)
+    )
+      return;
+    hideProofExplainer();
+  });
+  proofExplainer.addEventListener("mouseleave", (e) => {
+    if (e.relatedTarget instanceof Node && proofHover.contains(e.relatedTarget))
+      return;
+    hideProofExplainer();
+  });
+  proofHover.addEventListener("focus", showProofExplainer);
+  proofHover.addEventListener("click", showProofExplainer);
+  proofHover.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") hideProofExplainer();
+  });
+  $("proof-explainer-close").addEventListener("click", hideProofExplainer);
+  window.addEventListener("resize", hideProofExplainer);
+  window.addEventListener("scroll", hideProofExplainer, {
+    capture: true,
+    passive: true,
   });
 
   /* ── import / export / reset ── */

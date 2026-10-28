@@ -18,9 +18,9 @@ import { CURRENT_TREND_EDITION } from "@/lib/prompt-studio/domain/trends";
         <p class="intro-kicker">A prompt composer, not an image generator</p>
         <h2 id="intro-h">Direct the image, then copy the prompt.</h2>
         <p>
-          Choose a layout, imagery and print finish separately. The studio
-          writes one prompt for ChatGPT Images, Gemini, Midjourney, FLUX or
-          Stable Diffusion; you paste it there. It runs in your browser and
+          Four short steps: describe your idea, choose a look, tweak colors and
+          type if you like, then copy the prompt into ChatGPT Images, Gemini,
+          Midjourney, FLUX or Stable Diffusion. It runs in your browser and
           sends nothing anywhere.
         </p>
         <div class="intro-actions">
@@ -41,9 +41,15 @@ import { CURRENT_TREND_EDITION } from "@/lib/prompt-studio/domain/trends";
     <div class="step-rail-inner">
       <ol class="step-rail" id="step-rail" aria-label="Steps"></ol>
       <div class="step-rail-meta">
-        <h2 id="step-heading" tabindex="-1"></h2>
+        <div class="step-heading-block">
+          <h2 id="step-heading" tabindex="-1"></h2>
+          <span class="step-optional" id="step-optional" hidden>Optional</span>
+          <p class="step-purpose" id="step-purpose"></p>
+        </div>
         <label class="label expert-toggle cursor-pointer gap-3">
-          <span>Show all options</span>
+          <span title="Skip the steps and show every control on one page"
+            >Show all options</span
+          >
           <input
             type="checkbox"
             id="btn-expert"
@@ -229,8 +235,9 @@ Brooklyn, NY"></textarea>
             <div>
               <h2 id="directions-h">Start from a direction</h2>
               <p class="goal-guidance">
-                A direction fills in Layout, Imagery and Finish below. Change
-                any layer afterward.
+                A direction is a ready-made look. It sets three things at once:
+                Layout (how the page is composed), Imagery (the art style) and
+                Finish (the print texture). Pick one, then change any of them.
               </p>
               <p id="goal-guidance" class="goal-guidance"></p>
             </div>
@@ -255,7 +262,8 @@ Brooklyn, NY"></textarea>
           >
           </p>
           <p class="curation-note">
-            Curated picks are studio recommendations, not usage counts.
+            Curated pick: our recommendation for your format and goal. 2026
+            starter: a current-trend direction. Neither is a popularity count.
           </p>
           <details class="direction-explorer">
             <summary class="btn btn-ghost">Explore all directions</summary>
@@ -1046,7 +1054,7 @@ Brooklyn, NY"></textarea>
       </section>
 
       <div class="step-nav" id="step-nav">
-        <button type="button" class="btn ghost" id="step-back">Back</button>
+        <button type="button" class="btn" id="step-back">Back</button>
         <button type="button" class="btn primary" id="step-next">Next</button>
       </div>
     </div>
@@ -1131,7 +1139,50 @@ Brooklyn, NY"></textarea>
           </label>
           <div class="tab-content proof-tab-content">
             <figure class="sheet card card-border">
-              <div class="crop" id="proof"></div>
+              <div
+                class="proof-hover"
+                id="proof-hover"
+                tabindex="0"
+                aria-describedby="proof-explainer"
+              >
+                <div class="crop" id="proof"></div>
+              </div>
+              <div
+                id="proof-explainer"
+                class="proof-explainer"
+                popover="manual"
+                role="dialog"
+                aria-label="About this proof"
+              >
+                <button
+                  type="button"
+                  class="btn btn-ghost btn-circle btn-xs proof-explainer-close"
+                  id="proof-explainer-close"
+                  aria-label="Close"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="14"
+                    height="14"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    aria-hidden="true"
+                    ><path d="M18 6 6 18M6 6l12 12"></path></svg
+                  >
+                </button>
+                <h3>A vector study, not a generated image</h3>
+                <p>
+                  It sketches how your four choices combine: Layout, Imagery,
+                  Finish and Type. The legend dots show which choice drives
+                  which part.
+                </p>
+                <p>
+                  The corner marks are crop marks framing the artboard. Copy the
+                  prompt into an image model to get the real result.
+                </p>
+              </div>
               <figcaption>
                 <ul class="seps" id="seps"></ul>
                 <p class="caveat">

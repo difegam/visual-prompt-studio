@@ -1160,8 +1160,8 @@ test("guided path: a blank recipe starts at Describe and nothing is done", () =>
     assert.equal(guided.isStepDone(id, blank, ctx), false, id);
   }
   assert.equal(guided.initialStep(blank, ctx), "describe");
-  assert.equal(guided.stepSummary("describe", blank, ctx), "Not started");
-  assert.equal(guided.stepSummary("look", blank, ctx), "Starting look");
+  assert.equal(guided.stepSummary("describe", blank, ctx), "Add your idea");
+  assert.equal(guided.stepSummary("look", blank, ctx), "Pick a direction");
 });
 
 test("guided path: a saved brief moves the start to Look", () => {
